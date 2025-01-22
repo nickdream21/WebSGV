@@ -1060,3 +1060,37 @@ footer {
         color: white;
         cursor: pointer;
     }
+
+
+/* Estilo para el botón de búsqueda */
+.btn-search {
+    background-color: #007bff; /* Azul primario de Bootstrap */
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0; /* Redondear solo la parte derecha */
+    padding: 8px 12px;
+    transition: all 0.3s ease; /* Animación suave */
+}
+
+    .btn-search:hover {
+        background-color: #0056b3; /* Azul más oscuro al pasar el cursor */
+        color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para efecto flotante */
+    }
+
+.input-group {
+    border-radius: 4px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que el contenido respete los bordes */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sutil sombra */
+}
+
+
+.select2-container {
+    z-index: 10000; /* Asegura que el menú esté por encima de otros elementos */
+}
+
+.select2-dropdown {
+    position: absolute !important; /* Garantiza el posicionamiento */
+    top: auto !important; /* Forzar hacia abajo */
+    bottom: auto !important;
+}

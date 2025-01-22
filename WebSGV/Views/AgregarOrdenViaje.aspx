@@ -18,77 +18,72 @@
         <!-- Contenido de las pestañas -->
         <div class="tab-content" id="ordenViajeContent">
             <!-- Pestaña 1: Datos del Viaje -->
-           <!-- Pestaña 1: Datos del Viaje -->
-<div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-    <h3 class="tab-header">Datos del Viaje</h3>
-    <form id="formDatosViaje">
-        <div class="row">
-            <div class="col-md-6 form-group">
-                <label for="txtCPI">N° CPI:</label>
-                <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" />
-            </div>
-            <div class="col-md-6 form-group">
-                <label for="txtOrdenViaje">N° Orden Viaje:</label>
-                <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3 form-group">
-                <label for="txtFechaSalida">Fecha de Salida:</label>
-                <input type="date" id="txtFechaSalida" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtHoraSalida">Hora de Salida:</label>
-                <input type="time" id="txtHoraSalida" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtFechaLlegada">Fecha de Llegada:</label>
-                <input type="date" id="txtFechaLlegada" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtHoraLlegada">Hora de Llegada:</label>
-                <input type="time" id="txtHoraLlegada" runat="server" class="form-control" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4 form-group">
-                <label for="ddlCliente">Cliente:</label>
-                <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control">
-                <asp:ListItem Text="Seleccione un cliente" Value="" />
-                </asp:DropDownList>
-            </div>
-            <div class="col-md-4 form-group">
-                <label for="ddlTracto">Placa Tracto:</label>
-                <asp:DropDownList id="ddlTracto" runat="server" class="form-control">
-                <asp:ListItem Text="Seleccione un tracto" Value="" />
-                </asp:DropDownList>
-            </div>
-            <div class="col-md-4 form-group">
-                <label for="ddlCarreta">Placa Carreta:</label>
-                <asp:DropDownList id="ddlCarreta" runat="server" class="form-control">
-                <asp:ListItem Text="Seleccione una placa" Value="" />
-                </asp:DropDownList>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 form-group">
-                <label for="ddlConductor">Conductor:</label>
-                <asp:DropDownList id="ddlConductor" runat="server" class="form-control">
-                 <asp:ListItem Text="Seleccione un conductor" Value="" />
-                </asp:DropDownList>
-            </div>
-            <div class="col-md-6 form-group">
-                <label for="txtObservaciones">Observaciones:</label>
-                <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
-            </div>
-        </div>
-        <div class="form-group text-right">
-            <button type="button" class="btn btn-primary" onclick="showNextTab('liquidacion-tab')">Siguiente</button>
-        </div>
-    </form>
+            <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
+                <h3 class="tab-header">Datos del Viaje</h3>
+                <form id="formDatosViaje">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="txtCPI">N° CPI:</label>
+                            <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" />
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="txtOrdenViaje">N° Orden Viaje:</label>
+                            <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label for="txtFechaSalida">Fecha de Salida:</label>
+                            <input type="date" id="txtFechaSalida" runat="server" class="form-control" />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtHoraSalida">Hora de Salida:</label>
+                            <input type="time" id="txtHoraSalida" runat="server" class="form-control" />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtFechaLlegada">Fecha de Llegada:</label>
+                            <input type="date" id="txtFechaLlegada" runat="server" class="form-control" />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtHoraLlegada">Hora de Llegada:</label>
+                            <input type="time" id="txtHoraLlegada" runat="server" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label for="ddlCliente">Cliente:</label>
+                            <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control">
+                                <asp:ListItem Text="Seleccione un cliente" Value="" />
+                            </asp:DropDownList>
+                        </div>
+<div class="col-md-4 form-group">
+    <label for="ddlPlacaTracto">Placa Tracto:</label>
+    <select id="ddlPlacaTracto" class="form-control" style="width: 100%;"></select>
 </div>
 
 
+                     <!-- Campo Placa Carreta -->
+    <div class="col-md-4 form-group">
+        <label for="ddlPlacaCarreta">Placa Carreta:</label>
+        <select id="ddlPlacaCarreta" class="form-control" style="width: 100%;"></select>
+    </div>
+
+    <!-- Campo Conductor -->
+    <div class="col-md-4 form-group">
+        <label for="ddlConductor">Conductor:</label>
+        <select id="ddlConductor" class="form-control" style="width: 100%;"></select>
+    </div>
+                        <div class="col-md-6 form-group">
+                            <label for="txtObservaciones">Observaciones:</label>
+                            <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group text-right">
+    <button type="button" class="btn btn-primary" onclick="showNextTab('liquidacion')">Siguiente</button>
+</div>
+
+                </form>
+            </div>
             <!-- Pestaña 2: Liquidación -->
 <div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
     <h3 class="tab-header">Liquidación</h3>
@@ -136,8 +131,7 @@
         </tr>
     </tbody>
 </table>
-
-        <!-- Tabla de Gastos -->
+       <!-- Tabla de Gastos -->
 <h5>Gastos</h5>
 <table class="table table-bordered liquidacion-tabla-gastos" id="tablaGastos">
     <thead class="liquidacion-tabla-cabecera">
@@ -150,7 +144,7 @@
             <th>Acción</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="gastosFijosBody">
         <tr>
             <td>1</td>
             <td>Peajes</td>
@@ -216,11 +210,15 @@
             <td></td>
         </tr>
     </tbody>
+    <tbody id="gastosAdicionalesBody">
+        <!-- Aquí se añadirán dinámicamente los gastos adicionales -->
+    </tbody>
 </table>
-<!-- Botones para agregar y eliminar filas -->
+<!-- Botón para agregar filas -->
 <div class="text-right">
     <button type="button" class="btn btn-success" onclick="agregarFila()">Añadir Fila</button>
 </div>
+
 
 
         <!-- Resumen -->
@@ -299,14 +297,6 @@
         </div>
     </div>
 </div>
-
-        
-
-
-
-
-
-
         <h5>Productos asociados</h5>
         <!-- Tabla Productos -->
         <table class="table table-bordered guias-tabla-productos" id="tablaProductos">
@@ -346,11 +336,113 @@
         </div>
     </form>
 </div>
-
-
         </div>
     </div>
 <script src="<%= ResolveUrl("~/Scripts/Custom/JavaScript.js") %>"></script>
+
+
+     <!-- Librerías para autocompletado -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- CSS de Select2 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<!-- JS de Select2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+<!-- Librerías necesarias -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $(document).ready(function () {
+            // Inicializar Select2 para Placa Tracto
+            $("#ddlPlacaTracto").select2({
+                placeholder: "Buscar una placa de tracto...",
+                data: JSON.parse('<%= ViewState["PlacasTracto"] %>').map(function (item) {
+            return { id: item, text: item };
+        }),
+        minimumInputLength: 1
+    });
+
+          // Inicializar Select2 para Placa Carreta
+          $("#ddlPlacaCarreta").select2({
+              placeholder: "Buscar una placa de carreta...",
+              data: JSON.parse('<%= ViewState["PlacasCarreta"] %>').map(function (item) {
+            return { id: item, text: item };
+        }),
+        minimumInputLength: 1
+    });
+
+    // Inicializar Select2 para Conductor
+    $("#ddlConductor").select2({
+        placeholder: "Buscar un conductor...",
+        dropdownParent: $('#ddlConductor').parent(),
+        data: JSON.parse('<%= ViewState["Conductores"] %>').map(function (item) {
+            return { id: item, text: item };
+        }),
+        minimumInputLength: 1
+    });
+      });
+
+    });
+    function agregarFila() {
+        // Crear una nueva fila
+        const nuevaFila = `
+            <tr>
+                <td class="numeroFila"></td>
+                <td><input type="text" class="form-control" placeholder="Gasto Adicional"></td>
+                <td><input type="text" class="form-control" placeholder="Descripción"></td>
+                <td><input type="number" class="form-control" placeholder="Soles"></td>
+                <td><input type="number" class="form-control" placeholder="Dólares"></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btnEliminarFila">Eliminar</button>
+                </td>
+            </tr>
+        `;
+
+        // Añadir la fila al cuerpo de gastos adicionales
+        $("#gastosAdicionalesBody").append(nuevaFila);
+
+        // Recalcular los números de las filas
+        recalcularNumeros();
+    }
+
+    // Evento para eliminar una fila
+    $(document).on("click", ".btnEliminarFila", function () {
+        // Eliminar la fila seleccionada
+        $(this).closest("tr").remove();
+
+        // Recalcular los números de las filas
+        recalcularNumeros();
+    });
+
+    // Función para recalcular los números de las filas
+    function recalcularNumeros() {
+        // Iterar sobre las filas y asignar números consecutivos
+        $("#gastosAdicionalesBody tr").each(function (index) {
+            $(this).find(".numeroFila").text(index + 9); // Comienza en 9 porque los gastos fijos terminan en 8
+        });
+    }
+
+    function showNextTab(nextTabId) {
+        // Desactivar la pestaña activa
+        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
+        $('.tab-content .tab-pane.active').removeClass('show active');
+
+        // Activar la siguiente pestaña
+        $(`#${nextTabId}-tab`).addClass('active').attr('aria-selected', 'true');
+        $(`#${nextTabId}`).addClass('show active');
+    }
+
+
+
+
+</script>
+
 
 
 </asp:Content>

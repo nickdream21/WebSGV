@@ -78,33 +78,6 @@ namespace WebSGV.Views
         protected global::System.Web.UI.WebControls.DropDownList ddlCliente;
 
         /// <summary>
-        /// Control ddlTracto.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlTracto;
-
-        /// <summary>
-        /// Control ddlCarreta.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCarreta;
-
-        /// <summary>
-        /// Control ddlConductor.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlConductor;
-
-        /// <summary>
         /// Control txtObservaciones.
         /// </summary>
         /// <remarks>
