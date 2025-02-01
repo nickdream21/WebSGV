@@ -23,7 +23,7 @@
 
 <body>
     <form runat="server">
-        <asp:ScriptManager runat="server"></asp:ScriptManager>
+        <asp:ScriptManager runat="server" EnablePageMethods="true"></asp:ScriptManager>
 
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light" runat="server" id="Navbar">
