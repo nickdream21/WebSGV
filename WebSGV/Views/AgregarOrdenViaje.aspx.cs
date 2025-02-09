@@ -5,8 +5,6 @@ using System.Configuration;
 using System.Web.UI.WebControls;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System.Web.Mvc;
-using System.Web.Services;
 using System.Text.RegularExpressions;
 
 namespace WebSGV.Views
@@ -21,14 +19,46 @@ namespace WebSGV.Views
                 CargarPlacasTracto();
                 CargarPlacasCarreta();
                 CargarConductores();
-
             }
         }
+
         private void CargarClientes()
         {
-            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
             string query = "SELECT idCliente, nombre FROM Cliente";
+            DataTable dt = ObtenerDatosDeBD(query);
 
+            if (dt.Rows.Count > 0)
+            {
+                ddlCliente.DataSource = dt;
+                ddlCliente.DataTextField = "nombre";
+                ddlCliente.DataValueField = "idCliente";
+                ddlCliente.DataBind();
+            }
+
+            ddlCliente.Items.Insert(0, new ListItem("Seleccione un cliente", ""));
+        }
+
+        private void CargarPlacasTracto()
+        {
+            string query = "SELECT placaTracto FROM Tracto";
+            ViewState["PlacasTracto"] = JsonConvert.SerializeObject(ObtenerListaDeBD(query));
+        }
+
+        private void CargarPlacasCarreta()
+        {
+            string query = "SELECT placaCarreta FROM Carreta";
+            ViewState["PlacasCarreta"] = JsonConvert.SerializeObject(ObtenerListaDeBD(query));
+        }
+
+        private void CargarConductores()
+        {
+            string query = "SELECT CONCAT(nombre, ' ', apPaterno, ' ', apMaterno) AS nombreCompleto FROM Conductor";
+            ViewState["Conductores"] = JsonConvert.SerializeObject(ObtenerListaDeBD(query));
+        }
+
+        private DataTable ObtenerDatosDeBD(string query)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -39,68 +69,21 @@ namespace WebSGV.Views
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
                         da.Fill(dt);
-
-                        ddlCliente.DataSource = dt;
-                        ddlCliente.DataTextField = "nombre";
-                        ddlCliente.DataValueField = "idCliente";
-                        ddlCliente.DataBind();
+                        return dt;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error: " + ex.Message);
+                        Console.WriteLine("Error al obtener datos: " + ex.Message);
+                        return new DataTable();
                     }
                 }
             }
-
-            ddlCliente.Items.Insert(0, new ListItem("Seleccione un cliente", ""));
         }
 
-        private void CargarPlacasTracto()
+        private List<string> ObtenerListaDeBD(string query)
         {
-            ViewState["PlacasTracto"] = ObtenerDatosDeBD("SELECT placaTracto FROM Tracto");
-        }
-
-        private void CargarPlacasCarreta()
-        {
-            ViewState["PlacasCarreta"] = ObtenerDatosDeBD("SELECT placaCarreta FROM Carreta");
-        }
-
-        private void CargarConductores()
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
-            string query = "SELECT CONCAT(nombre, ' ', apPaterno, ' ', apMaterno) AS nombreCompleto FROM Conductor";
-
-            List<string> conductores = new List<string>();
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    try
-                    {
-                        conn.Open();
-                        SqlDataReader reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                        {
-                            conductores.Add(reader["nombreCompleto"].ToString());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error al cargar conductores: " + ex.Message);
-                    }
-                }
-            }
-
-            // Guardamos los datos en el ViewState para usarlos en el cliente
-            ViewState["Conductores"] = JsonConvert.SerializeObject(conductores);
-        }
-
-
-        private string ObtenerDatosDeBD(string query)
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
             List<string> resultados = new List<string>();
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -122,10 +105,8 @@ namespace WebSGV.Views
                 }
             }
 
-            return JsonConvert.SerializeObject(resultados);
+            return resultados;
         }
-
-
 
         protected void btnSiguiente_Click(object sender, EventArgs e)
         {
@@ -139,21 +120,21 @@ namespace WebSGV.Views
 
             if (!string.IsNullOrEmpty(errores))
             {
-                // Mostrar errores al usuario
-                lblErrores.Text = errores.Replace("\n", "<br/>"); // Muestra errores en el Label
+                lblErrores.Text = errores.Replace("\n", "<br/>");
                 return;
             }
-
-            // Enviar señal a JavaScript para cambiar de pestaña
-            ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#liquidacion-tab').click();", true);
+            else
+            {
+                lblErrores.Text = "";
+                ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#liquidacion-tab').click();", true);
+                return;  // ERROR: Faltaba ";"
+            }
         }
-
 
         private string ValidarDatosViaje(string cpic, string ordenViaje, DateTime fechaSalida, DateTime fechaLlegada)
         {
             string mensajeError = "";
 
-            // Validar CPIC
             if (string.IsNullOrEmpty(cpic))
             {
                 mensajeError += "El campo 'N° CPI' es obligatorio.\n";
@@ -163,11 +144,9 @@ namespace WebSGV.Views
                 mensajeError += "El N° CPI ingresado no existe en la base de datos.\n";
             }
 
-            // Validar que la Orden de Viaje sea única
             if (string.IsNullOrEmpty(ordenViaje))
             {
-                mensajeError += "El campo 'N° Orden Viaje' es obligatorio.\n ";
-
+                mensajeError += "El campo 'N° Orden Viaje' es obligatorio.\n";
             }
             else if (!Regex.IsMatch(ordenViaje, @"^\d{6}$"))
             {
@@ -175,10 +154,9 @@ namespace WebSGV.Views
             }
             else if (!EsOrdenDeViajeUnica(ordenViaje))
             {
-                mensajeError += "El N° Orden Viaje ya está registrado.\n variable:"+ordenViaje;
+                mensajeError += "El N° Orden Viaje ya está registrado.\n";
             }
 
-            // Validar fechas
             DateTime fechaActual = DateTime.Now;
             if (fechaSalida > fechaActual)
             {
@@ -208,7 +186,7 @@ namespace WebSGV.Views
                     cmd.Parameters.AddWithValue("@cpic", cpic);
                     conn.Open();
                     int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    return count > 0; // Retorna true si existe
+                    return count > 0;
                 }
             }
         }
@@ -225,17 +203,9 @@ namespace WebSGV.Views
                     cmd.Parameters.AddWithValue("@ordenViaje", ordenViaje);
                     conn.Open();
                     int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    return count == 0; // Devuelve true si NO existe en la BD
+                    return count == 0;
                 }
             }
         }
-
-
-
-       
-
     }
-
-
 }
-

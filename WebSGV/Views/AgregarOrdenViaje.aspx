@@ -54,36 +54,41 @@
             </div>
         </div>
 
-        <!-- Tercera fila: Cliente, Placas, y Conductor -->
-        <div class="row mb-3">
-            <div class="col-md-4 form-group">
-                <label for="ddlCliente">Cliente:</label>
-                <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control">
-                    <asp:ListItem Text="Seleccione un cliente" Value="" />
-                </asp:DropDownList>
-            </div>
-            <div class="col-md-4 form-group">
-                <label for="ddlPlacaTracto">Placa Tracto:</label>
-                <select id="ddlPlacaTracto" class="form-control">
-                    <!-- Opciones generadas dinámicamente -->
-                </select>
-            </div>
-            <div class="col-md-4 form-group">
-                <label for="ddlPlacaCarreta">Placa Carreta:</label>
-                <select id="ddlPlacaCarreta" class="form-control">
-                    <!-- Opciones generadas dinámicamente -->
-                </select>
-            </div>
-        </div>
+       <!-- Tercera fila: Cliente, Placas, y Conductor -->
+<div class="row mb-3">
+    <div class="col-md-4 form-group">
+        <label for="ddlCliente">Cliente:</label>
+        <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control select2">
+            <asp:ListItem Text="Seleccione un cliente" Value="" />
+        </asp:DropDownList>
+    </div>
+    <div class="col-md-4 form-group">
+        <label for="ddlPlacaTracto">Placa Tracto:</label>
+        <asp:DropDownList ID="ddlPlacaTracto" runat="server" CssClass="form-control select2">
+            <!-- Opciones generadas dinámicamente -->
+        </asp:DropDownList>
+    </div>
+    <div class="col-md-4 form-group">
+        <label for="ddlPlacaCarreta">Placa Carreta:</label>
+        <asp:DropDownList ID="ddlPlacaCarreta" runat="server" CssClass="form-control select2">
+            <!-- Opciones generadas dinámicamente -->
+        </asp:DropDownList>
+    </div>
+</div>
 
-        <!-- Cuarta fila: Conductor y Observaciones -->
-        <div class="row mb-4">
-            <div class="col-md-6 form-group">
-                <label for="ddlConductor">Conductor:</label>
-                <select id="ddlConductor" class="form-control">
-                    <!-- Opciones generadas dinámicamente -->
-                </select>
-            </div>
+<!-- Cuarta fila: Conductor y Observaciones -->
+<div class="row mb-4">
+    <div class="col-md-6 form-group">
+        <label for="ddlConductor">Conductor:</label>
+        <asp:DropDownList ID="ddlConductor" runat="server" CssClass="form-control select2">
+            <!-- Opciones generadas dinámicamente -->
+        </asp:DropDownList>
+    </div>
+    <div class="col-md-6 form-group">
+        <label for="txtObservaciones">Observaciones:</label>
+        <textarea id="Textarea1" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
+    </div>
+</div>
             <div class="col-md-6 form-group">
                 <label for="txtObservaciones">Observaciones:</label>
                 <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
@@ -371,39 +376,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 
 <script>
-    $(document).ready(function () {
-        $(document).ready(function () {
-            // Inicializar Select2 para Placa Tracto
-            $("#ddlPlacaTracto").select2({
-                placeholder: "Buscar una placa de tracto...",
-                data: JSON.parse('<%= ViewState["PlacasTracto"] %>').map(function (item) {
-                    return { id: item, text: item };
-                }),
-                minimumInputLength: 1
-            });
-
-            // Inicializar Select2 para Placa Carreta
-            $("#ddlPlacaCarreta").select2({
-                placeholder: "Buscar una placa de carreta...",
-                data: JSON.parse('<%= ViewState["PlacasCarreta"] %>').map(function (item) {
-                    return { id: item, text: item };
-                }),
-                minimumInputLength: 1
-            });
-
-            // Inicializar Select2 para Conductor
-            $("#ddlConductor").select2({
-                placeholder: "Buscar un conductor...",
-                dropdownParent: $('#ddlConductor').parent(),
-                data: JSON.parse('<%= ViewState["Conductores"] %>').map(function (item) {
-                    return { id: item, text: item };
-                }),
-                minimumInputLength: 1
-            });
-        });
-
+   $(document).ready(function () {
+    $("#<%= ddlPlacaTracto.ClientID %>").on('change', function () {
+        var selectedPlaca = $(this).val();
+        console.log("Placa Tracto seleccionada: " + selectedPlaca);
     });
-    function agregarFila() {
+
+    $("#<%= ddlPlacaCarreta.ClientID %>").on('change', function () {
+        var selectedPlaca = $(this).val();
+        console.log("Placa Carreta seleccionada: " + selectedPlaca);
+    });
+
+    $("#<%= ddlConductor.ClientID %>").on('change', function () {
+        var selectedConductor = $(this).val();
+        console.log("Conductor seleccionado: " + selectedConductor);
+    });
+});
+   
+function agregarFila() {
         // Crear una nueva fila
         const nuevaFila =
             <tr>
