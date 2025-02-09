@@ -1094,3 +1094,29 @@ footer {
     top: auto !important; /* Forzar hacia abajo */
     bottom: auto !important;
 }
+
+/* Estilo específico para el botón Siguiente */
+.btn-next {
+    font-size: 14px;
+    padding: 8px 16px; /* Tamaño compacto */
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block; /* Evita que ocupe todo el ancho */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .btn-next:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+
+/* Ajuste del contenedor del botón */
+#formDatosViaje .form-group.text-end {
+    text-align: right;
+    margin-top: 20px;
+}
+

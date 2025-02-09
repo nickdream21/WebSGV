@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Agregar Orden de Viaje" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarOrdenViaje.aspx.cs" Inherits="WebSGV.Views.AgregarOrdenViaje" %>
+﻿<%@ Page Title="Agregar Orden de Viaje" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarOrdenViaje.aspx.cs" Inherits="WebSGV.Views.AgregarOrdenViaje"  %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="tabs-container">
@@ -18,72 +18,87 @@
         <!-- Contenido de las pestañas -->
         <div class="tab-content" id="ordenViajeContent">
             <!-- Pestaña 1: Datos del Viaje -->
-            <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-                <h3 class="tab-header">Datos del Viaje</h3>
-                <form id="formDatosViaje">
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label for="txtCPI">N° CPI:</label>
-                            <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" />
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label for="txtOrdenViaje">N° Orden Viaje:</label>
-                            <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3 form-group">
-                            <label for="txtFechaSalida">Fecha de Salida:</label>
-                            <input type="date" id="txtFechaSalida" runat="server" class="form-control" />
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label for="txtHoraSalida">Hora de Salida:</label>
-                            <input type="time" id="txtHoraSalida" runat="server" class="form-control" />
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label for="txtFechaLlegada">Fecha de Llegada:</label>
-                            <input type="date" id="txtFechaLlegada" runat="server" class="form-control" />
-                        </div>
-                        <div class="col-md-3 form-group">
-                            <label for="txtHoraLlegada">Hora de Llegada:</label>
-                            <input type="time" id="txtHoraLlegada" runat="server" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label for="ddlCliente">Cliente:</label>
-                            <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control">
-                                <asp:ListItem Text="Seleccione un cliente" Value="" />
-                            </asp:DropDownList>
-                        </div>
-<div class="col-md-4 form-group">
-    <label for="ddlPlacaTracto">Placa Tracto:</label>
-    <select id="ddlPlacaTracto" class="form-control" style="width: 100%;"></select>
-</div>
-
-
-                     <!-- Campo Placa Carreta -->
-    <div class="col-md-4 form-group">
-        <label for="ddlPlacaCarreta">Placa Carreta:</label>
-        <select id="ddlPlacaCarreta" class="form-control" style="width: 100%;"></select>
-    </div>
-
-    <!-- Campo Conductor -->
-    <div class="col-md-4 form-group">
-        <label for="ddlConductor">Conductor:</label>
-        <select id="ddlConductor" class="form-control" style="width: 100%;"></select>
-    </div>
-                        <div class="col-md-6 form-group">
-                            <label for="txtObservaciones">Observaciones:</label>
-                            <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-group text-right">
-    <button type="button" class="btn btn-primary" onclick="showNextTab('liquidacion')">Siguiente</button>
-</div>
-
-                </form>
+<div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
+    <h3 class="tab-header text-center mb-4">Datos del Viaje</h3>
+    <form id="formDatosViaje">
+        <asp:HiddenField ID="hfValidationError" runat="server" />
+        <!-- Primera fila: N° CPI y N° Orden Viaje -->
+        <div class="row mb-3">
+            <div class="col-md-6 form-group">
+                <label for="txtCPI">N° CPI:</label>
+                <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" />
             </div>
+            <div class="col-md-6 form-group">
+                <label for="txtOrdenViaje">N° Orden Viaje:</label>
+                <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" />
+            </div>
+        </div>
+
+        <!-- Segunda fila: Fechas y horas -->
+        <div class="row mb-3">
+            <div class="col-md-3 form-group">
+                <label for="txtFechaSalida">Fecha de Salida:</label>
+                <input type="date" id="txtFechaSalida" runat="server" class="form-control" />
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="txtHoraSalida">Hora de Salida:</label>
+                <input type="time" id="txtHoraSalida" runat="server" class="form-control" />
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="txtFechaLlegada">Fecha de Llegada:</label>
+                <input type="date" id="txtFechaLlegada" runat="server" class="form-control" />
+            </div>
+            <div class="col-md-3 form-group">
+                <label for="txtHoraLlegada">Hora de Llegada:</label>
+                <input type="time" id="txtHoraLlegada" runat="server" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Tercera fila: Cliente, Placas, y Conductor -->
+        <div class="row mb-3">
+            <div class="col-md-4 form-group">
+                <label for="ddlCliente">Cliente:</label>
+                <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control">
+                    <asp:ListItem Text="Seleccione un cliente" Value="" />
+                </asp:DropDownList>
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="ddlPlacaTracto">Placa Tracto:</label>
+                <select id="ddlPlacaTracto" class="form-control">
+                    <!-- Opciones generadas dinámicamente -->
+                </select>
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="ddlPlacaCarreta">Placa Carreta:</label>
+                <select id="ddlPlacaCarreta" class="form-control">
+                    <!-- Opciones generadas dinámicamente -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Cuarta fila: Conductor y Observaciones -->
+        <div class="row mb-4">
+            <div class="col-md-6 form-group">
+                <label for="ddlConductor">Conductor:</label>
+                <select id="ddlConductor" class="form-control">
+                    <!-- Opciones generadas dinámicamente -->
+                </select>
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="txtObservaciones">Observaciones:</label>
+                <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
+            </div>
+        </div>
+
+        <!-- Botón Siguiente -->
+        <div class="form-group text-end">
+    <asp:Button ID="btnSiguiente" runat="server" CssClass="btn btn-primary px-4 py-2" Text="Siguiente" OnClick="btnSiguiente_Click" />
+</div>
+<asp:Label ID="lblErrores" runat="server" CssClass="text-danger"></asp:Label>
+
+    </form>
+</div>
+
             <!-- Pestaña 2: Liquidación -->
 <div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
     <h3 class="tab-header">Liquidación</h3>
@@ -244,14 +259,14 @@
 
         <!-- Botones de navegación -->
         <div class="form-group text-right mt-3">
-            <button type="button" class="btn btn-secondary" onclick="showPreviousTab('datos-tab')">Atrás</button>
-            <button type="button" class="btn btn-primary" onclick="showNextTab('guias-tab')">Siguiente</button>
-        </div>
+                        <button type="button" class="btn btn-secondary" onclick="showPreviousTab('datos')">Atrás</button>
+                        <button type="button" class="btn btn-primary" onclick="showNextTab('guias')">Siguiente</button>
+                    </div>
     </form>
 </div>
 
-             <!--  Guías -->
-          <div class="tab-pane fade" id="guias" role="tabpanel" aria-labelledby="guias-tab">
+            <!-- Guías -->
+<div class="tab-pane fade" id="guias" role="tabpanel" aria-labelledby="guias-tab">
     <h3 class="tab-header">Guías de Transporte</h3>
     <form id="formGuias">
         <!-- Número de Guías -->
@@ -266,37 +281,36 @@
             </div>
         </div>
 
-            <!-- Campo Rutas -->
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label for="ddlRuta">Ruta:</label>
-                         <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control" ClientIDMode="Static" AutoPostBack="false" onchange="toggleRutaDetails()">
-                            <asp:ListItem Text="Seleccione una ruta" Value="" />
-                            <asp:ListItem Text="Ruta 1" Value="1" />
-                            <asp:ListItem Text="Ruta 2" Value="2" />
-                        </asp:DropDownList>
+        <!-- Campo Rutas -->
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <label for="ddlRuta">Ruta:</label>
+                <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control" ClientIDMode="Static" AutoPostBack="false" onchange="toggleRutaDetails()">
+                    <asp:ListItem Text="Seleccione una ruta" Value="" />
+                    <asp:ListItem Text="Ruta 1" Value="1" />
+                    <asp:ListItem Text="Ruta 2" Value="2" />
+                </asp:DropDownList>
+            </div>
+        </div>
 
-                        </div>
-                    </div>
-
-                    <!-- Campos adicionales para Ruta 2 -->
-                    
+        <!-- Campos adicionales para Ruta 2 -->
         <div id="rutaDetails" style="display: none;">
-    <div class="row">
-        <div class="col-md-6 form-group">
-            <label for="ddlPlantaDescarga">Planta de Descarga:</label>
-            <asp:DropDownList ID="ddlPlantaDescarga" runat="server" CssClass="form-control">
-                <asp:ListItem Text="Seleccione una planta" Value="" />
-                <asp:ListItem Text="Planta 1" Value="planta1" />
-                <asp:ListItem Text="Planta 2" Value="planta2" />
-            </asp:DropDownList>
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="ddlPlantaDescarga">Planta de Descarga:</label>
+                    <asp:DropDownList ID="ddlPlantaDescarga" runat="server" CssClass="form-control">
+                        <asp:ListItem Text="Seleccione una planta" Value="" />
+                        <asp:ListItem Text="Planta 1" Value="planta1" />
+                        <asp:ListItem Text="Planta 2" Value="planta2" />
+                    </asp:DropDownList>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label for="txtNumManifiesto">N° Manifiesto:</label>
+                    <asp:TextBox ID="txtNumManifiesto" runat="server" CssClass="form-control" Placeholder="Ingrese N° Manifiesto"></asp:TextBox>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 form-group">
-            <label for="txtNumManifiesto">N° Manifiesto:</label>
-            <asp:TextBox ID="txtNumManifiesto" runat="server" CssClass="form-control" Placeholder="Ingrese N° Manifiesto"></asp:TextBox>
-        </div>
-    </div>
-</div>
+
         <h5>Productos asociados</h5>
         <!-- Tabla Productos -->
         <table class="table table-bordered guias-tabla-productos" id="tablaProductos">
@@ -331,7 +345,7 @@
 
         <!-- Botones de navegación -->
         <div class="form-group text-right">
-            <button type="button" class="btn btn-secondary" onclick="showPreviousTab('liquidacion-tab')">Atrás</button>
+            <button type="button" class="btn btn-secondary" onclick="showPreviousTab('liquidacion')">Atrás</button>
             <button type="submit" class="btn btn-success" onclick="return validarFormulario()">Guardar</button>
         </div>
     </form>
@@ -363,35 +377,35 @@
             $("#ddlPlacaTracto").select2({
                 placeholder: "Buscar una placa de tracto...",
                 data: JSON.parse('<%= ViewState["PlacasTracto"] %>').map(function (item) {
-            return { id: item, text: item };
-        }),
-        minimumInputLength: 1
-    });
+                    return { id: item, text: item };
+                }),
+                minimumInputLength: 1
+            });
 
-          // Inicializar Select2 para Placa Carreta
-          $("#ddlPlacaCarreta").select2({
-              placeholder: "Buscar una placa de carreta...",
-              data: JSON.parse('<%= ViewState["PlacasCarreta"] %>').map(function (item) {
-            return { id: item, text: item };
-        }),
-        minimumInputLength: 1
-    });
+            // Inicializar Select2 para Placa Carreta
+            $("#ddlPlacaCarreta").select2({
+                placeholder: "Buscar una placa de carreta...",
+                data: JSON.parse('<%= ViewState["PlacasCarreta"] %>').map(function (item) {
+                    return { id: item, text: item };
+                }),
+                minimumInputLength: 1
+            });
 
-    // Inicializar Select2 para Conductor
-    $("#ddlConductor").select2({
-        placeholder: "Buscar un conductor...",
-        dropdownParent: $('#ddlConductor').parent(),
-        data: JSON.parse('<%= ViewState["Conductores"] %>').map(function (item) {
-            return { id: item, text: item };
-        }),
-        minimumInputLength: 1
-    });
-      });
+            // Inicializar Select2 para Conductor
+            $("#ddlConductor").select2({
+                placeholder: "Buscar un conductor...",
+                dropdownParent: $('#ddlConductor').parent(),
+                data: JSON.parse('<%= ViewState["Conductores"] %>').map(function (item) {
+                    return { id: item, text: item };
+                }),
+                minimumInputLength: 1
+            });
+        });
 
     });
     function agregarFila() {
         // Crear una nueva fila
-        const nuevaFila = `
+        const nuevaFila =
             <tr>
                 <td class="numeroFila"></td>
                 <td><input type="text" class="form-control" placeholder="Gasto Adicional"></td>
@@ -402,7 +416,7 @@
                     <button type="button" class="btn btn-danger btnEliminarFila">Eliminar</button>
                 </td>
             </tr>
-        `;
+            ;
 
         // Añadir la fila al cuerpo de gastos adicionales
         $("#gastosAdicionalesBody").append(nuevaFila);
@@ -429,13 +443,146 @@
     }
 
     function showNextTab(nextTabId) {
-        // Desactivar la pestaña activa
         $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
         $('.tab-content .tab-pane.active').removeClass('show active');
+        $(#${ nextTabId } - tab).addClass('active').attr('aria-selected', 'true');
+        $(#${ nextTabId }).addClass('show active');
+    }
 
-        // Activar la siguiente pestaña
-        $(`#${nextTabId}-tab`).addClass('active').attr('aria-selected', 'true');
-        $(`#${nextTabId}`).addClass('show active');
+    // Función para cambiar a la pestaña anterior
+    function showPreviousTab(prevTabId) {
+        // Mover la clase 'active' y mostrar la pestaña anterior
+        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
+        $('.tab-content .tab-pane.active').removeClass('show active');
+        $(#${ prevTabId } - tab).addClass('active').attr('aria-selected', 'true');
+        $(#${ prevTabId }).addClass('show active');
+
+        // Mantener los datos visibles si ya fueron rellenados
+        if (prevTabId === "liquidacion") {
+            $('#liquidacion').find('input, select, textarea').each(function () {
+                $(this).val($(this).val());
+            });
+        }
+    }
+
+    // Función para mostrar los campos adicionales al seleccionar Ruta 2
+    function toggleRutaDetails() {
+        const selectedRoute = $('#ddlRuta').val();
+        if (selectedRoute === "2") {
+            $('#rutaDetails').show();
+        } else {
+            $('#rutaDetails').hide();
+        }
+    }
+
+    // Función para validar los datos antes de guardar
+    function validarFormulario() {
+        let isValid = true;
+
+        // Validar campos requeridos
+        $('#formGuias').find('input, select').each(function () {
+            if ($(this).val() === "" && $(this).attr('required')) {
+                isValid = false;
+                alert('Por favor, complete todos los campos obligatorios.');
+                return false;
+            }
+        });
+
+        return isValid;
+    }
+
+
+    $(document).ready(function () {
+        // Agregar una fila
+        $(document).on("click", ".btn-add-row", function () {
+            const nuevaFila =
+                <tr>
+                    <td>
+                        <select class="form-control">
+                            <option value="">Seleccione un producto</option>
+                            <option>Producto 1</option>
+                            <option>Producto 2</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" placeholder="Cantidad">
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-primary btn-add-row">Añadir</button>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-remove-row">Eliminar</button>
+                    </td>
+                </tr>
+                ;
+
+            $("#tablaProductos tbody").append(nuevaFila);
+            actualizarOpcionesProductos();
+        });
+
+        // Eliminar una fila
+        $(document).on("click", ".btn-remove-row", function () {
+            if ($("#tablaProductos tbody tr").length > 1) {
+                $(this).closest("tr").remove();
+                actualizarOpcionesProductos();
+            } else {
+                alert("No puede eliminar todas las filas. Debe haber al menos una.");
+            }
+        });
+
+        // Actualizar las opciones disponibles en los select
+        function actualizarOpcionesProductos() {
+            const productosSeleccionados = [];
+
+            // Recopilar productos seleccionados en la tabla
+            $("#tablaProductos tbody tr").each(function () {
+                const productoSeleccionado = $(this).find("select").val();
+                if (productoSeleccionado) {
+                    productosSeleccionados.push(productoSeleccionado);
+                }
+            });
+
+            // Actualizar cada select de la tabla
+            $("#tablaProductos tbody tr").each(function () {
+                const selectActual = $(this).find("select");
+                const productoSeleccionadoActual = selectActual.val();
+
+                // Guardar la selección actual y limpiar opciones
+                selectActual.empty();
+                selectActual.append('<option value="">Seleccione un producto</option>');
+                selectActual.append('<option>Producto 1</option>');
+                selectActual.append('<option>Producto 2</option>');
+
+                // Deshabilitar los productos ya seleccionados en otros selects
+                productosSeleccionados.forEach(function (producto) {
+                    if (producto !== productoSeleccionadoActual) {
+                        selectActual.find(option: contains(${ producto })).attr("disabled", true);
+                    }
+                });
+
+                // Restaurar la selección actual
+                selectActual.val(productoSeleccionadoActual);
+            });
+        }
+
+        // Detectar cambio en el select y actualizar opciones
+        $(document).on("change", "#tablaProductos tbody select", function () {
+            actualizarOpcionesProductos();
+        });
+    });
+
+    $(document).ready(function () {
+        $('#btnSiguienteDatos').on('click', function () {
+                showNextTab('liquidacion'); // Cambia de pestaña
+        });
+    });
+
+    // Función para mostrar la siguiente pestaña
+    function showNextTab(nextTabId) {
+        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
+        $('.tab-content .tab-pane.active').removeClass('show active');
+        $(#${ nextTabId } - tab).addClass('active').attr('aria-selected', 'true');
+        $(#${ nextTabId }).addClass('show active');
     }
 
 
