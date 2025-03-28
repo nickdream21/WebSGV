@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Agregar Orden de Viaje" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarOrdenViaje.aspx.cs" Inherits="WebSGV.Views.AgregarOrdenViaje"  %>
+﻿<%@ Page Title="Agregar Orden de Viaje" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarOrdenViaje.aspx.cs" Inherits="WebSGV.Views.AgregarOrdenViaje" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="tabs-container">
@@ -18,384 +18,574 @@
         <!-- Contenido de las pestañas -->
         <div class="tab-content" id="ordenViajeContent">
             <!-- Pestaña 1: Datos del Viaje -->
-<div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-    <h3 class="tab-header text-center mb-4">Datos del Viaje</h3>
-    <form id="formDatosViaje">
-        <asp:HiddenField ID="hfValidationError" runat="server" />
-        <!-- Primera fila: N° CPI y N° Orden Viaje -->
-        <div class="row mb-3">
-            <div class="col-md-6 form-group">
-                <label for="txtCPI">N° CPI:</label>
-                <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" />
-            </div>
-            <div class="col-md-6 form-group">
-                <label for="txtOrdenViaje">N° Orden Viaje:</label>
-                <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" />
-            </div>
-        </div>
+            <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
+                <h3 class="tab-header text-center mb-4">Datos del Viaje</h3>
+                <form id="formDatosViaje">
+                    <asp:HiddenField ID="hfValidationError" runat="server" />
+                    <!-- Primera fila: N° CPI y N° Orden Viaje -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 form-group">
+                            <label for="txtCPI">N° CPI:</label>
+                            <input type="text" id="txtCPI" runat="server" class="form-control" placeholder="Ingrese el N° CPI" required />
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="txtOrdenViaje">N° Orden Viaje:</label>
+                            <input type="text" id="txtOrdenViaje" runat="server" class="form-control" placeholder="Ingrese el N° Orden de Viaje" required />
+                        </div>
+                    </div>
 
-        <!-- Segunda fila: Fechas y horas -->
-        <div class="row mb-3">
-            <div class="col-md-3 form-group">
-                <label for="txtFechaSalida">Fecha de Salida:</label>
-                <input type="date" id="txtFechaSalida" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtHoraSalida">Hora de Salida:</label>
-                <input type="time" id="txtHoraSalida" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtFechaLlegada">Fecha de Llegada:</label>
-                <input type="date" id="txtFechaLlegada" runat="server" class="form-control" />
-            </div>
-            <div class="col-md-3 form-group">
-                <label for="txtHoraLlegada">Hora de Llegada:</label>
-                <input type="time" id="txtHoraLlegada" runat="server" class="form-control" />
-            </div>
-        </div>
+                    <!-- Segunda fila: Fechas y horas -->
+                    <div class="row mb-3">
+                        <div class="col-md-3 form-group">
+                            <label for="txtFechaSalida">Fecha de Salida:</label>
+                            <input type="date" id="txtFechaSalida" runat="server" class="form-control" required />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtHoraSalida">Hora de Salida:</label>
+                            <input type="time" id="txtHoraSalida" runat="server" class="form-control" required />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtFechaLlegada">Fecha de Llegada:</label>
+                            <input type="date" id="txtFechaLlegada" runat="server" class="form-control" required />
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label for="txtHoraLlegada">Hora de Llegada:</label>
+                            <input type="time" id="txtHoraLlegada" runat="server" class="form-control" required />
+                        </div>
+                    </div>
 
-       <!-- Tercera fila: Cliente, Placas, y Conductor -->
-<div class="row mb-3">
-    <div class="col-md-4 form-group">
-        <label for="ddlCliente">Cliente:</label>
-        <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control select2">
-            <asp:ListItem Text="Seleccione un cliente" Value="" />
-        </asp:DropDownList>
-    </div>
-    <div class="col-md-4 form-group">
-        <label for="ddlPlacaTracto">Placa Tracto:</label>
-        <asp:DropDownList ID="ddlPlacaTracto" runat="server" CssClass="form-control select2">
-            <!-- Opciones generadas dinámicamente -->
-        </asp:DropDownList>
-    </div>
-    <div class="col-md-4 form-group">
-        <label for="ddlPlacaCarreta">Placa Carreta:</label>
-        <asp:DropDownList ID="ddlPlacaCarreta" runat="server" CssClass="form-control select2">
-            <!-- Opciones generadas dinámicamente -->
-        </asp:DropDownList>
-    </div>
-</div>
+                    <!-- Tercera fila: Cliente, Placas y Conductor -->
+                    <div class="row mb-3">
+                        <div class="col-md-4 form-group">
+                            <label for="ddlCliente">Cliente:</label>
+                            <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control select2" required>
+                                <asp:ListItem Text="Seleccione un cliente" Value="" />
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="ddlPlacaTracto">Placa Tracto:</label>
+                            <asp:DropDownList ID="ddlPlacaTracto" runat="server" CssClass="form-control select2" required>
+                                <asp:ListItem Text="Seleccione una placa" Value="" />
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="ddlPlacaCarreta">Placa Carreta:</label>
+                            <asp:DropDownList ID="ddlPlacaCarreta" runat="server" CssClass="form-control select2" required>
+                                <asp:ListItem Text="Seleccione una placa" Value="" />
+                            </asp:DropDownList>
+                        </div>
+                    </div>
 
-<!-- Cuarta fila: Conductor y Observaciones -->
-<div class="row mb-4">
-    <div class="col-md-6 form-group">
-        <label for="ddlConductor">Conductor:</label>
-        <asp:DropDownList ID="ddlConductor" runat="server" CssClass="form-control select2">
-            <!-- Opciones generadas dinámicamente -->
-        </asp:DropDownList>
-    </div>
-    <div class="col-md-6 form-group">
-        <label for="txtObservaciones">Observaciones:</label>
-        <textarea id="Textarea1" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
-    </div>
-</div>
-            <div class="col-md-6 form-group">
-                <label for="txtObservaciones">Observaciones:</label>
-                <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
+                    <!-- Cuarta fila: Conductor y Observaciones -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 form-group">
+                            <label for="ddlConductor">Conductor:</label>
+                            <asp:DropDownList ID="ddlConductor" runat="server" CssClass="form-control select2" required>
+                                <asp:ListItem Text="Seleccione un conductor" Value="" />
+                            </asp:DropDownList>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="txtObservaciones">Observaciones:</label>
+                            <textarea id="txtObservaciones" runat="server" class="form-control" rows="3" placeholder="Añadir observaciones"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botón Siguiente -->
+                    <div class="form-group text-end">
+                        <asp:Button ID="btnSiguiente" runat="server" CssClass="btn btn-primary px-4 py-2" Text="Siguiente" OnClientClick="return validarDatosViaje();" OnClick="btnSiguiente_Click" />
+                    </div>
+
+                    <!-- Etiqueta para mostrar errores -->
+                    <div class="form-group">
+                        <asp:Label ID="lblErrores" runat="server" CssClass="text-danger" EnableViewState="false"></asp:Label>
+                    </div>
+                </form>
             </div>
-        </div>
-
-        <!-- Botón Siguiente -->
-        <div class="form-group text-end">
-    <asp:Button ID="btnSiguiente" runat="server" CssClass="btn btn-primary px-4 py-2" Text="Siguiente" OnClick="btnSiguiente_Click" />
-</div>
-<asp:Label ID="lblErrores" runat="server" CssClass="text-danger"></asp:Label>
-
-    </form>
-</div>
 
             <!-- Pestaña 2: Liquidación -->
-<div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
-    <h3 class="tab-header">Liquidación</h3>
-    <form id="formLiquidacion">
-        <!-- Tabla de ingresos -->
-<h5>Ingresos</h5>
-<table class="table table-bordered liquidacion-tabla-ingresos"">
-    <thead class="liquidacion-tabla-cabecera">
-        <tr>
-            <th>#</th>
-            <th>Ingresos</th>
-            <th>Descripción</th>
-            <th>Soles (S/)</th>
-            <th>Dólares ($)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>1</td>
-            <td>Despacho</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>Mensualidad</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Otros Autorizados</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Préstamo</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-        </tr>
-    </tbody>
-</table>
-       <!-- Tabla de Gastos -->
-<h5>Gastos</h5>
-<table class="table table-bordered liquidacion-tabla-gastos" id="tablaGastos">
-    <thead class="liquidacion-tabla-cabecera">
-        <tr>
-            <th>#</th>
-            <th>Gastos</th>
-            <th>Descripción</th>
-            <th>Soles (S/)</th>
-            <th>Dólares ($)</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody id="gastosFijosBody">
-        <tr>
-            <td>1</td>
-            <td>Peajes</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>Alimentación</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Apoyo-Seguridad</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Reparaciones Varios</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Movilidad</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>6</td>
-            <td>Encapada/Descencarpada</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>7</td>
-            <td>Hospedaje</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>8</td>
-            <td>Combustible</td>
-            <td><input type="text" class="form-control" placeholder="Descripción"></td>
-            <td><input type="number" class="form-control" placeholder="Soles"></td>
-            <td><input type="number" class="form-control" placeholder="Dólares"></td>
-            <td></td>
-        </tr>
-    </tbody>
-    <tbody id="gastosAdicionalesBody">
-        <!-- Aquí se añadirán dinámicamente los gastos adicionales -->
-    </tbody>
-</table>
-<!-- Botón para agregar filas -->
-<div class="text-right">
-    <button type="button" class="btn btn-success" onclick="agregarFila()">Añadir Fila</button>
-</div>
+            <div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
+                <h3 class="tab-header">Liquidación</h3>
+                <form id="formLiquidacion">
+                    <!-- Tabla de ingresos -->
+                    <h5>Ingresos</h5>
+                    <table class="table table-bordered liquidacion-tabla-ingresos">
+                        <thead class="liquidacion-tabla-cabecera">
+                            <tr>
+                                <th>#</th>
+                                <th>Ingresos</th>
+                                <th>Descripción</th>
+                                <th>Soles (S/)</th>
+                                <th>Dólares ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingresosBody">
+                            <tr>
+                                <td>1</td>
+                                <td>Despacho</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Mensualidad</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Otros Autorizados</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Préstamo</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
+                    <!-- Tabla de Gastos -->
+                    <h5>Gastos</h5>
+                    <table class="table table-bordered liquidacion-tabla-gastos" id="tablaGastos">
+                        <thead class="liquidacion-tabla-cabecera">
+                            <tr>
+                                <th>#</th>
+                                <th>Gastos</th>
+                                <th>Descripción</th>
+                                <th>Soles (S/)</th>
+                                <th>Dólares ($)</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gastosFijosBody">
+                            <tr>
+                                <td>1</td>
+                                <td>Peajes</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="213"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Alimentación</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="342"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Apoyo-Seguridad</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Reparaciones Varios</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Movilidad</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Encapada/Descencarpada</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="123"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="214"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Hospedaje</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="124"></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>Combustible</td>
+                                <td>
+                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Soles" value="123"></td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                        <tbody id="gastosAdicionalesBody">
+                            <!-- Aquí se añadirán dinámicamente los gastos adicionales -->
+                        </tbody>
+                    </table>
 
+                    <!-- Botón para agregar filas -->
+                    <div class="text-right">
+                        <button type="button" class="btn btn-success" onclick="agregarFila()">Añadir Fila</button>
+                    </div>
 
-        <!-- Resumen -->
-        <h5>Resumen</h5>
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Total Ingresos</th>
-                        <th>Total Gastos</th>
-                        <th>Diferencia de Saldo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><input type="number" class="form-control" readonly></td>
-                        <td><input type="number" class="form-control" readonly></td>
-                        <td><input type="number" class="form-control" readonly></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                    <!-- Resumen -->
+                    <h5>Resumen</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Soles (S/)</th>
+                                    <th>Dólares ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Total Ingresos</td>
+                                    <td id="totalIngresosSoles">0.00</td>
+                                    <td id="totalIngresosDolares">0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Total Gastos</td>
+                                    <td id="totalGastosSoles">0.00</td>
+                                    <td id="totalGastosDolares">0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Diferencia de Saldo</td>
+                                    <td id="diferenciaSaldoSoles">0.00</td>
+                                    <td id="diferenciaSaldoDolares">0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-        <!-- Botones de navegación -->
-        <div class="form-group text-right mt-3">
+                    <!-- Botones de navegación -->
+                    <div class="form-group text-right mt-3">
                         <button type="button" class="btn btn-secondary" onclick="showPreviousTab('datos')">Atrás</button>
                         <button type="button" class="btn btn-primary" onclick="showNextTab('guias')">Siguiente</button>
                     </div>
-    </form>
-</div>
-
-            <!-- Guías -->
-<div class="tab-pane fade" id="guias" role="tabpanel" aria-labelledby="guias-tab">
-    <h3 class="tab-header">Guías de Transporte</h3>
-    <form id="formGuias">
-        <!-- Número de Guías -->
-        <div class="row">
-            <div class="col-md-6 form-group">
-                <label for="txtGuiaTransportista">N° Guía Transportista:</label>
-                <input type="text" id="txtGuiaTransportista" class="form-control" placeholder="Ingrese N° Guía Transportista">
+                </form>
             </div>
-            <div class="col-md-6 form-group">
-                <label for="txtGuiaCliente">N° Guía Cliente:</label>
-                <input type="text" id="txtGuiaCliente" class="form-control" placeholder="Ingrese N° Guía Cliente">
+
+            <!-- Pestaña 3: Guías -->
+            <div class="tab-pane fade" id="guias" role="tabpanel" aria-labelledby="guias-tab">
+                <h3 class="tab-header">Guías de Transporte</h3>
+                <form id="formGuias">
+                    <!-- Número de Guías -->
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="txtGuiaTransportista">N° Guía Transportista:</label>
+                            <asp:TextBox ID="txtGuiaTransportista" runat="server" CssClass="form-control" placeholder="Ingrese N° Guía Transportista" required="required"></asp:TextBox>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="txtGuiaCliente">N° Guía Cliente:</label>
+                            <asp:TextBox ID="txtGuiaCliente" runat="server" CssClass="form-control" placeholder="Ingrese N° Guía Cliente" required="required"></asp:TextBox>
+                        </div>
+                    </div>
+
+                    <!-- Campo Rutas -->
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="ddlRuta">Ruta:</label>
+                            <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control" ClientIDMode="Static" AutoPostBack="false" onchange="toggleRutaDetails()">
+                                <asp:ListItem Text="Seleccione una ruta" Value="" />
+                                <asp:ListItem Text="Ruta 1" Value="1" />
+                                <asp:ListItem Text="Sullana-Guayaquil-Sullana" Value="2" />
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+
+                    <!-- Campos adicionales para Ruta 2 -->
+                    <div id="rutaDetails" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="ddlPlantaDescarga">Planta de Descarga:</label>
+                                <asp:DropDownList ID="ddlPlantaDescarga" runat="server" CssClass="form-control">
+                                    <asp:ListItem Text="Seleccione una planta" Value="" />
+                                    <asp:ListItem Text="Planta 1" Value="planta1" />
+                                    <asp:ListItem Text="Planta 2" Value="planta2" />
+                                </asp:DropDownList>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="txtManifiesto">N° Manifiesto:</label>
+                                <asp:TextBox ID="txtManifiesto" runat="server" CssClass="form-control" Placeholder="Ingrese N° Manifiesto"></asp:TextBox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5>Productos asociados</h5>
+                    <!-- Tabla Productos -->
+                    <table class="table table-bordered guias-tabla-productos" id="tablaProductos">
+                        <thead class="guias-tabla-cabecera">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad de Bolsas</th>
+                                <th>Añadir</th>
+                                <th>Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las filas se agregarán dinámicamente con JavaScript -->
+                        </tbody>
+                    </table>
+
+                    <!-- Botones de navegación -->
+                    <div class="form-group text-right">
+                        <button type="button" class="btn btn-secondary" onclick="showPreviousTab('liquidacion')">Atrás</button>
+                        <asp:Button ID="btnGuardar" runat="server" Text="Guardar" CssClass="btn btn-success" OnClientClick="return validarFormulario();" OnClick="btnGuardar_Click" />
+                    </div>
+                </form>
             </div>
-        </div>
 
-        <!-- Campo Rutas -->
-        <div class="row">
-            <div class="col-md-6 form-group">
-                <label for="ddlRuta">Ruta:</label>
-                <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control" ClientIDMode="Static" AutoPostBack="false" onchange="toggleRutaDetails()">
-                    <asp:ListItem Text="Seleccione una ruta" Value="" />
-                    <asp:ListItem Text="Ruta 1" Value="1" />
-                    <asp:ListItem Text="Ruta 2" Value="2" />
-                </asp:DropDownList>
-            </div>
-        </div>
+            <!-- Librerías necesarias -->
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
+            <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+            <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+            <script src="<%= ResolveUrl("~/Scripts/Custom/JavaScript.js") %>"></script>
 
-        <!-- Campos adicionales para Ruta 2 -->
-        <div id="rutaDetails" style="display: none;">
-            <div class="row">
-                <div class="col-md-6 form-group">
-                    <label for="ddlPlantaDescarga">Planta de Descarga:</label>
-                    <asp:DropDownList ID="ddlPlantaDescarga" runat="server" CssClass="form-control">
-                        <asp:ListItem Text="Seleccione una planta" Value="" />
-                        <asp:ListItem Text="Planta 1" Value="planta1" />
-                        <asp:ListItem Text="Planta 2" Value="planta2" />
-                    </asp:DropDownList>
-                </div>
-                <div class="col-md-6 form-group">
-                    <label for="txtNumManifiesto">N° Manifiesto:</label>
-                    <asp:TextBox ID="txtNumManifiesto" runat="server" CssClass="form-control" Placeholder="Ingrese N° Manifiesto"></asp:TextBox>
-                </div>
-            </div>
-        </div>
+            <style>
+                /* Estilos para las tablas de Ingresos y Gastos */
+                .liquidacion-tabla-ingresos th:nth-child(4),
+                .liquidacion-tabla-ingresos td:nth-child(4),
+                .liquidacion-tabla-ingresos th:nth-child(5),
+                .liquidacion-tabla-ingresos td:nth-child(5),
+                .liquidacion-tabla-gastos th:nth-child(4),
+                .liquidacion-tabla-gastos td:nth-child(4),
+                .liquidacion-tabla-gastos th:nth-child(5),
+                .liquidacion-tabla-gastos td:nth-child(5) {
+                    width: 15%; /* Ancho igual para las columnas Soles y Dólares */
+                    min-width: 120px; /* Ancho mínimo para asegurar legibilidad */
+                }
 
-        <h5>Productos asociados</h5>
-        <!-- Tabla Productos -->
-        <table class="table table-bordered guias-tabla-productos" id="tablaProductos">
-            <thead class="guias-tabla-cabecera">
-                <tr>
-                    <th>Producto</th>
-                    <th>Cantidad de Bolsas</th>
-                    <th>Añadir</th>
-                    <th>Eliminar</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <select class="form-control">
-                            <option>Producto 1</option>
-                            <option>Producto 2</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control" placeholder="Cantidad">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-primary btn-add-row">Añadir</button>
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-remove-row">Eliminar</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                /* Estilos para la tabla de Resumen */
+                .table-responsive table th:nth-child(2),
+                .table-responsive table td:nth-child(2),
+                .table-responsive table th:nth-child(3),
+                .table-responsive table td:nth-child(3) {
+                    width: 20%; /* Ancho igual para las columnas Soles y Dólares en el Resumen */
+                    min-width: 120px;
+                }
 
-        <!-- Botones de navegación -->
-        <div class="form-group text-right">
-            <button type="button" class="btn btn-secondary" onclick="showPreviousTab('liquidacion')">Atrás</button>
-            <button type="submit" class="btn btn-success" onclick="return validarFormulario()">Guardar</button>
-        </div>
-    </form>
-</div>
-        </div>
-    </div>
-<script src="<%= ResolveUrl("~/Scripts/Custom/JavaScript.js") %>"></script>
+                .table-responsive table th:nth-child(1),
+                .table-responsive table td:nth-child(1) {
+                    width: 60%; /* Ancho para la columna Concepto en el Resumen */
+                }
+            </style>
 
+            <script>
+                $(document).ready(function () {
+                    // Inicializar Select2
+                    $('.select2').select2();
 
-     <!-- Librerías para autocompletado -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <!-- CSS de Select2 -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
-<!-- JS de Select2 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+                    // Evento para detectar cambios en los dropdowns
+                    $("#<%= ddlPlacaTracto.ClientID %>").on('change', function () {
+            var selectedPlaca = $(this).val();
+            console.log("Placa Tracto seleccionada: " + selectedPlaca);
+        });
 
-<!-- Librerías necesarias -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" />
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+        $("#<%= ddlPlacaCarreta.ClientID %>").on('change', function () {
+            var selectedPlaca = $(this).val();
+            console.log("Placa Carreta seleccionada: " + selectedPlaca);
+        });
 
-<script>
-   $(document).ready(function () {
-    $("#<%= ddlPlacaTracto.ClientID %>").on('change', function () {
-        var selectedPlaca = $(this).val();
-        console.log("Placa Tracto seleccionada: " + selectedPlaca);
+        $("#<%= ddlConductor.ClientID %>").on('change', function () {
+            var selectedConductor = $(this).val();
+            console.log("Conductor seleccionado: " + selectedConductor);
+        });
+
+        // Verificar si hay un mensaje de éxito desde el servidor para cambiar de pestaña
+        if ($('#<%= lblErrores.ClientID %>').text() === "") {
+            var validationSuccess = $('#<%= hfValidationError.ClientID %>').val();
+            if (validationSuccess === "true") {
+                showNextTab('liquidacion');
+            }
+        }
+
+        // Mostrar mensaje de error del servidor en un alert
+        var errorMessage = $('#<%= lblErrores.ClientID %>').text();
+        if (errorMessage !== "") {
+            alert(errorMessage.replace(/<br\/>/g, "\n"));
+        }
+
+        // Escuchar cambios en los campos de las tablas de Ingresos y Gastos
+        $(document).on('input change', '#ingresosBody input, #gastosFijosBody input, #gastosAdicionalesBody input', function () {
+            actualizarResumen();
+        });
+
+        // Limpiar campos y calcular los totales iniciales al cargar la página
+        limpiarCamposLiquidacion();
+        actualizarResumen();
+
+        // Asegurarse de que la tabla de productos esté vacía antes de agregar la fila inicial
+        $("#tablaProductos tbody").empty();
+        // Agregar una fila inicial a la tabla de productos al cargar la página
+        agregarFilaProducto();
     });
 
-    $("#<%= ddlPlacaCarreta.ClientID %>").on('change', function () {
-        var selectedPlaca = $(this).val();
-        console.log("Placa Carreta seleccionada: " + selectedPlaca);
-    });
+                // Validar datos de la pestaña "Datos del Viaje" antes de pasar a la siguiente pestaña
+                function validarDatosViaje() {
+                    let isValid = true;
+                    let errores = [];
 
-    $("#<%= ddlConductor.ClientID %>").on('change', function () {
-        var selectedConductor = $(this).val();
-        console.log("Conductor seleccionado: " + selectedConductor);
-    });
-});
-   
-function agregarFila() {
-        // Crear una nueva fila
-        const nuevaFila =
+                    // Validar campos de texto
+                    if ($('#<%= txtCPI.ClientID %>').val().trim() === "") {
+            errores.push("El campo 'N° CPI' es obligatorio.");
+            $('#<%= txtCPI.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtCPI.ClientID %>').removeClass('is-invalid');
+        }
+
+        if ($('#<%= txtOrdenViaje.ClientID %>').val().trim() === "") {
+            errores.push("El campo 'N° Orden Viaje' es obligatorio.");
+            $('#<%= txtOrdenViaje.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtOrdenViaje.ClientID %>').removeClass('is-invalid');
+        }
+
+        // Validar fechas
+        let fechaSalida = $('#<%= txtFechaSalida.ClientID %>').val();
+        let fechaLlegada = $('#<%= txtFechaLlegada.ClientID %>').val();
+        let horaSalida = $('#<%= txtHoraSalida.ClientID %>').val();
+        let horaLlegada = $('#<%= txtHoraLlegada.ClientID %>').val();
+        let fechaActual = new Date(); // Fecha actual
+        fechaActual.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparación
+
+        if (!fechaSalida) {
+            errores.push("La 'Fecha de Salida' es obligatoria.");
+            $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtFechaSalida.ClientID %>').removeClass('is-invalid');
+        }
+
+        if (!horaSalida) {
+            errores.push("La 'Hora de Salida' es obligatoria.");
+            $('#<%= txtHoraSalida.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtHoraSalida.ClientID %>').removeClass('is-invalid');
+        }
+
+        if (!fechaLlegada) {
+            errores.push("La 'Fecha de Llegada' es obligatoria.");
+            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtFechaLlegada.ClientID %>').removeClass('is-invalid');
+        }
+
+        if (!horaLlegada) {
+            errores.push("La 'Hora de Llegada' es obligatoria.");
+            $('#<%= txtHoraLlegada.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtHoraLlegada.ClientID %>').removeClass('is-invalid');
+        }
+
+        if (fechaSalida && fechaLlegada) {
+            let fechaSalidaDate = new Date(fechaSalida);
+            let fechaLlegadaDate = new Date(fechaLlegada);
+
+            if (fechaSalidaDate > fechaLlegadaDate) {
+                errores.push("La 'Fecha de Salida' no puede ser mayor a la 'Fecha de Llegada'.");
+                $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
+                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+            }
+
+            if (fechaLlegadaDate > fechaActual) {
+                errores.push("La 'Fecha de Llegada' no puede ser mayor a la fecha actual (" + fechaActual.toLocaleDateString() + ").");
+                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+            }
+        }
+
+        // Validar dropdowns
+        if ($('#<%= ddlCliente.ClientID %>').val() === "") {
+            errores.push("Debe seleccionar un 'Cliente'.");
+            $('#<%= ddlCliente.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= ddlCliente.ClientID %>').removeClass('is-invalid');
+        }
+
+        if ($('#<%= ddlPlacaTracto.ClientID %>').val() === "") {
+            errores.push("Debe seleccionar una 'Placa Tracto'.");
+            $('#<%= ddlPlacaTracto.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= ddlPlacaTracto.ClientID %>').removeClass('is-invalid');
+        }
+
+        if ($('#<%= ddlPlacaCarreta.ClientID %>').val() === "") {
+            errores.push("Debe seleccionar una 'Placa Carreta'.");
+            $('#<%= ddlPlacaCarreta.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= ddlPlacaCarreta.ClientID %>').removeClass('is-invalid');
+        }
+
+        if ($('#<%= ddlConductor.ClientID %>').val() === "") {
+            errores.push("Debe seleccionar un 'Conductor'.");
+            $('#<%= ddlConductor.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= ddlConductor.ClientID %>').removeClass('is-invalid');
+        }
+
+        // Mostrar errores si los hay
+        if (errores.length > 0) {
+            alert(errores.join("\n"));
+            return false;
+        }
+
+        // Limpiar el campo oculto antes de enviar al servidor
+        $('#<%= hfValidationError.ClientID %>').val("");
+        return true; // Permitir el postback para validaciones del servidor
+    }
+
+    // Función para agregar una fila en la tabla de gastos
+    function agregarFila() {
+        const nuevaFila = `
             <tr>
                 <td class="numeroFila"></td>
                 <td><input type="text" class="form-control" placeholder="Gasto Adicional"></td>
@@ -406,59 +596,126 @@ function agregarFila() {
                     <button type="button" class="btn btn-danger btnEliminarFila">Eliminar</button>
                 </td>
             </tr>
-            ;
+        `;
 
-        // Añadir la fila al cuerpo de gastos adicionales
         $("#gastosAdicionalesBody").append(nuevaFila);
-
-        // Recalcular los números de las filas
         recalcularNumeros();
+        actualizarResumen(); // Actualizar el resumen después de agregar una fila
     }
 
     // Evento para eliminar una fila
     $(document).on("click", ".btnEliminarFila", function () {
-        // Eliminar la fila seleccionada
         $(this).closest("tr").remove();
-
-        // Recalcular los números de las filas
         recalcularNumeros();
+        actualizarResumen(); // Actualizar el resumen después de eliminar una fila
     });
 
     // Función para recalcular los números de las filas
     function recalcularNumeros() {
-        // Iterar sobre las filas y asignar números consecutivos
         $("#gastosAdicionalesBody tr").each(function (index) {
             $(this).find(".numeroFila").text(index + 9); // Comienza en 9 porque los gastos fijos terminan en 8
         });
     }
 
+    // Función para limpiar los campos numéricos de las tablas Ingresos y Gastos
+    function limpiarCamposLiquidacion() {
+        // Limpiar campos de Ingresos (Soles y Dólares)
+        $("#ingresosBody tr").each(function () {
+            $(this).find("td:eq(3) input").val(""); // Soles
+            $(this).find("td:eq(4) input").val(""); // Dólares
+        });
+
+        // Limpiar campos de Gastos Fijos (Soles y Dólares)
+        $("#gastosFijosBody tr").each(function () {
+            $(this).find("td:eq(3) input").val(""); // Soles
+            $(this).find("td:eq(4) input").val(""); // Dólares
+        });
+
+        // Limpiar campos de Gastos Adicionales (Soles y Dólares)
+        $("#gastosAdicionalesBody tr").each(function () {
+            $(this).find("td:eq(3) input").val(""); // Soles
+            $(this).find("td:eq(4) input").val(""); // Dólares
+        });
+    }
+
+    // Función para actualizar el resumen de totales
+    function actualizarResumen() {
+        // Calcular totales de Ingresos
+        let totalIngresosSoles = 0;
+        let totalIngresosDolares = 0;
+
+        $("#ingresosBody tr").each(function () {
+            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+            totalIngresosSoles += soles;
+            totalIngresosDolares += dolares;
+        });
+
+        // Calcular totales de Gastos (gastos fijos + adicionales)
+        let totalGastosSoles = 0;
+        let totalGastosDolares = 0;
+
+        // Gastos fijos
+        $("#gastosFijosBody tr").each(function () {
+            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+            totalGastosSoles += soles;
+            totalGastosDolares += dolares;
+        });
+
+        // Gastos adicionales
+        $("#gastosAdicionalesBody tr").each(function () {
+            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+            totalGastosSoles += soles;
+            totalGastosDolares += dolares;
+        });
+
+        // Calcular diferencia de saldo
+        let diferenciaSaldoSoles = totalIngresosSoles - totalGastosSoles;
+        let diferenciaSaldoDolares = totalIngresosDolares - totalGastosDolares;
+
+        // Actualizar los valores en la tabla de Resumen
+        $("#totalIngresosSoles").text(totalIngresosSoles.toFixed(2));
+        $("#totalIngresosDolares").text(totalIngresosDolares.toFixed(2));
+        $("#totalGastosSoles").text(totalGastosSoles.toFixed(2));
+        $("#totalGastosDolares").text(totalGastosDolares.toFixed(2));
+        $("#diferenciaSaldoSoles").text(diferenciaSaldoSoles.toFixed(2));
+        $("#diferenciaSaldoDolares").text(diferenciaSaldoDolares.toFixed(2));
+    }
+
+    // Función para mostrar la siguiente pestaña
     function showNextTab(nextTabId) {
         $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
         $('.tab-content .tab-pane.active').removeClass('show active');
-        $(#${ nextTabId } - tab).addClass('active').attr('aria-selected', 'true');
-        $(#${ nextTabId }).addClass('show active');
+        $('#' + nextTabId + '-tab').addClass('active').attr('aria-selected', 'true');
+        $('#' + nextTabId).addClass('show active');
+
+        // Limpiar campos si se muestra la pestaña Liquidación
+        if (nextTabId === "liquidacion") {
+            limpiarCamposLiquidacion();
+            actualizarResumen();
+        }
     }
 
     // Función para cambiar a la pestaña anterior
     function showPreviousTab(prevTabId) {
-        // Mover la clase 'active' y mostrar la pestaña anterior
         $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
         $('.tab-content .tab-pane.active').removeClass('show active');
-        $(#${ prevTabId } - tab).addClass('active').attr('aria-selected', 'true');
-        $(#${ prevTabId }).addClass('show active');
+        $('#' + prevTabId + '-tab').addClass('active').attr('aria-selected', 'true');
+        $('#' + prevTabId).addClass('show active');
 
-        // Mantener los datos visibles si ya fueron rellenados
+        // Limpiar campos si se muestra la pestaña Liquidación
         if (prevTabId === "liquidacion") {
-            $('#liquidacion').find('input, select, textarea').each(function () {
-                $(this).val($(this).val());
-            });
+            limpiarCamposLiquidacion();
+            actualizarResumen();
         }
     }
 
-    // Función para mostrar los campos adicionales al seleccionar Ruta 2
+    // Función para mostrar los campos adicionales al seleccionar Sullana-Guayaquil-Sullana
     function toggleRutaDetails() {
-        const selectedRoute = $('#ddlRuta').val();
-        if (selectedRoute === "2") {
+        const selectedRouteValue = $('#ddlRuta').val();
+        if (selectedRouteValue === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
             $('#rutaDetails').show();
         } else {
             $('#rutaDetails').hide();
@@ -468,118 +725,205 @@ function agregarFila() {
     // Función para validar los datos antes de guardar
     function validarFormulario() {
         let isValid = true;
+        let errores = [];
 
-        // Validar campos requeridos
-        $('#formGuias').find('input, select').each(function () {
-            if ($(this).val() === "" && $(this).attr('required')) {
-                isValid = false;
-                alert('Por favor, complete todos los campos obligatorios.');
-                return false;
+        // Validar N° Guía Transportista
+        const guiaTransportista = $('#<%= txtGuiaTransportista.ClientID %>').val().trim();
+        if (guiaTransportista === "") {
+            errores.push("El campo 'N° Guía Transportista' es obligatorio.");
+            $('#<%= txtGuiaTransportista.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtGuiaTransportista.ClientID %>').removeClass('is-invalid');
+        }
+
+        // Validar N° Guía Cliente
+        const guiaCliente = $('#<%= txtGuiaCliente.ClientID %>').val().trim();
+        if (guiaCliente === "") {
+            errores.push("El campo 'N° Guía Cliente' es obligatorio.");
+            $('#<%= txtGuiaCliente.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtGuiaCliente.ClientID %>').removeClass('is-invalid');
+        }
+
+        // Validar Ruta
+        const ruta = $('#ddlRuta').val();
+        if (ruta === "") {
+            errores.push("Debe seleccionar una 'Ruta'.");
+            $('#ddlRuta').addClass('is-invalid');
+        } else {
+            $('#ddlRuta').removeClass('is-invalid');
+        }
+
+        // Validar Planta de Descarga y N° Manifiesto si la ruta es "Sullana-Guayaquil-Sullana"
+        if (ruta === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
+            const plantaDescarga = $('#<%= ddlPlantaDescarga.ClientID %>').val();
+            if (plantaDescarga === "") {
+                errores.push("Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.");
+                $('#<%= ddlPlantaDescarga.ClientID %>').addClass('is-invalid');
+            } else {
+                $('#<%= ddlPlantaDescarga.ClientID %>').removeClass('is-invalid');
+            }
+
+            const manifiesto = $('#<%= txtManifiesto.ClientID %>').val().trim();
+            if (manifiesto === "") {
+                errores.push("El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.");
+                $('#<%= txtManifiesto.ClientID %>').addClass('is-invalid');
+            } else {
+                $('#<%= txtManifiesto.ClientID %>').removeClass('is-invalid');
+            }
+        }
+
+        // Validar la tabla de productos
+        let productosValidos = true;
+        let productosData = [];
+        $("#tablaProductos tbody tr").each(function () {
+            const producto = $(this).find(".producto-dropdown").val();
+            const cantidad = $(this).find("input[name='cantidad']").val();
+
+            if (producto === "0" || !cantidad || cantidad <= 0) {
+                productosValidos = false;
+                $(this).find(".producto-dropdown").addClass('is-invalid');
+                $(this).find("input[name='cantidad']").addClass('is-invalid');
+            } else {
+                $(this).find(".producto-dropdown").removeClass('is-invalid');
+                $(this).find("input[name='cantidad']").removeClass('is-invalid');
+                // Agregar los datos del producto a la lista para enviar al servidor
+                productosData.push({
+                    idProducto: producto,
+                    cantidad: cantidad
+                });
             }
         });
 
-        return isValid;
+        if (!productosValidos) {
+            errores.push('Por favor, seleccione un producto y una cantidad válida en todas las filas de "Productos asociados".');
+        }
+
+        // Mostrar errores si los hay
+        if (errores.length > 0) {
+            alert(errores.join("\n"));
+            return false;
+        }
+
+        // Enviar los datos de los productos al servidor
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'productosData',
+            value: JSON.stringify(productosData)
+        }).appendTo('#formGuias');
+
+        // Si las validaciones del cliente pasan, permitir el postback para validaciones del servidor
+        return true;
     }
 
+    // Gestión de la tabla de productos
+    const productos = <%= ObtenerProductosJSON() %>;
+                const productosSeleccionados = new Set(); // Para rastrear productos seleccionados
 
-    $(document).ready(function () {
-        // Agregar una fila
-        $(document).on("click", ".btn-add-row", function () {
-            const nuevaFila =
-                <tr>
-                    <td>
-                        <select class="form-control">
-                            <option value="">Seleccione un producto</option>
-                            <option>Producto 1</option>
-                            <option>Producto 2</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control" placeholder="Cantidad">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-primary btn-add-row">Añadir</button>
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger btn-remove-row">Eliminar</button>
-                    </td>
-                </tr>
-                ;
+                // Agregar una fila
+                $(document).on("click", ".btn-add-row", function () {
+                    const ultimaFila = $("#tablaProductos tbody tr:last");
+                    if (ultimaFila.length && !validarFila(ultimaFila)) {
+                        alert("Complete todos los datos de la fila actual antes de agregar una nueva.");
+                        return;
+                    }
+                    agregarFilaProducto();
+                });
 
-            $("#tablaProductos tbody").append(nuevaFila);
-            actualizarOpcionesProductos();
-        });
+                // Eliminar una fila
+                $(document).on("click", ".btn-remove-row", function () {
+                    if ($("#tablaProductos tbody tr").length > 1) {
+                        const fila = $(this).closest("tr");
+                        const dropdown = fila.find(".producto-dropdown");
+                        const valorSeleccionado = dropdown.val();
 
-        // Eliminar una fila
-        $(document).on("click", ".btn-remove-row", function () {
-            if ($("#tablaProductos tbody tr").length > 1) {
-                $(this).closest("tr").remove();
-                actualizarOpcionesProductos();
-            } else {
-                alert("No puede eliminar todas las filas. Debe haber al menos una.");
-            }
-        });
+                        // Liberar el producto seleccionado
+                        if (valorSeleccionado !== "0") {
+                            productosSeleccionados.delete(valorSeleccionado);
+                        }
 
-        // Actualizar las opciones disponibles en los select
-        function actualizarOpcionesProductos() {
-            const productosSeleccionados = [];
-
-            // Recopilar productos seleccionados en la tabla
-            $("#tablaProductos tbody tr").each(function () {
-                const productoSeleccionado = $(this).find("select").val();
-                if (productoSeleccionado) {
-                    productosSeleccionados.push(productoSeleccionado);
-                }
-            });
-
-            // Actualizar cada select de la tabla
-            $("#tablaProductos tbody tr").each(function () {
-                const selectActual = $(this).find("select");
-                const productoSeleccionadoActual = selectActual.val();
-
-                // Guardar la selección actual y limpiar opciones
-                selectActual.empty();
-                selectActual.append('<option value="">Seleccione un producto</option>');
-                selectActual.append('<option>Producto 1</option>');
-                selectActual.append('<option>Producto 2</option>');
-
-                // Deshabilitar los productos ya seleccionados en otros selects
-                productosSeleccionados.forEach(function (producto) {
-                    if (producto !== productoSeleccionadoActual) {
-                        selectActual.find(option: contains(${ producto })).attr("disabled", true);
+                        fila.remove();
+                        actualizarDropdowns();
+                    } else {
+                        alert("No puede eliminar todas las filas. Debe haber al menos una.");
                     }
                 });
 
-                // Restaurar la selección actual
-                selectActual.val(productoSeleccionadoActual);
-            });
-        }
+                // Función para agregar una fila
+                function agregarFilaProducto() {
+                    const nuevaFila = `
+            <tr>
+                <td>
+                    <select class="form-control producto-dropdown" onchange="actualizarSeleccion(this)">
+                        <option value="0">Seleccione un producto</option>
+                        ${productos.map(p => `<option value="${p.idProducto}">${p.nombre}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="form-control" placeholder="Cantidad" name="cantidad" min="1">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-primary btn-add-row">Añadir</button>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-remove-row">Eliminar</button>
+                </td>
+            </tr>
+        `;
 
-        // Detectar cambio en el select y actualizar opciones
-        $(document).on("change", "#tablaProductos tbody select", function () {
-            actualizarOpcionesProductos();
-        });
-    });
+                    $("#tablaProductos tbody").append(nuevaFila);
+                    actualizarDropdowns();
+                }
 
-    $(document).ready(function () {
-        $('#btnSiguienteDatos').on('click', function () {
-                showNextTab('liquidacion'); // Cambia de pestaña
-        });
-    });
+                // Actualizar selección de productos
+                function actualizarSeleccion(dropdown) {
+                    const valorAnterior = dropdown.dataset.valorAnterior || "0";
+                    const valorNuevo = dropdown.value;
 
-    // Función para mostrar la siguiente pestaña
-    function showNextTab(nextTabId) {
-        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
-        $('.tab-content .tab-pane.active').removeClass('show active');
-        $(#${ nextTabId } - tab).addClass('active').attr('aria-selected', 'true');
-        $(#${ nextTabId }).addClass('show active');
-    }
+                    // Liberar el producto previamente seleccionado
+                    if (valorAnterior !== "0") {
+                        productosSeleccionados.delete(valorAnterior);
+                    }
 
+                    // Validar la nueva selección
+                    if (valorNuevo !== "0") {
+                        if (productosSeleccionados.has(valorNuevo)) {
+                            alert("Este producto ya está seleccionado.");
+                            dropdown.value = "0"; // Restablecer selección
+                            return;
+                        }
+                        productosSeleccionados.add(valorNuevo);
+                    }
 
+                    dropdown.dataset.valorAnterior = valorNuevo; // Guardar la nueva selección
+                    actualizarDropdowns();
+                }
 
+                // Deshabilitar productos seleccionados en otros dropdowns
+                function actualizarDropdowns() {
+                    $("#tablaProductos .producto-dropdown").each(function () {
+                        const dropdown = $(this);
+                        const opciones = dropdown.find("option");
+                        opciones.each(function () {
+                            const opcion = $(this);
+                            if (productosSeleccionados.has(opcion.val()) && opcion.val() !== dropdown.val()) {
+                                opcion.prop("disabled", true); // Deshabilitar producto seleccionado
+                            } else {
+                                opcion.prop("disabled", false); // Habilitar si está disponible
+                            }
+                        });
+                    });
+                }
 
-</script>
+                // Validar una fila antes de agregar otra
+                function validarFila(fila) {
+                    const producto = fila.find(".producto-dropdown").val();
+                    const cantidad = fila.find("input[name='cantidad']").val();
 
-
-
+                    if (producto === "0" || !cantidad || cantidad <= 0) {
+                        return false;
+                    }
+                    return true;
+                }
+            </script>
 </asp:Content>

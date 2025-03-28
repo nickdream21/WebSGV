@@ -210,6 +210,7 @@
     <Content Include="Views\RegistroChoferes.aspx" />
     <Content Include="Views\RegistroSemiremolques.aspx" />
     <Content Include="Views\RegistroTractos.aspx" />
+    <Content Include="Views\WebForm2.aspx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
     <Content Include="Site.Mobile.Master" />
@@ -326,6 +327,13 @@
     </Compile>
     <Compile Include="Views\RegistroTractos.aspx.designer.cs">
       <DependentUpon>RegistroTractos.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WebForm2.aspx.cs">
+      <DependentUpon>WebForm2.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\WebForm2.aspx.designer.cs">
+      <DependentUpon>WebForm2.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

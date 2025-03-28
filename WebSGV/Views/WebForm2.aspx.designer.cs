@@ -11,179 +11,134 @@ namespace WebSGV.Views
 {
 
 
-    public partial class AgregarOrdenViaje
+    public partial class WebForm2
     {
 
         /// <summary>
-        /// Control hfValidationError.
+        /// Control txtPedido.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfValidationError;
+        protected global::System.Web.UI.WebControls.TextBox txtPedido;
 
         /// <summary>
-        /// Control txtCPI.
+        /// Control txtConductorOrigen.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText txtCPI;
+        protected global::System.Web.UI.WebControls.TextBox txtConductorOrigen;
 
         /// <summary>
-        /// Control txtOrdenViaje.
+        /// Control txtTracto1.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText txtOrdenViaje;
+        protected global::System.Web.UI.WebControls.TextBox txtTracto1;
 
         /// <summary>
-        /// Control txtFechaSalida.
+        /// Control txtCarreta.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl txtFechaSalida;
+        protected global::System.Web.UI.WebControls.TextBox txtCarreta;
 
         /// <summary>
-        /// Control txtHoraSalida.
+        /// Control txtConductorDestino.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl txtHoraSalida;
+        protected global::System.Web.UI.WebControls.TextBox txtConductorDestino;
 
         /// <summary>
-        /// Control txtFechaLlegada.
+        /// Control txtTracto2.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl txtFechaLlegada;
+        protected global::System.Web.UI.WebControls.TextBox txtTracto2;
 
         /// <summary>
-        /// Control txtHoraLlegada.
+        /// Control txtFHSBase.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl txtHoraLlegada;
+        protected global::System.Web.UI.WebControls.TextBox txtFHSBase;
 
         /// <summary>
-        /// Control ddlCliente.
+        /// Control txtFHLLTrujillo.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCliente;
+        protected global::System.Web.UI.WebControls.TextBox txtFHLLTrujillo;
 
         /// <summary>
-        /// Control ddlPlacaTracto.
+        /// Control txtFHRegistro.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlPlacaTracto;
+        protected global::System.Web.UI.WebControls.TextBox txtFHRegistro;
 
         /// <summary>
-        /// Control ddlPlacaCarreta.
+        /// Control txtFHProgramacion.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlPlacaCarreta;
+        protected global::System.Web.UI.WebControls.TextBox txtFHProgramacion;
 
         /// <summary>
-        /// Control ddlConductor.
+        /// Control txtKPIDepsa.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlConductor;
+        protected global::System.Web.UI.WebControls.TextBox txtKPIDepsa;
 
         /// <summary>
-        /// Control txtObservaciones.
+        /// Control txtKPITCI.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlTextArea txtObservaciones;
+        protected global::System.Web.UI.WebControls.TextBox txtKPITCI;
 
         /// <summary>
-        /// Control btnSiguiente.
+        /// Control txtMotivoRetraso.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSiguiente;
+        protected global::System.Web.UI.WebControls.TextBox txtMotivoRetraso;
 
         /// <summary>
-        /// Control lblErrores.
+        /// Control txtMotivoComentario.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblErrores;
-
-        /// <summary>
-        /// Control txtGuiaTransportista.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtGuiaTransportista;
-
-        /// <summary>
-        /// Control txtGuiaCliente.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtGuiaCliente;
-
-        /// <summary>
-        /// Control ddlRuta.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlRuta;
-
-        /// <summary>
-        /// Control ddlPlantaDescarga.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlPlantaDescarga;
-
-        /// <summary>
-        /// Control txtManifiesto.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtManifiesto;
+        protected global::System.Web.UI.WebControls.TextBox txtMotivoComentario;
 
         /// <summary>
         /// Control btnGuardar.
