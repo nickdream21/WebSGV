@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Web.UI.WebControls;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace WebSGV.Views
 {
@@ -40,14 +41,14 @@ namespace WebSGV.Views
 
         private void CargarPlacasTracto()
         {
-            string query = "SELECT placaTracto FROM Tracto";
+            string query = "SELECT idTracto, placaTracto FROM Tracto";
             DataTable dt = ObtenerDatosDeBD(query);
 
             if (dt.Rows.Count > 0)
             {
                 ddlPlacaTracto.DataSource = dt;
                 ddlPlacaTracto.DataTextField = "placaTracto";
-                ddlPlacaTracto.DataValueField = "placaTracto";
+                ddlPlacaTracto.DataValueField = "idTracto";
                 ddlPlacaTracto.DataBind();
             }
 
@@ -56,14 +57,14 @@ namespace WebSGV.Views
 
         private void CargarPlacasCarreta()
         {
-            string query = "SELECT placaCarreta FROM Carreta";
+            string query = "SELECT idCarreta, placaCarreta FROM Carreta";
             DataTable dt = ObtenerDatosDeBD(query);
 
             if (dt.Rows.Count > 0)
             {
                 ddlPlacaCarreta.DataSource = dt;
                 ddlPlacaCarreta.DataTextField = "placaCarreta";
-                ddlPlacaCarreta.DataValueField = "placaCarreta";
+                ddlPlacaCarreta.DataValueField = "idCarreta";
                 ddlPlacaCarreta.DataBind();
             }
 
@@ -85,6 +86,7 @@ namespace WebSGV.Views
 
             ddlConductor.Items.Insert(0, new ListItem("Seleccione un conductor", ""));
         }
+
         private void CargarRutas()
         {
             string query = "SELECT idRuta, nombre FROM Ruta";
@@ -101,20 +103,60 @@ namespace WebSGV.Views
             ddlRuta.Items.Insert(0, new ListItem("Seleccione una ruta", ""));
         }
 
-        private void CargarPlantasDescarga()
+        private void CargarPlantasDescarga(int? idCliente = null)
         {
             string query = "SELECT idPlanta, nombre FROM PlantaDescarga";
-            DataTable dt = ObtenerDatosDeBD(query);
-
-            if (dt.Rows.Count > 0)
+            if (idCliente.HasValue)
             {
-                ddlPlantaDescarga.DataSource = dt;
-                ddlPlantaDescarga.DataTextField = "nombre";
-                ddlPlantaDescarga.DataValueField = "idPlanta";
-                ddlPlantaDescarga.DataBind();
+                query += " WHERE idCliente = @idCliente";
             }
 
-            ddlPlantaDescarga.Items.Insert(0, new ListItem("Seleccione una planta", ""));
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    if (idCliente.HasValue)
+                    {
+                        cmd.Parameters.AddWithValue("@idCliente", idCliente.Value);
+                    }
+
+                    try
+                    {
+                        conn.Open();
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        ddlPlantaDescarga.Items.Clear(); // Limpiar el dropdown antes de cargar nuevos datos
+                        if (dt.Rows.Count > 0)
+                        {
+                            ddlPlantaDescarga.DataSource = dt;
+                            ddlPlantaDescarga.DataTextField = "nombre";
+                            ddlPlantaDescarga.DataValueField = "idPlanta";
+                            ddlPlantaDescarga.DataBind();
+                        }
+
+                        ddlPlantaDescarga.Items.Insert(0, new ListItem("Seleccione una planta", ""));
+                    }
+                    catch (Exception ex)
+                    {
+                        lblErrores.Text = "Error al cargar las plantas de descarga: " + ex.Message;
+                    }
+                }
+            }
+        }
+
+        protected void ddlCliente_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(ddlCliente.SelectedValue))
+            {
+                int idCliente = Convert.ToInt32(ddlCliente.SelectedValue);
+                CargarPlantasDescarga(idCliente);
+            }
+            else
+            {
+                CargarPlantasDescarga(); // Si no se selecciona un cliente, cargar todas las plantas
+            }
         }
 
         protected string ObtenerProductosJSON()
@@ -324,6 +366,81 @@ namespace WebSGV.Views
             }
         }
 
+        private bool GuiaTransportistaExiste(string guiaTransportista)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
+            string query = "SELECT COUNT(*) FROM GuiasTransportista WHERE numeroGuiaTransportista = @guiaTransportista";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    try
+                    {
+                        cmd.Parameters.AddWithValue("@guiaTransportista", guiaTransportista);
+                        conn.Open();
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        lblErrores.Text = "Error al validar el 'N° Guía Transportista': " + ex.Message;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        private bool GuiaClienteExiste(string guiaCliente)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
+            string query = "SELECT COUNT(*) FROM GuiasTransportista WHERE numeroGuiaCliente = @guiaCliente";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    try
+                    {
+                        cmd.Parameters.AddWithValue("@guiaCliente", guiaCliente);
+                        conn.Open();
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        lblErrores.Text = "Error al validar el 'N° Guía Cliente': " + ex.Message;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        private bool ManifiestoExiste(string numeroManifiesto)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
+            string query = "SELECT COUNT(*) FROM GuiasTransportista WHERE numeroManifiesto = @numeroManifiesto";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    try
+                    {
+                        cmd.Parameters.AddWithValue("@numeroManifiesto", numeroManifiesto);
+                        conn.Open();
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        lblErrores.Text = "Error al validar el 'N° Manifiesto': " + ex.Message;
+                        return false;
+                    }
+                }
+            }
+        }
+
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
             try
@@ -333,6 +450,8 @@ namespace WebSGV.Views
                 string ordenViaje = txtOrdenViaje.Value.Trim();
                 DateTime fechaSalida = string.IsNullOrEmpty(txtFechaSalida.Value) ? DateTime.MinValue : DateTime.Parse(txtFechaSalida.Value);
                 DateTime fechaLlegada = string.IsNullOrEmpty(txtFechaLlegada.Value) ? DateTime.MinValue : DateTime.Parse(txtFechaLlegada.Value);
+                string horaSalida = txtHoraSalida.Value;
+                string horaLlegada = txtHoraLlegada.Value;
                 string cliente = ddlCliente.SelectedValue;
                 string placaTracto = ddlPlacaTracto.SelectedValue;
                 string placaCarreta = ddlPlacaCarreta.SelectedValue;
@@ -340,25 +459,159 @@ namespace WebSGV.Views
                 string observaciones = txtObservaciones.Value;
 
                 // Obtener los datos de la pestaña "Guías"
-                string guiaTransportista = Request.Form["txtGuiaTransportista"];
-                string guiaCliente = Request.Form["txtGuiaCliente"];
+                string guiaTransportista = txtGuiaTransportista.Text.Trim();
+                string guiaCliente = txtGuiaCliente.Text.Trim();
                 string ruta = ddlRuta.SelectedValue;
                 string plantaDescarga = ddlPlantaDescarga.SelectedValue;
-                string numManifiesto = txtNumManifiesto.Text;
+                string numManifiesto = txtManifiesto.Text.Trim();
 
-                // Validar datos antes de guardar
-                string errores = ValidarDatosViaje(cpic, ordenViaje, fechaSalida, fechaLlegada, txtHoraSalida.Value, txtHoraLlegada.Value, cliente, placaTracto, placaCarreta, conductor);
+                // Obtener los datos de la pestaña "Liquidación"
+                // Nota: Ajusta los nombres de los campos según tu HTML
+
+                string descDespacho = Request.Form["txtDescDespacho"] ?? "";
+                decimal despachoSoles = decimal.TryParse(Request.Form["txtDespachoSoles"], out var ds) ? ds : 0;
+                decimal despachoDolares = decimal.TryParse(Request.Form["txtDespachoDolares"], out var dd) ? dd : 0;
+
+                string descMensualidad = Request.Form["txtDescMensualidad"] ?? "";
+                decimal mensualidadSoles = decimal.TryParse(Request.Form["txtMensualidadSoles"], out var ms) ? ms : 0;
+                decimal mensualidadDolares = decimal.TryParse(Request.Form["txtMensualidadDolares"], out var md) ? md : 0;
+
+                string descOtros = Request.Form["txtDescOtros"] ?? "";
+                decimal otrosSoles = decimal.TryParse(Request.Form["txtOtrosSoles"], out var os) ? os : 0;
+                decimal otrosDolares = decimal.TryParse(Request.Form["txtOtrosDolares"], out var od) ? od : 0;
+
+                string descPrestamo = Request.Form["txtDescPrestamo"] ?? "";
+                decimal prestamoSoles = decimal.TryParse(Request.Form["txtPrestamoSoles"], out var ps) ? ps : 0;
+                decimal prestamoDolares = decimal.TryParse(Request.Form["txtPrestamoDolares"], out var pd) ? pd : 0;
+
+
+
+                // Variables temporales únicas
+                decimal temp;
+
+                // Peajes
+                string descPeajes = Request.Form["txtDescPeajes"] ?? "";
+                decimal peajesSoles = decimal.TryParse(Request.Form["txtPeajesSoles"], out temp) ? temp : 0;
+                decimal peajesDolares = decimal.TryParse(Request.Form["txtPeajesDolares"], out temp) ? temp : 0;
+
+                // Alimentación
+                string descAlimentacion = Request.Form["txtDescAlimentacion"] ?? "";
+                decimal alimentacionSoles = decimal.TryParse(Request.Form["txtAlimentacionSoles"], out temp) ? temp : 0;
+                decimal alimentacionDolares = decimal.TryParse(Request.Form["txtAlimentacionDolares"], out temp) ? temp : 0;
+
+                // Apoyo-Seguridad
+                string descApoyoSeguridad = Request.Form["txtDescApoyoSeguridad"] ?? "";
+                decimal apoyoSeguridadSoles = decimal.TryParse(Request.Form["txtApoyoSeguridadSoles"], out temp) ? temp : 0;
+                decimal apoyoSeguridadDolares = decimal.TryParse(Request.Form["txtApoyoSeguridadDolares"], out temp) ? temp : 0;
+
+                // Reparaciones
+                string descReparaciones = Request.Form["txtDescReparaciones"] ?? "";
+                decimal reparacionesSoles = decimal.TryParse(Request.Form["txtReparacionesSoles"], out temp) ? temp : 0;
+                decimal reparacionesDolares = decimal.TryParse(Request.Form["txtReparacionesDolares"], out temp) ? temp : 0;
+
+                // Movilidad
+                string descMovilidad = Request.Form["txtDescMovilidad"] ?? "";
+                decimal movilidadSoles = decimal.TryParse(Request.Form["txtMovilidadSoles"], out temp) ? temp : 0;
+                decimal movilidadDolares = decimal.TryParse(Request.Form["txtMovilidadDolares"], out temp) ? temp : 0;
+
+                // Encapada
+                string descEncapada = Request.Form["txtDescEncapada"] ?? "";
+                decimal encapadaSoles = decimal.TryParse(Request.Form["txtEncapadaSoles"], out temp) ? temp : 0;
+                decimal encapadaDolares = decimal.TryParse(Request.Form["txtEncapadaDolares"], out temp) ? temp : 0;
+
+                // Hospedaje
+                string descHospedaje = Request.Form["txtDescHospedaje"] ?? "";
+                decimal hospedajeSoles = decimal.TryParse(Request.Form["txtHospedajeSoles"], out temp) ? temp : 0;
+                decimal hospedajeDolares = decimal.TryParse(Request.Form["txtHospedajeDolares"], out temp) ? temp : 0;
+
+                // Combustible
+                string descCombustible = Request.Form["txtDescCombustible"] ?? "";
+                decimal combustibleSoles = decimal.TryParse(Request.Form["txtCombustibleSoles"], out temp) ? temp : 0;
+                decimal combustibleDolares = decimal.TryParse(Request.Form["txtCombustibleDolares"], out temp) ? temp : 0;
+
+
+
+
+                Response.Write($"CPIC: {cpic}, OrdenViaje: {ordenViaje}, GuiaTransportista: {Request.Form["txtGuiaTransportista"]}<br/>");
+
+
+                // Validar datos de la pestaña "Datos del Viaje"
+                string errores = ValidarDatosViaje(cpic, ordenViaje, fechaSalida, fechaLlegada, horaSalida, horaLlegada, cliente, placaTracto, placaCarreta, conductor);
+
+                // Validar datos de la pestaña "Guías"
                 if (string.IsNullOrEmpty(guiaTransportista))
                 {
                     errores += "El campo 'N° Guía Transportista' es obligatorio.\n";
                 }
+                else if (GuiaTransportistaExiste(guiaTransportista))
+                {
+                    errores += "El 'N° Guía Transportista' ya está registrado.\n";
+                }
+
                 if (string.IsNullOrEmpty(guiaCliente))
                 {
                     errores += "El campo 'N° Guía Cliente' es obligatorio.\n";
                 }
+                else if (GuiaClienteExiste(guiaCliente))
+                {
+                    errores += "El 'N° Guía Cliente' ya está registrado.\n";
+                }
+
+                if (string.IsNullOrEmpty(ruta))
+                {
+                    errores += "Debe seleccionar una 'Ruta'.\n";
+                }
+
+                if (ruta == "2") // Sullana-Guayaquil-Sullana
+                {
+                    if (string.IsNullOrEmpty(plantaDescarga))
+                    {
+                        errores += "Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.\n";
+                    }
+
+                    if (string.IsNullOrEmpty(numManifiesto))
+                    {
+                        errores += "El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.\n";
+                    }
+                    else if (ManifiestoExiste(numManifiesto))
+                    {
+                        errores += "El 'N° Manifiesto' ya está registrado.\n";
+                    }
+                }
+
+                // Validar datos de la pestaña "Liquidación"
+                // Aquí puedes agregar validaciones adicionales si es necesario
+                if (Convert.ToDecimal(peajesSoles) < 0 || Convert.ToDecimal(peajesDolares) < 0)
+                {
+                    errores += "Los valores de 'Peajes' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(alimentacionSoles) < 0 || Convert.ToDecimal(alimentacionDolares) < 0)
+                {
+                    errores += "Los valores de 'Alimentación' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(combustibleSoles) < 0 || Convert.ToDecimal(combustibleDolares) < 0)
+                {
+                    errores += "Los valores de 'Combustible' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(despachoSoles) < 0 || Convert.ToDecimal(despachoDolares) < 0)
+                {
+                    errores += "Los valores de 'Despacho' no pueden ser negativos.\n";
+                }
+
+                // Obtener los datos de los productos
+                string productosJson = Request.Form["productosData"];
+                List<ProductoOrdenViaje> productos = string.IsNullOrEmpty(productosJson)
+                    ? new List<ProductoOrdenViaje>()
+                    : JsonConvert.DeserializeObject<List<ProductoOrdenViaje>>(productosJson);
+
+                if (productos.Count == 0)
+                {
+                    errores += "Debe agregar al menos un producto en la pestaña 'Guías'.\n";
+                }
 
                 if (!string.IsNullOrEmpty(errores))
                 {
+                    Response.Write("Errores de validación: " + errores.Replace("\n", "<br/>") + "<br/>");
                     lblErrores.Text = errores.Replace("\n", "<br/>");
                     ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
                     return;
@@ -369,36 +622,207 @@ namespace WebSGV.Views
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO OrdenViaje (numeroCPIC, numeroOrdenViaje, fechaSalida, fechaLlegada, idCliente, placaTracto, placaCarreta, idConductor, observaciones, guiaTransportista, guiaCliente, idRuta, plantaDescarga, numeroManifiesto) " +
-                                                           "VALUES (@numeroCPIC, @numeroOrdenViaje, @fechaSalida, @fechaLlegada, @idCliente, @placaTracto, @placaCarreta, @idConductor, @observaciones, @guiaTransportista, @guiaCliente, @idRuta, @plantaDescarga, @numeroManifiesto)", conn))
+                    using (SqlTransaction transaction = conn.BeginTransaction())
                     {
-                        cmd.Parameters.AddWithValue("@numeroCPIC", cpic);
-                        cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
-                        cmd.Parameters.AddWithValue("@fechaSalida", fechaSalida == DateTime.MinValue ? (object)DBNull.Value : fechaSalida);
-                        cmd.Parameters.AddWithValue("@fechaLlegada", fechaLlegada == DateTime.MinValue ? (object)DBNull.Value : fechaLlegada);
-                        cmd.Parameters.AddWithValue("@idCliente", cliente);
-                        cmd.Parameters.AddWithValue("@placaTracto", placaTracto);
-                        cmd.Parameters.AddWithValue("@placaCarreta", placaCarreta);
-                        cmd.Parameters.AddWithValue("@idConductor", conductor);
-                        cmd.Parameters.AddWithValue("@observaciones", observaciones ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@guiaTransportista", guiaTransportista);
-                        cmd.Parameters.AddWithValue("@guiaCliente", guiaCliente);
-                        cmd.Parameters.AddWithValue("@idRuta", string.IsNullOrEmpty(ruta) ? (object)DBNull.Value : ruta);
-                        cmd.Parameters.AddWithValue("@plantaDescarga", string.IsNullOrEmpty(plantaDescarga) ? (object)DBNull.Value : plantaDescarga);
-                        cmd.Parameters.AddWithValue("@numeroManifiesto", string.IsNullOrEmpty(numManifiesto) ? (object)DBNull.Value : numManifiesto);
+                        try
+                        {
+                            // Insertar en la tabla OrdenViaje
+                            string queryOrdenViaje = "INSERT INTO OrdenViaje (numeroOrdenViaje, fechaSalida, horaSalida, fechaLlegada, horaLlegada, idCliente, idTracto, idCarreta, idConductor, observaciones, idCPIC) " +
+                                                     "OUTPUT INSERTED.idOrdenViaje " +
+                                                     "VALUES (@numeroOrdenViaje, @fechaSalida, @horaSalida, @fechaLlegada, @horaLlegada, @idCliente, @idTracto, @idCarreta, @idConductor, @observaciones, @idCPIC)";
+                            int idOrdenViaje;
+                            using (SqlCommand cmd = new SqlCommand(queryOrdenViaje, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+                                cmd.Parameters.AddWithValue("@fechaSalida", fechaSalida == DateTime.MinValue ? (object)DBNull.Value : fechaSalida);
+                                cmd.Parameters.AddWithValue("@horaSalida", string.IsNullOrEmpty(horaSalida) ? (object)DBNull.Value : horaSalida);
+                                cmd.Parameters.AddWithValue("@fechaLlegada", fechaLlegada == DateTime.MinValue ? (object)DBNull.Value : fechaLlegada);
+                                cmd.Parameters.AddWithValue("@horaLlegada", string.IsNullOrEmpty(horaLlegada) ? (object)DBNull.Value : horaLlegada);
+                                cmd.Parameters.AddWithValue("@idCliente", cliente);
+                                cmd.Parameters.AddWithValue("@idTracto", placaTracto);
+                                cmd.Parameters.AddWithValue("@idCarreta", placaCarreta);
+                                cmd.Parameters.AddWithValue("@idConductor", conductor);
+                                cmd.Parameters.AddWithValue("@observaciones", observaciones ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@idCPIC", ObtenerIdCPIC(cpic));
 
-                        cmd.ExecuteNonQuery();
+                                idOrdenViaje = (int)cmd.ExecuteScalar();
+                            }
+
+                            // Insertar en la tabla GuiasTransportista
+                            string queryGuia = "INSERT INTO GuiasTransportista (numeroOrdenViaje, numeroGuiaTransportista, numeroGuiaCliente, ruta1, plantaDescarga, numeroManifiesto) " +
+                                              "OUTPUT INSERTED.idGuia " +
+                                              "VALUES (@numeroOrdenViaje, @numeroGuiaTransportista, @numeroGuiaCliente, @ruta1, @plantaDescarga, @numeroManifiesto)";
+                            int idGuia;
+                            using (SqlCommand cmd = new SqlCommand(queryGuia, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+                                cmd.Parameters.AddWithValue("@numeroGuiaTransportista", guiaTransportista);
+                                cmd.Parameters.AddWithValue("@numeroGuiaCliente", guiaCliente);
+                                cmd.Parameters.AddWithValue("@ruta1", ruta);
+                                cmd.Parameters.AddWithValue("@plantaDescarga", string.IsNullOrEmpty(plantaDescarga) ? (object)DBNull.Value : plantaDescarga);
+                                cmd.Parameters.AddWithValue("@numeroManifiesto", string.IsNullOrEmpty(numManifiesto) ? (object)DBNull.Value : numManifiesto);
+
+                                idGuia = (int)cmd.ExecuteScalar();
+                            }
+
+                            // Insertar los productos asociados en la tabla DetalleOrdenViaje
+                            string queryProducto = "INSERT INTO DetalleOrdenViaje (idGuia, idProducto, cantidadBolsas) VALUES (@idGuia, @idProducto, @cantidad)";
+                            foreach (var producto in productos)
+                            {
+                                using (SqlCommand cmd = new SqlCommand(queryProducto, conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@idGuia", idGuia);
+                                    cmd.Parameters.AddWithValue("@idProducto", producto.idProducto);
+                                    cmd.Parameters.AddWithValue("@cantidad", producto.cantidad);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // Insertar los datos de la pestaña "Liquidación" en la tabla Ingresos
+                            // Insertar los datos de la pestaña "Liquidación" en la tabla Ingresos
+                            string queryIngresos = @"INSERT INTO Ingresos (
+                                                numeroOrdenViaje,
+                                                despachoSoles, despachoDolares, descDespacho,
+                                                mensualidadSoles, mensualidadDolares, descMensualidad,
+                                                otrosSoles, otrosDolares, descOtros,
+                                                prestamoSoles, prestamoDolares, descPrestamo
+                                            )
+                                            VALUES (
+                                                @numeroOrdenViaje,
+                                                @despachoSoles, @despachoDolares, @descDespacho,
+                                                @mensualidadSoles, @mensualidadDolares, @descMensualidad,
+                                                @otrosSoles, @otrosDolares, @descOtros,
+                                                @prestamoSoles, @prestamoDolares, @descPrestamo
+                                            )";
+                            using (SqlCommand cmd = new SqlCommand(queryIngresos, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+
+                                cmd.Parameters.AddWithValue("@despachoSoles", despachoSoles);
+                                cmd.Parameters.AddWithValue("@despachoDolares", despachoDolares);
+                                cmd.Parameters.AddWithValue("@descDespacho", descDespacho);
+
+                                cmd.Parameters.AddWithValue("@mensualidadSoles", mensualidadSoles);
+                                cmd.Parameters.AddWithValue("@mensualidadDolares", mensualidadDolares);
+                                cmd.Parameters.AddWithValue("@descMensualidad", descMensualidad);
+
+                                cmd.Parameters.AddWithValue("@otrosSoles", otrosSoles);
+                                cmd.Parameters.AddWithValue("@otrosDolares", otrosDolares);
+                                cmd.Parameters.AddWithValue("@descOtros", descOtros);
+
+                                cmd.Parameters.AddWithValue("@prestamoSoles", prestamoSoles);
+                                cmd.Parameters.AddWithValue("@prestamoDolares", prestamoDolares);
+                                cmd.Parameters.AddWithValue("@descPrestamo", descPrestamo);
+
+                                cmd.ExecuteNonQuery();
+                            }
+
+
+                            // Insertar los datos de la pestaña "Liquidación" en la tabla Egresos
+                            // Insertar los datos de la pestaña "Liquidación" en la tabla Egresos
+                            string queryEgresos = @"INSERT INTO Egresos (
+                                           numeroOrdenViaje,
+                                        peajesSoles, peajesDolares, descPeajes,
+                                        alimentacionSoles, alimentacionDolares, descAlimentacion,
+                                        apoyoSeguridadSoles, apoyoSeguridadDolares, descApoyoSeguridad,
+                                        reparacionesVariosSoles, reparacionesVariosDolares, descReparaciones,
+                                        movilidadSoles, movilidadDolares, descMovilidad,
+                                        encapadaSoles, encapadaDolares, descEncapada,
+                                        hospedajeSoles, hospedajeDolares, descHospedaje,
+                                        combustibleSoles, combustibleDolares, descCombustible
+                                    )
+                                    VALUES (
+                                        @numeroOrdenViaje,
+                                        @peajesSoles, @peajesDolares, @descPeajes,
+                                        @alimentacionSoles, @alimentacionDolares, @descAlimentacion,
+                                        @apoyoSeguridadSoles, @apoyoSeguridadDolares, @descApoyoSeguridad,
+                                        @reparacionesVariosSoles, @reparacionesVariosDolares, @descReparaciones,
+                                        @movilidadSoles, @movilidadDolares, @descMovilidad,
+                                        @encapadaSoles, @encapadaDolares, @descEncapada,
+                                        @hospedajeSoles, @hospedajeDolares, @descHospedaje,
+                                        @combustibleSoles, @combustibleDolares, @descCombustible
+                                    )";
+                            using (SqlCommand cmd = new SqlCommand(queryEgresos, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+                                cmd.Parameters.AddWithValue("@peajesSoles", peajesSoles);
+                                cmd.Parameters.AddWithValue("@peajesDolares", peajesDolares);
+                                cmd.Parameters.AddWithValue("@descPeajes", descPeajes);
+
+                                cmd.Parameters.AddWithValue("@alimentacionSoles", alimentacionSoles);
+                                cmd.Parameters.AddWithValue("@alimentacionDolares", alimentacionDolares);
+                                cmd.Parameters.AddWithValue("@descAlimentacion", descAlimentacion);
+
+                                cmd.Parameters.AddWithValue("@apoyoSeguridadSoles", apoyoSeguridadSoles);
+                                cmd.Parameters.AddWithValue("@apoyoSeguridadDolares", apoyoSeguridadDolares);
+                                cmd.Parameters.AddWithValue("@descApoyoSeguridad", descApoyoSeguridad);
+
+                                cmd.Parameters.AddWithValue("@reparacionesVariosSoles", reparacionesSoles);
+                                cmd.Parameters.AddWithValue("@reparacionesVariosDolares", reparacionesDolares);
+                                cmd.Parameters.AddWithValue("@descReparaciones", descReparaciones);
+
+                                cmd.Parameters.AddWithValue("@movilidadSoles", movilidadSoles);
+                                cmd.Parameters.AddWithValue("@movilidadDolares", movilidadDolares);
+                                cmd.Parameters.AddWithValue("@descMovilidad", descMovilidad);
+
+                                cmd.Parameters.AddWithValue("@encapadaSoles", encapadaSoles);
+                                cmd.Parameters.AddWithValue("@encapadaDolares", encapadaDolares);
+                                cmd.Parameters.AddWithValue("@descEncapada", descEncapada);
+
+                                cmd.Parameters.AddWithValue("@hospedajeSoles", hospedajeSoles);
+                                cmd.Parameters.AddWithValue("@hospedajeDolares", hospedajeDolares);
+                                cmd.Parameters.AddWithValue("@descHospedaje", descHospedaje);
+
+                                cmd.Parameters.AddWithValue("@combustibleSoles", combustibleSoles);
+                                cmd.Parameters.AddWithValue("@combustibleDolares", combustibleDolares);
+                                cmd.Parameters.AddWithValue("@descCombustible", descCombustible);
+
+                                cmd.ExecuteNonQuery();
+                            }
+
+
+                            transaction.Commit();
+                            lblErrores.Text = "✅ Orden de viaje guardada correctamente.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            lblErrores.Text = "Error al guardar la orden de viaje: " + ex.Message;
+                            ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
+                        }
                     }
                 }
-
-                lblErrores.Text = "✅ Orden de viaje guardada correctamente.";
-                ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
             }
             catch (Exception ex)
             {
-                lblErrores.Text = "Error al guardar la orden de viaje: " + ex.Message;
+                lblErrores.Text = "Error general: " + ex.Message;
+                Response.Write("Error general: " + ex.Message + "<br/>");
                 ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
             }
         }
+
+        private int ObtenerIdCPIC(string numeroCPIC)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
+            string query = "SELECT idCPIC FROM CPIC WHERE numeroCPIC = @numeroCPIC";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@numeroCPIC", numeroCPIC);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+        }
+    }
+
+    public class ProductoOrdenViaje
+    {
+        public int idProducto { get; set; }
+        public int cantidad { get; set; }
     }
 }

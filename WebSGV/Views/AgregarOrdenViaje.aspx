@@ -13,6 +13,7 @@
             <li class="nav-item">
                 <a class="nav-link" id="guias-tab" data-toggle="tab" href="#guias" role="tab" aria-controls="guias" aria-selected="false">Guías</a>
             </li>
+            <li class="nav-item">&nbsp;</li>
         </ul>
 
         <!-- Contenido de las pestañas -->
@@ -20,7 +21,7 @@
             <!-- Pestaña 1: Datos del Viaje -->
             <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
                 <h3 class="tab-header text-center mb-4">Datos del Viaje</h3>
-                <form id="formDatosViaje">
+                <div id="formDatosViaje">
                     <asp:HiddenField ID="hfValidationError" runat="server" />
                     <!-- Primera fila: N° CPI y N° Orden Viaje -->
                     <div class="row mb-3">
@@ -58,7 +59,7 @@
                     <div class="row mb-3">
                         <div class="col-md-4 form-group">
                             <label for="ddlCliente">Cliente:</label>
-                            <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control select2" required>
+                            <asp:DropDownList ID="ddlCliente" runat="server" CssClass="form-control select2" AutoPostBack="true" OnSelectedIndexChanged="ddlCliente_SelectedIndexChanged" required>
                                 <asp:ListItem Text="Seleccione un cliente" Value="" />
                             </asp:DropDownList>
                         </div>
@@ -99,13 +100,13 @@
                     <div class="form-group">
                         <asp:Label ID="lblErrores" runat="server" CssClass="text-danger" EnableViewState="false"></asp:Label>
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Pestaña 2: Liquidación -->
             <div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
                 <h3 class="tab-header">Liquidación</h3>
-                <form id="formLiquidacion">
+                <div id="formLiquidacion">
                     <!-- Tabla de ingresos -->
                     <h5>Ingresos</h5>
                     <table class="table table-bordered liquidacion-tabla-ingresos">
@@ -123,42 +124,43 @@
                                 <td>1</td>
                                 <td>Despacho</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescDespacho" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                    <input type="number" class="form-control" name="txtDespachoSoles" placeholder="Soles" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                                    <input type="number" class="form-control" name="txtDespachoDolares" placeholder="Dólares" min="0" step="0.01"></td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td>Mensualidad</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescMensualidad" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                    <input type="number" class="form-control" name="txtMensualidadSoles" placeholder="Soles" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                                    <input type="number" class="form-control" name="txtMensualidadDolares" placeholder="Dólares" min="0" step="0.01"></td>
                             </tr>
                             <tr>
                                 <td>3</td>
                                 <td>Otros Autorizados</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescOtros" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                    <input type="number" class="form-control" name="txtOtrosSoles" placeholder="Soles" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                                    <input type="number" class="form-control" name="txtOtrosDolares" placeholder="Dólares" min="0" step="0.01"></td>
                             </tr>
                             <tr>
                                 <td>4</td>
                                 <td>Préstamo</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescPrestamo" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles"></td>
+                                    <input type="number" class="form-control" name="txtPrestamoSoles" placeholder="Soles" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares"></td>
+                                    <input type="number" class="form-control" name="txtPrestamoDolares" placeholder="Dólares" min="0" step="0.01"></td>
                             </tr>
+
                         </tbody>
                     </table>
 
@@ -180,90 +182,91 @@
                                 <td>1</td>
                                 <td>Peajes</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescPeajes" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="213"></td>
+                                    <input type="number" class="form-control" name="txtPeajesSoles" placeholder="Soles" value="213" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                    <input type="number" class="form-control" name="txtPeajesDolares" placeholder="Dólares" value="123" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td>Alimentación</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescAlimentacion" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="342"></td>
+                                    <input type="number" class="form-control" name="txtAlimentacionSoles" placeholder="Soles" value="342" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                    <input type="number" class="form-control" name="txtAlimentacionDolares" placeholder="Dólares" value="123" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>3</td>
                                 <td>Apoyo-Seguridad</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescApoyoSeguridad" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                    <input type="number" class="form-control" name="txtApoyoSeguridadSoles" placeholder="Soles" value="324" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="123"></td>
+                                    <input type="number" class="form-control" name="txtApoyoSeguridadDolares" placeholder="Dólares" value="123" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>4</td>
                                 <td>Reparaciones Varios</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescReparaciones" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                    <input type="number" class="form-control" name="txtReparacionesSoles" placeholder="Soles" value="324" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                    <input type="number" class="form-control" name="txtReparacionesDolares" placeholder="Dólares" value="142" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>5</td>
                                 <td>Movilidad</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescMovilidad" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                    <input type="number" class="form-control" name="txtMovilidadSoles" placeholder="Soles" value="324" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                    <input type="number" class="form-control" name="txtMovilidadDolares" placeholder="Dólares" value="142" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>6</td>
                                 <td>Encapada/Descencarpada</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescEncapada" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="123"></td>
+                                    <input type="number" class="form-control" name="txtEncapadaSoles" placeholder="Soles" value="123" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="214"></td>
+                                    <input type="number" class="form-control" name="txtEncapadaDolares" placeholder="Dólares" value="214" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>7</td>
                                 <td>Hospedaje</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescHospedaje" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="324"></td>
+                                    <input type="number" class="form-control" name="txtHospedajeSoles" placeholder="Soles" value="324" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="124"></td>
+                                    <input type="number" class="form-control" name="txtHospedajeDolares" placeholder="Dólares" value="124" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td>8</td>
                                 <td>Combustible</td>
                                 <td>
-                                    <input type="text" class="form-control" placeholder="Descripción"></td>
+                                    <input type="text" class="form-control" name="txtDescCombustible" placeholder="Descripción"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Soles" value="123"></td>
+                                    <input type="number" class="form-control" name="txtCombustibleSoles" placeholder="Soles" value="123" min="0" step="0.01"></td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Dólares" value="142"></td>
+                                    <input type="number" class="form-control" name="txtCombustibleDolares" placeholder="Dólares" value="142" min="0" step="0.01"></td>
                                 <td></td>
                             </tr>
+
                         </tbody>
                         <tbody id="gastosAdicionalesBody">
                             <!-- Aquí se añadirán dinámicamente los gastos adicionales -->
@@ -311,13 +314,13 @@
                         <button type="button" class="btn btn-secondary" onclick="showPreviousTab('datos')">Atrás</button>
                         <button type="button" class="btn btn-primary" onclick="showNextTab('guias')">Siguiente</button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Pestaña 3: Guías -->
             <div class="tab-pane fade" id="guias" role="tabpanel" aria-labelledby="guias-tab">
                 <h3 class="tab-header">Guías de Transporte</h3>
-                <form id="formGuias">
+                <div id="formGuias">
                     <!-- Número de Guías -->
                     <div class="row">
                         <div class="col-md-6 form-group">
@@ -381,7 +384,7 @@
                         <button type="button" class="btn btn-secondary" onclick="showPreviousTab('liquidacion')">Atrás</button>
                         <asp:Button ID="btnGuardar" runat="server" Text="Guardar" CssClass="btn btn-success" OnClientClick="return validarFormulario();" OnClick="btnGuardar_Click" />
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Librerías necesarias -->
@@ -428,48 +431,48 @@
 
                     // Evento para detectar cambios en los dropdowns
                     $("#<%= ddlPlacaTracto.ClientID %>").on('change', function () {
-            var selectedPlaca = $(this).val();
-            console.log("Placa Tracto seleccionada: " + selectedPlaca);
-        });
+                        var selectedPlaca = $(this).val();
+                        console.log("Placa Tracto seleccionada: " + selectedPlaca);
+                    });
 
-        $("#<%= ddlPlacaCarreta.ClientID %>").on('change', function () {
-            var selectedPlaca = $(this).val();
-            console.log("Placa Carreta seleccionada: " + selectedPlaca);
-        });
+                    $("#<%= ddlPlacaCarreta.ClientID %>").on('change', function () {
+                        var selectedPlaca = $(this).val();
+                        console.log("Placa Carreta seleccionada: " + selectedPlaca);
+                    });
 
-        $("#<%= ddlConductor.ClientID %>").on('change', function () {
-            var selectedConductor = $(this).val();
-            console.log("Conductor seleccionado: " + selectedConductor);
-        });
+                    $("#<%= ddlConductor.ClientID %>").on('change', function () {
+                        var selectedConductor = $(this).val();
+                        console.log("Conductor seleccionado: " + selectedConductor);
+                    });
 
-        // Verificar si hay un mensaje de éxito desde el servidor para cambiar de pestaña
-        if ($('#<%= lblErrores.ClientID %>').text() === "") {
-            var validationSuccess = $('#<%= hfValidationError.ClientID %>').val();
-            if (validationSuccess === "true") {
-                showNextTab('liquidacion');
-            }
-        }
+                    // Verificar si hay un mensaje de éxito desde el servidor para cambiar de pestaña
+                    if ($('#<%= lblErrores.ClientID %>').text() === "") {
+                        var validationSuccess = $('#<%= hfValidationError.ClientID %>').val();
+                        if (validationSuccess === "true") {
+                            showNextTab('liquidacion');
+                        }
+                    }
 
-        // Mostrar mensaje de error del servidor en un alert
-        var errorMessage = $('#<%= lblErrores.ClientID %>').text();
-        if (errorMessage !== "") {
-            alert(errorMessage.replace(/<br\/>/g, "\n"));
-        }
+                    // Mostrar mensaje de error del servidor en un alert
+                    var errorMessage = $('#<%= lblErrores.ClientID %>').text();
+                    if (errorMessage !== "") {
+                        alert(errorMessage.replace(/<br\/>/g, "\n"));
+                    }
 
-        // Escuchar cambios en los campos de las tablas de Ingresos y Gastos
-        $(document).on('input change', '#ingresosBody input, #gastosFijosBody input, #gastosAdicionalesBody input', function () {
-            actualizarResumen();
-        });
+                    // Escuchar cambios en los campos de las tablas de Ingresos y Gastos
+                    $(document).on('input change', '#ingresosBody input, #gastosFijosBody input, #gastosAdicionalesBody input', function () {
+                        actualizarResumen();
+                    });
 
-        // Limpiar campos y calcular los totales iniciales al cargar la página
-        limpiarCamposLiquidacion();
-        actualizarResumen();
+                    // Limpiar campos y calcular los totales iniciales al cargar la página
+                    limpiarCamposLiquidacion();
+                    actualizarResumen();
 
-        // Asegurarse de que la tabla de productos esté vacía antes de agregar la fila inicial
-        $("#tablaProductos tbody").empty();
-        // Agregar una fila inicial a la tabla de productos al cargar la página
-        agregarFilaProducto();
-    });
+                    // Asegurarse de que la tabla de productos esté vacía antes de agregar la fila inicial
+                    $("#tablaProductos tbody").empty();
+                    // Agregar una fila inicial a la tabla de productos al cargar la página
+                    agregarFilaProducto();
+                });
 
                 // Validar datos de la pestaña "Datos del Viaje" antes de pasar a la siguiente pestaña
                 function validarDatosViaje() {
@@ -478,114 +481,114 @@
 
                     // Validar campos de texto
                     if ($('#<%= txtCPI.ClientID %>').val().trim() === "") {
-            errores.push("El campo 'N° CPI' es obligatorio.");
-            $('#<%= txtCPI.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtCPI.ClientID %>').removeClass('is-invalid');
-        }
+                        errores.push("El campo 'N° CPI' es obligatorio.");
+                        $('#<%= txtCPI.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtCPI.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if ($('#<%= txtOrdenViaje.ClientID %>').val().trim() === "") {
-            errores.push("El campo 'N° Orden Viaje' es obligatorio.");
-            $('#<%= txtOrdenViaje.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtOrdenViaje.ClientID %>').removeClass('is-invalid');
-        }
+                    if ($('#<%= txtOrdenViaje.ClientID %>').val().trim() === "") {
+                        errores.push("El campo 'N° Orden Viaje' es obligatorio.");
+                        $('#<%= txtOrdenViaje.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtOrdenViaje.ClientID %>').removeClass('is-invalid');
+                    }
 
-        // Validar fechas
-        let fechaSalida = $('#<%= txtFechaSalida.ClientID %>').val();
-        let fechaLlegada = $('#<%= txtFechaLlegada.ClientID %>').val();
-        let horaSalida = $('#<%= txtHoraSalida.ClientID %>').val();
-        let horaLlegada = $('#<%= txtHoraLlegada.ClientID %>').val();
-        let fechaActual = new Date(); // Fecha actual
-        fechaActual.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparación
+                    // Validar fechas
+                    let fechaSalida = $('#<%= txtFechaSalida.ClientID %>').val();
+                    let fechaLlegada = $('#<%= txtFechaLlegada.ClientID %>').val();
+                    let horaSalida = $('#<%= txtHoraSalida.ClientID %>').val();
+                    let horaLlegada = $('#<%= txtHoraLlegada.ClientID %>').val();
+                    let fechaActual = new Date(); // Fecha actual
+                    fechaActual.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparación
 
-        if (!fechaSalida) {
-            errores.push("La 'Fecha de Salida' es obligatoria.");
-            $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtFechaSalida.ClientID %>').removeClass('is-invalid');
-        }
+                    if (!fechaSalida) {
+                        errores.push("La 'Fecha de Salida' es obligatoria.");
+                        $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtFechaSalida.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if (!horaSalida) {
-            errores.push("La 'Hora de Salida' es obligatoria.");
-            $('#<%= txtHoraSalida.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtHoraSalida.ClientID %>').removeClass('is-invalid');
-        }
+                    if (!horaSalida) {
+                        errores.push("La 'Hora de Salida' es obligatoria.");
+                        $('#<%= txtHoraSalida.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtHoraSalida.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if (!fechaLlegada) {
-            errores.push("La 'Fecha de Llegada' es obligatoria.");
-            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtFechaLlegada.ClientID %>').removeClass('is-invalid');
-        }
+                    if (!fechaLlegada) {
+                        errores.push("La 'Fecha de Llegada' es obligatoria.");
+                        $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtFechaLlegada.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if (!horaLlegada) {
-            errores.push("La 'Hora de Llegada' es obligatoria.");
-            $('#<%= txtHoraLlegada.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtHoraLlegada.ClientID %>').removeClass('is-invalid');
-        }
+                    if (!horaLlegada) {
+                        errores.push("La 'Hora de Llegada' es obligatoria.");
+                        $('#<%= txtHoraLlegada.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtHoraLlegada.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if (fechaSalida && fechaLlegada) {
-            let fechaSalidaDate = new Date(fechaSalida);
-            let fechaLlegadaDate = new Date(fechaLlegada);
+                    if (fechaSalida && fechaLlegada) {
+                        let fechaSalidaDate = new Date(fechaSalida);
+                        let fechaLlegadaDate = new Date(fechaLlegada);
 
-            if (fechaSalidaDate > fechaLlegadaDate) {
-                errores.push("La 'Fecha de Salida' no puede ser mayor a la 'Fecha de Llegada'.");
-                $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
-                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
-            }
+                        if (fechaSalidaDate > fechaLlegadaDate) {
+                            errores.push("La 'Fecha de Salida' no puede ser mayor a la 'Fecha de Llegada'.");
+                            $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
+                            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+                        }
 
-            if (fechaLlegadaDate > fechaActual) {
-                errores.push("La 'Fecha de Llegada' no puede ser mayor a la fecha actual (" + fechaActual.toLocaleDateString() + ").");
-                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
-            }
-        }
+                        if (fechaLlegadaDate > fechaActual) {
+                            errores.push("La 'Fecha de Llegada' no puede ser mayor a la fecha actual (" + fechaActual.toLocaleDateString() + ").");
+                            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+                        }
+                    }
 
-        // Validar dropdowns
-        if ($('#<%= ddlCliente.ClientID %>').val() === "") {
-            errores.push("Debe seleccionar un 'Cliente'.");
-            $('#<%= ddlCliente.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= ddlCliente.ClientID %>').removeClass('is-invalid');
-        }
+                    // Validar dropdowns
+                    if ($('#<%= ddlCliente.ClientID %>').val() === "") {
+                        errores.push("Debe seleccionar un 'Cliente'.");
+                        $('#<%= ddlCliente.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= ddlCliente.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if ($('#<%= ddlPlacaTracto.ClientID %>').val() === "") {
-            errores.push("Debe seleccionar una 'Placa Tracto'.");
-            $('#<%= ddlPlacaTracto.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= ddlPlacaTracto.ClientID %>').removeClass('is-invalid');
-        }
+                    if ($('#<%= ddlPlacaTracto.ClientID %>').val() === "") {
+                        errores.push("Debe seleccionar una 'Placa Tracto'.");
+                        $('#<%= ddlPlacaTracto.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= ddlPlacaTracto.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if ($('#<%= ddlPlacaCarreta.ClientID %>').val() === "") {
-            errores.push("Debe seleccionar una 'Placa Carreta'.");
-            $('#<%= ddlPlacaCarreta.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= ddlPlacaCarreta.ClientID %>').removeClass('is-invalid');
-        }
+                    if ($('#<%= ddlPlacaCarreta.ClientID %>').val() === "") {
+                        errores.push("Debe seleccionar una 'Placa Carreta'.");
+                        $('#<%= ddlPlacaCarreta.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= ddlPlacaCarreta.ClientID %>').removeClass('is-invalid');
+                    }
 
-        if ($('#<%= ddlConductor.ClientID %>').val() === "") {
-            errores.push("Debe seleccionar un 'Conductor'.");
-            $('#<%= ddlConductor.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= ddlConductor.ClientID %>').removeClass('is-invalid');
-        }
+                    if ($('#<%= ddlConductor.ClientID %>').val() === "") {
+                        errores.push("Debe seleccionar un 'Conductor'.");
+                        $('#<%= ddlConductor.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= ddlConductor.ClientID %>').removeClass('is-invalid');
+                    }
 
-        // Mostrar errores si los hay
-        if (errores.length > 0) {
-            alert(errores.join("\n"));
-            return false;
-        }
+                    // Mostrar errores si los hay
+                    if (errores.length > 0) {
+                        alert(errores.join("\n"));
+                        return false;
+                    }
 
-        // Limpiar el campo oculto antes de enviar al servidor
-        $('#<%= hfValidationError.ClientID %>').val("");
-        return true; // Permitir el postback para validaciones del servidor
-    }
+                    // Limpiar el campo oculto antes de enviar al servidor
+                    $('#<%= hfValidationError.ClientID %>').val("");
+                    return true; // Permitir el postback para validaciones del servidor
+                }
 
-    // Función para agregar una fila en la tabla de gastos
-    function agregarFila() {
-        const nuevaFila = `
+                // Función para agregar una fila en la tabla de gastos
+                function agregarFila() {
+                    const nuevaFila = `
             <tr>
                 <td class="numeroFila"></td>
                 <td><input type="text" class="form-control" placeholder="Gasto Adicional"></td>
@@ -598,226 +601,226 @@
             </tr>
         `;
 
-        $("#gastosAdicionalesBody").append(nuevaFila);
-        recalcularNumeros();
-        actualizarResumen(); // Actualizar el resumen después de agregar una fila
-    }
+                    $("#gastosAdicionalesBody").append(nuevaFila);
+                    recalcularNumeros();
+                    actualizarResumen(); // Actualizar el resumen después de agregar una fila
+                }
 
-    // Evento para eliminar una fila
-    $(document).on("click", ".btnEliminarFila", function () {
-        $(this).closest("tr").remove();
-        recalcularNumeros();
-        actualizarResumen(); // Actualizar el resumen después de eliminar una fila
-    });
+                // Evento para eliminar una fila
+                $(document).on("click", ".btnEliminarFila", function () {
+                    $(this).closest("tr").remove();
+                    recalcularNumeros();
+                    actualizarResumen(); // Actualizar el resumen después de eliminar una fila
+                });
 
-    // Función para recalcular los números de las filas
-    function recalcularNumeros() {
-        $("#gastosAdicionalesBody tr").each(function (index) {
-            $(this).find(".numeroFila").text(index + 9); // Comienza en 9 porque los gastos fijos terminan en 8
-        });
-    }
+                // Función para recalcular los números de las filas
+                function recalcularNumeros() {
+                    $("#gastosAdicionalesBody tr").each(function (index) {
+                        $(this).find(".numeroFila").text(index + 9); // Comienza en 9 porque los gastos fijos terminan en 8
+                    });
+                }
 
-    // Función para limpiar los campos numéricos de las tablas Ingresos y Gastos
-    function limpiarCamposLiquidacion() {
-        // Limpiar campos de Ingresos (Soles y Dólares)
-        $("#ingresosBody tr").each(function () {
-            $(this).find("td:eq(3) input").val(""); // Soles
-            $(this).find("td:eq(4) input").val(""); // Dólares
-        });
+                // Función para limpiar los campos numéricos de las tablas Ingresos y Gastos
+                function limpiarCamposLiquidacion() {
+                    // Limpiar campos de Ingresos (Soles y Dólares)
+                    $("#ingresosBody tr").each(function () {
+                        $(this).find("td:eq(3) input").val(""); // Soles
+                        $(this).find("td:eq(4) input").val(""); // Dólares
+                    });
 
-        // Limpiar campos de Gastos Fijos (Soles y Dólares)
-        $("#gastosFijosBody tr").each(function () {
-            $(this).find("td:eq(3) input").val(""); // Soles
-            $(this).find("td:eq(4) input").val(""); // Dólares
-        });
+                    // Limpiar campos de Gastos Fijos (Soles y Dólares)
+                    $("#gastosFijosBody tr").each(function () {
+                        $(this).find("td:eq(3) input").val(""); // Soles
+                        $(this).find("td:eq(4) input").val(""); // Dólares
+                    });
 
-        // Limpiar campos de Gastos Adicionales (Soles y Dólares)
-        $("#gastosAdicionalesBody tr").each(function () {
-            $(this).find("td:eq(3) input").val(""); // Soles
-            $(this).find("td:eq(4) input").val(""); // Dólares
-        });
-    }
+                    // Limpiar campos de Gastos Adicionales (Soles y Dólares)
+                    $("#gastosAdicionalesBody tr").each(function () {
+                        $(this).find("td:eq(3) input").val(""); // Soles
+                        $(this).find("td:eq(4) input").val(""); // Dólares
+                    });
+                }
 
-    // Función para actualizar el resumen de totales
-    function actualizarResumen() {
-        // Calcular totales de Ingresos
-        let totalIngresosSoles = 0;
-        let totalIngresosDolares = 0;
+                // Función para actualizar el resumen de totales
+                function actualizarResumen() {
+                    // Calcular totales de Ingresos
+                    let totalIngresosSoles = 0;
+                    let totalIngresosDolares = 0;
 
-        $("#ingresosBody tr").each(function () {
-            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
-            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
-            totalIngresosSoles += soles;
-            totalIngresosDolares += dolares;
-        });
+                    $("#ingresosBody tr").each(function () {
+                        let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+                        let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+                        totalIngresosSoles += soles;
+                        totalIngresosDolares += dolares;
+                    });
 
-        // Calcular totales de Gastos (gastos fijos + adicionales)
-        let totalGastosSoles = 0;
-        let totalGastosDolares = 0;
+                    // Calcular totales de Gastos (gastos fijos + adicionales)
+                    let totalGastosSoles = 0;
+                    let totalGastosDolares = 0;
 
-        // Gastos fijos
-        $("#gastosFijosBody tr").each(function () {
-            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
-            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
-            totalGastosSoles += soles;
-            totalGastosDolares += dolares;
-        });
+                    // Gastos fijos
+                    $("#gastosFijosBody tr").each(function () {
+                        let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+                        let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+                        totalGastosSoles += soles;
+                        totalGastosDolares += dolares;
+                    });
 
-        // Gastos adicionales
-        $("#gastosAdicionalesBody tr").each(function () {
-            let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
-            let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
-            totalGastosSoles += soles;
-            totalGastosDolares += dolares;
-        });
+                    // Gastos adicionales
+                    $("#gastosAdicionalesBody tr").each(function () {
+                        let soles = parseFloat($(this).find("td:eq(3) input").val()) || 0;
+                        let dolares = parseFloat($(this).find("td:eq(4) input").val()) || 0;
+                        totalGastosSoles += soles;
+                        totalGastosDolares += dolares;
+                    });
 
-        // Calcular diferencia de saldo
-        let diferenciaSaldoSoles = totalIngresosSoles - totalGastosSoles;
-        let diferenciaSaldoDolares = totalIngresosDolares - totalGastosDolares;
+                    // Calcular diferencia de saldo
+                    let diferenciaSaldoSoles = totalIngresosSoles - totalGastosSoles;
+                    let diferenciaSaldoDolares = totalIngresosDolares - totalGastosDolares;
 
-        // Actualizar los valores en la tabla de Resumen
-        $("#totalIngresosSoles").text(totalIngresosSoles.toFixed(2));
-        $("#totalIngresosDolares").text(totalIngresosDolares.toFixed(2));
-        $("#totalGastosSoles").text(totalGastosSoles.toFixed(2));
-        $("#totalGastosDolares").text(totalGastosDolares.toFixed(2));
-        $("#diferenciaSaldoSoles").text(diferenciaSaldoSoles.toFixed(2));
-        $("#diferenciaSaldoDolares").text(diferenciaSaldoDolares.toFixed(2));
-    }
+                    // Actualizar los valores en la tabla de Resumen
+                    $("#totalIngresosSoles").text(totalIngresosSoles.toFixed(2));
+                    $("#totalIngresosDolares").text(totalIngresosDolares.toFixed(2));
+                    $("#totalGastosSoles").text(totalGastosSoles.toFixed(2));
+                    $("#totalGastosDolares").text(totalGastosDolares.toFixed(2));
+                    $("#diferenciaSaldoSoles").text(diferenciaSaldoSoles.toFixed(2));
+                    $("#diferenciaSaldoDolares").text(diferenciaSaldoDolares.toFixed(2));
+                }
 
-    // Función para mostrar la siguiente pestaña
-    function showNextTab(nextTabId) {
-        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
-        $('.tab-content .tab-pane.active').removeClass('show active');
-        $('#' + nextTabId + '-tab').addClass('active').attr('aria-selected', 'true');
-        $('#' + nextTabId).addClass('show active');
+                // Función para mostrar la siguiente pestaña
+                function showNextTab(nextTabId) {
+                    $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
+                    $('.tab-content .tab-pane.active').removeClass('show active');
+                    $('#' + nextTabId + '-tab').addClass('active').attr('aria-selected', 'true');
+                    $('#' + nextTabId).addClass('show active');
 
-        // Limpiar campos si se muestra la pestaña Liquidación
-        if (nextTabId === "liquidacion") {
-            limpiarCamposLiquidacion();
-            actualizarResumen();
-        }
-    }
+                    // Limpiar campos si se muestra la pestaña Liquidación
+                    if (nextTabId === "liquidacion") {
+                        limpiarCamposLiquidacion();
+                        actualizarResumen();
+                    }
+                }
 
-    // Función para cambiar a la pestaña anterior
-    function showPreviousTab(prevTabId) {
-        $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
-        $('.tab-content .tab-pane.active').removeClass('show active');
-        $('#' + prevTabId + '-tab').addClass('active').attr('aria-selected', 'true');
-        $('#' + prevTabId).addClass('show active');
+                // Función para cambiar a la pestaña anterior
+                function showPreviousTab(prevTabId) {
+                    $('.nav-tabs .nav-link.active').removeClass('active').attr('aria-selected', 'false');
+                    $('.tab-content .tab-pane.active').removeClass('show active');
+                    $('#' + prevTabId + '-tab').addClass('active').attr('aria-selected', 'true');
+                    $('#' + prevTabId).addClass('show active');
 
-        // Limpiar campos si se muestra la pestaña Liquidación
-        if (prevTabId === "liquidacion") {
-            limpiarCamposLiquidacion();
-            actualizarResumen();
-        }
-    }
+                    // Limpiar campos si se muestra la pestaña Liquidación
+                    if (prevTabId === "liquidacion") {
+                        limpiarCamposLiquidacion();
+                        actualizarResumen();
+                    }
+                }
 
-    // Función para mostrar los campos adicionales al seleccionar Sullana-Guayaquil-Sullana
-    function toggleRutaDetails() {
-        const selectedRouteValue = $('#ddlRuta').val();
-        if (selectedRouteValue === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
-            $('#rutaDetails').show();
-        } else {
-            $('#rutaDetails').hide();
-        }
-    }
+                // Función para mostrar los campos adicionales al seleccionar Sullana-Guayaquil-Sullana
+                function toggleRutaDetails() {
+                    const selectedRouteValue = $('#ddlRuta').val();
+                    if (selectedRouteValue === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
+                        $('#rutaDetails').show();
+                    } else {
+                        $('#rutaDetails').hide();
+                    }
+                }
 
-    // Función para validar los datos antes de guardar
-    function validarFormulario() {
-        let isValid = true;
-        let errores = [];
+                // Función para validar los datos antes de guardar
+                function validarFormulario() {
+                    let isValid = true;
+                    let errores = [];
 
-        // Validar N° Guía Transportista
-        const guiaTransportista = $('#<%= txtGuiaTransportista.ClientID %>').val().trim();
-        if (guiaTransportista === "") {
-            errores.push("El campo 'N° Guía Transportista' es obligatorio.");
-            $('#<%= txtGuiaTransportista.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtGuiaTransportista.ClientID %>').removeClass('is-invalid');
-        }
+                    // Validar N° Guía Transportista
+                    const guiaTransportista = $('#<%= txtGuiaTransportista.ClientID %>').val().trim();
+                    if (guiaTransportista === "") {
+                        errores.push("El campo 'N° Guía Transportista' es obligatorio.");
+                        $('#<%= txtGuiaTransportista.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtGuiaTransportista.ClientID %>').removeClass('is-invalid');
+                    }
 
-        // Validar N° Guía Cliente
-        const guiaCliente = $('#<%= txtGuiaCliente.ClientID %>').val().trim();
-        if (guiaCliente === "") {
-            errores.push("El campo 'N° Guía Cliente' es obligatorio.");
-            $('#<%= txtGuiaCliente.ClientID %>').addClass('is-invalid');
-        } else {
-            $('#<%= txtGuiaCliente.ClientID %>').removeClass('is-invalid');
-        }
+                    // Validar N° Guía Cliente
+                    const guiaCliente = $('#<%= txtGuiaCliente.ClientID %>').val().trim();
+                    if (guiaCliente === "") {
+                        errores.push("El campo 'N° Guía Cliente' es obligatorio.");
+                        $('#<%= txtGuiaCliente.ClientID %>').addClass('is-invalid');
+                    } else {
+                        $('#<%= txtGuiaCliente.ClientID %>').removeClass('is-invalid');
+                    }
 
-        // Validar Ruta
-        const ruta = $('#ddlRuta').val();
-        if (ruta === "") {
-            errores.push("Debe seleccionar una 'Ruta'.");
-            $('#ddlRuta').addClass('is-invalid');
-        } else {
-            $('#ddlRuta').removeClass('is-invalid');
-        }
+                    // Validar Ruta
+                    const ruta = $('#ddlRuta').val();
+                    if (ruta === "") {
+                        errores.push("Debe seleccionar una 'Ruta'.");
+                        $('#ddlRuta').addClass('is-invalid');
+                    } else {
+                        $('#ddlRuta').removeClass('is-invalid');
+                    }
 
-        // Validar Planta de Descarga y N° Manifiesto si la ruta es "Sullana-Guayaquil-Sullana"
-        if (ruta === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
-            const plantaDescarga = $('#<%= ddlPlantaDescarga.ClientID %>').val();
-            if (plantaDescarga === "") {
-                errores.push("Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.");
-                $('#<%= ddlPlantaDescarga.ClientID %>').addClass('is-invalid');
+                    // Validar Planta de Descarga y N° Manifiesto si la ruta es "Sullana-Guayaquil-Sullana"
+                    if (ruta === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
+                        const plantaDescarga = $('#<%= ddlPlantaDescarga.ClientID %>').val();
+                        if (plantaDescarga === "") {
+                            errores.push("Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.");
+                            $('#<%= ddlPlantaDescarga.ClientID %>').addClass('is-invalid');
             } else {
                 $('#<%= ddlPlantaDescarga.ClientID %>').removeClass('is-invalid');
-            }
+                        }
 
-            const manifiesto = $('#<%= txtManifiesto.ClientID %>').val().trim();
-            if (manifiesto === "") {
-                errores.push("El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.");
-                $('#<%= txtManifiesto.ClientID %>').addClass('is-invalid');
+                        const manifiesto = $('#<%= txtManifiesto.ClientID %>').val().trim();
+                        if (manifiesto === "") {
+                            errores.push("El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.");
+                            $('#<%= txtManifiesto.ClientID %>').addClass('is-invalid');
             } else {
                 $('#<%= txtManifiesto.ClientID %>').removeClass('is-invalid');
-            }
-        }
+                        }
+                    }
 
-        // Validar la tabla de productos
-        let productosValidos = true;
-        let productosData = [];
-        $("#tablaProductos tbody tr").each(function () {
-            const producto = $(this).find(".producto-dropdown").val();
-            const cantidad = $(this).find("input[name='cantidad']").val();
+                    // Validar la tabla de productos
+                    let productosValidos = true;
+                    let productosData = [];
+                    $("#tablaProductos tbody tr").each(function () {
+                        const producto = $(this).find(".producto-dropdown").val();
+                        const cantidad = $(this).find("input[name='cantidad']").val();
 
-            if (producto === "0" || !cantidad || cantidad <= 0) {
-                productosValidos = false;
-                $(this).find(".producto-dropdown").addClass('is-invalid');
-                $(this).find("input[name='cantidad']").addClass('is-invalid');
-            } else {
-                $(this).find(".producto-dropdown").removeClass('is-invalid');
-                $(this).find("input[name='cantidad']").removeClass('is-invalid');
-                // Agregar los datos del producto a la lista para enviar al servidor
-                productosData.push({
-                    idProducto: producto,
-                    cantidad: cantidad
-                });
-            }
-        });
+                        if (producto === "0" || !cantidad || cantidad <= 0) {
+                            productosValidos = false;
+                            $(this).find(".producto-dropdown").addClass('is-invalid');
+                            $(this).find("input[name='cantidad']").addClass('is-invalid');
+                        } else {
+                            $(this).find(".producto-dropdown").removeClass('is-invalid');
+                            $(this).find("input[name='cantidad']").removeClass('is-invalid');
+                            // Agregar los datos del producto a la lista para enviar al servidor
+                            productosData.push({
+                                idProducto: producto,
+                                cantidad: cantidad
+                            });
+                        }
+                    });
 
-        if (!productosValidos) {
-            errores.push('Por favor, seleccione un producto y una cantidad válida en todas las filas de "Productos asociados".');
-        }
+                    if (!productosValidos) {
+                        errores.push('Por favor, seleccione un producto y una cantidad válida en todas las filas de "Productos asociados".');
+                    }
 
-        // Mostrar errores si los hay
-        if (errores.length > 0) {
-            alert(errores.join("\n"));
-            return false;
-        }
+                    // Mostrar errores si los hay
+                    if (errores.length > 0) {
+                        alert(errores.join("\n"));
+                        return false;
+                    }
 
-        // Enviar los datos de los productos al servidor
-        $('<input>').attr({
-            type: 'hidden',
-            name: 'productosData',
-            value: JSON.stringify(productosData)
-        }).appendTo('#formGuias');
+                    // Enviar los datos de los productos al servidor
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'productosData',
+                        value: JSON.stringify(productosData)
+                    }).appendTo('#formGuias');
 
-        // Si las validaciones del cliente pasan, permitir el postback para validaciones del servidor
-        return true;
-    }
+                    // Si las validaciones del cliente pasan, permitir el postback para validaciones del servidor
+                    return true;
+                }
 
-    // Gestión de la tabla de productos
-    const productos = <%= ObtenerProductosJSON() %>;
+                // Gestión de la tabla de productos
+                const productos = <%= ObtenerProductosJSON() %>;
                 const productosSeleccionados = new Set(); // Para rastrear productos seleccionados
 
                 // Agregar una fila
