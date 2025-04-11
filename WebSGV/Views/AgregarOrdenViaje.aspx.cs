@@ -10,6 +10,15 @@ namespace WebSGV.Views
 {
     public partial class AgregarOrdenViaje : System.Web.UI.Page
     {
+        public class GastoAdicional
+        {
+            public string nombreCategoria { get; set; }
+            public decimal soles { get; set; }
+            public decimal dolares { get; set; }
+            public string descripcion { get; set; }
+        }
+
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -604,6 +613,13 @@ namespace WebSGV.Views
                     ? new List<ProductoOrdenViaje>()
                     : JsonConvert.DeserializeObject<List<ProductoOrdenViaje>>(productosJson);
 
+                // Obtener gastos adicionales (categorías dinámicas)
+                string gastosAdicionalesJson = Request.Form["gastosAdicionales"]; // Este campo lo debes llenar desde JS
+                List<GastoAdicional> gastosAdicionales = string.IsNullOrEmpty(gastosAdicionalesJson)
+                    ? new List<GastoAdicional>()
+                    : JsonConvert.DeserializeObject<List<GastoAdicional>>(gastosAdicionalesJson);
+
+
                 if (productos.Count == 0)
                 {
                     errores += "Debe agregar al menos un producto en la pestaña 'Guías'.\n";
@@ -678,72 +694,43 @@ namespace WebSGV.Views
                                 }
                             }
 
-                            // Insertar los datos de la pestaña "Liquidación" en la tabla Ingresos
-                            // Insertar los datos de la pestaña "Liquidación" en la tabla Ingresos
-                            string queryIngresos = @"INSERT INTO Ingresos (
-                                                numeroOrdenViaje,
-                                                despachoSoles, despachoDolares, descDespacho,
-                                                mensualidadSoles, mensualidadDolares, descMensualidad,
-                                                otrosSoles, otrosDolares, descOtros,
-                                                prestamoSoles, prestamoDolares, descPrestamo
-                                            )
-                                            VALUES (
-                                                @numeroOrdenViaje,
-                                                @despachoSoles, @despachoDolares, @descDespacho,
-                                                @mensualidadSoles, @mensualidadDolares, @descMensualidad,
-                                                @otrosSoles, @otrosDolares, @descOtros,
-                                                @prestamoSoles, @prestamoDolares, @descPrestamo
-                                            )";
-                            using (SqlCommand cmd = new SqlCommand(queryIngresos, conn, transaction))
+                            //INSERTAR INGRESOS EN LA BASE DE DATOS
+                            using (SqlCommand cmd = new SqlCommand("InsertarIngresos", conn, transaction))
                             {
-                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+                                cmd.CommandType = CommandType.StoredProcedure;
 
+                                cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
                                 cmd.Parameters.AddWithValue("@despachoSoles", despachoSoles);
                                 cmd.Parameters.AddWithValue("@despachoDolares", despachoDolares);
-                                cmd.Parameters.AddWithValue("@descDespacho", descDespacho);
-
+                                cmd.Parameters.AddWithValue("@prestamoSoles", prestamoSoles);
+                                cmd.Parameters.AddWithValue("@prestamosDolares", prestamoDolares);
                                 cmd.Parameters.AddWithValue("@mensualidadSoles", mensualidadSoles);
                                 cmd.Parameters.AddWithValue("@mensualidadDolares", mensualidadDolares);
-                                cmd.Parameters.AddWithValue("@descMensualidad", descMensualidad);
-
                                 cmd.Parameters.AddWithValue("@otrosSoles", otrosSoles);
                                 cmd.Parameters.AddWithValue("@otrosDolares", otrosDolares);
-                                cmd.Parameters.AddWithValue("@descOtros", descOtros);
 
-                                cmd.Parameters.AddWithValue("@prestamoSoles", prestamoSoles);
-                                cmd.Parameters.AddWithValue("@prestamoDolares", prestamoDolares);
+                                // Puedes calcular total aquí si no lo haces desde frontend
+                                decimal totalSoles = despachoSoles + prestamoSoles + mensualidadSoles + otrosSoles;
+                                decimal totalDolares = despachoDolares + prestamoDolares + mensualidadDolares + otrosDolares;
+
+                                cmd.Parameters.AddWithValue("@totalSoles", totalSoles);
+                                cmd.Parameters.AddWithValue("@totalDolares", totalDolares);
+
+                                cmd.Parameters.AddWithValue("@descDespacho", descDespacho);
+                                cmd.Parameters.AddWithValue("@descMensualidad", descMensualidad);
+                                cmd.Parameters.AddWithValue("@descOtrosAutorizados", descOtros);
                                 cmd.Parameters.AddWithValue("@descPrestamo", descPrestamo);
 
                                 cmd.ExecuteNonQuery();
                             }
 
 
-                            // Insertar los datos de la pestaña "Liquidación" en la tabla Egresos
-                            // Insertar los datos de la pestaña "Liquidación" en la tabla Egresos
-                            string queryEgresos = @"INSERT INTO Egresos (
-                                           numeroOrdenViaje,
-                                        peajesSoles, peajesDolares, descPeajes,
-                                        alimentacionSoles, alimentacionDolares, descAlimentacion,
-                                        apoyoSeguridadSoles, apoyoSeguridadDolares, descApoyoSeguridad,
-                                        reparacionesVariosSoles, reparacionesVariosDolares, descReparaciones,
-                                        movilidadSoles, movilidadDolares, descMovilidad,
-                                        encapadaSoles, encapadaDolares, descEncapada,
-                                        hospedajeSoles, hospedajeDolares, descHospedaje,
-                                        combustibleSoles, combustibleDolares, descCombustible
-                                    )
-                                    VALUES (
-                                        @numeroOrdenViaje,
-                                        @peajesSoles, @peajesDolares, @descPeajes,
-                                        @alimentacionSoles, @alimentacionDolares, @descAlimentacion,
-                                        @apoyoSeguridadSoles, @apoyoSeguridadDolares, @descApoyoSeguridad,
-                                        @reparacionesVariosSoles, @reparacionesVariosDolares, @descReparaciones,
-                                        @movilidadSoles, @movilidadDolares, @descMovilidad,
-                                        @encapadaSoles, @encapadaDolares, @descEncapada,
-                                        @hospedajeSoles, @hospedajeDolares, @descHospedaje,
-                                        @combustibleSoles, @combustibleDolares, @descCombustible
-                                    )";
-                            using (SqlCommand cmd = new SqlCommand(queryEgresos, conn, transaction))
+                            //insertar egresos a la base de datos
+
+                            using (SqlCommand cmd = new SqlCommand("InsertarEgresos", conn, transaction))
                             {
+                                cmd.CommandType = CommandType.StoredProcedure;
+
                                 cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
                                 cmd.Parameters.AddWithValue("@peajesSoles", peajesSoles);
                                 cmd.Parameters.AddWithValue("@peajesDolares", peajesDolares);
@@ -753,21 +740,21 @@ namespace WebSGV.Views
                                 cmd.Parameters.AddWithValue("@alimentacionDolares", alimentacionDolares);
                                 cmd.Parameters.AddWithValue("@descAlimentacion", descAlimentacion);
 
-                                cmd.Parameters.AddWithValue("@apoyoSeguridadSoles", apoyoSeguridadSoles);
-                                cmd.Parameters.AddWithValue("@apoyoSeguridadDolares", apoyoSeguridadDolares);
+                                cmd.Parameters.AddWithValue("@apoyoseguridadSoles", apoyoSeguridadSoles);
+                                cmd.Parameters.AddWithValue("@apoyoseguridadDolares", apoyoSeguridadDolares);
                                 cmd.Parameters.AddWithValue("@descApoyoSeguridad", descApoyoSeguridad);
 
                                 cmd.Parameters.AddWithValue("@reparacionesVariosSoles", reparacionesSoles);
-                                cmd.Parameters.AddWithValue("@reparacionesVariosDolares", reparacionesDolares);
-                                cmd.Parameters.AddWithValue("@descReparaciones", descReparaciones);
+                                cmd.Parameters.AddWithValue("@repacionesVariosDolares", reparacionesDolares);
+                                cmd.Parameters.AddWithValue("@descReparacionesVarios", descReparaciones);
 
                                 cmd.Parameters.AddWithValue("@movilidadSoles", movilidadSoles);
                                 cmd.Parameters.AddWithValue("@movilidadDolares", movilidadDolares);
                                 cmd.Parameters.AddWithValue("@descMovilidad", descMovilidad);
 
-                                cmd.Parameters.AddWithValue("@encapadaSoles", encapadaSoles);
-                                cmd.Parameters.AddWithValue("@encapadaDolares", encapadaDolares);
-                                cmd.Parameters.AddWithValue("@descEncapada", descEncapada);
+                                cmd.Parameters.AddWithValue("@encarpada_desencarpadaSoles", encapadaSoles);
+                                cmd.Parameters.AddWithValue("@encarpada_desencarpadaDolares", encapadaDolares);
+                                cmd.Parameters.AddWithValue("@descEncarpadaDesencarpada", descEncapada);
 
                                 cmd.Parameters.AddWithValue("@hospedajeSoles", hospedajeSoles);
                                 cmd.Parameters.AddWithValue("@hospedajeDolares", hospedajeDolares);
@@ -779,6 +766,23 @@ namespace WebSGV.Views
 
                                 cmd.ExecuteNonQuery();
                             }
+
+                            // Insertar gastos adicionales en CategoriasAdicionales
+                            foreach (var gasto in gastosAdicionales)
+                            {
+                                using (SqlCommand cmd = new SqlCommand("InsertarGastoAdicional", conn, transaction))
+                                {
+                                    cmd.CommandType = CommandType.StoredProcedure;
+                                    cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
+                                    cmd.Parameters.AddWithValue("@nombreCategoria", gasto.nombreCategoria);
+                                    cmd.Parameters.AddWithValue("@soles", gasto.soles);
+                                    cmd.Parameters.AddWithValue("@dolares", gasto.dolares);
+                                    cmd.Parameters.AddWithValue("@descripcion", gasto.descripcion);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+
+
 
 
                             transaction.Commit();
