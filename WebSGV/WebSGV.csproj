@@ -293,6 +293,8 @@
     <Compile Include="Views\AgregarOrdenViaje.aspx.designer.cs">
       <DependentUpon>AgregarOrdenViaje.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Models\DniResponse.cs" />
+    <Compile Include="Models\DniService.cs" />
     <Compile Include="Views\Inicio.aspx.cs">
       <DependentUpon>Inicio.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -339,7 +341,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
