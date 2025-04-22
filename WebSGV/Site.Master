@@ -19,6 +19,9 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 </head>
 
 <body>
@@ -63,7 +66,7 @@
                         </div>
                     </li>
 
-                     <!-- ABASTECIMIENTO DE COMBUSTIBLE-->
+                    <!-- ABASTECIMIENTO DE COMBUSTIBLE-->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAbastecimiento" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Abastecimiento de Combustible
                         </a>
@@ -93,7 +96,7 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownConsultas" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Consultas
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownConsultas">
-                            <a class="dropdown-item" href="#">Reportes</a>
+                            <a class="dropdown-item" href="Reportes.aspx">Reportes</a>
                             <a class="dropdown-item" href="#">Almacén</a>
                         </div>
                     </li>

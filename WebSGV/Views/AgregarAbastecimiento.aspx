@@ -1,151 +1,623 @@
-﻿<%@ Page Title="Agregar Abastecimiento de Combustible" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarAbastecimiento.aspx.cs" Inherits="WebSGV.Views.AgregarAbastecimiento" %>
+﻿<%@ Page Title="Parte de Abastecimiento de Combustible" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="AgregarAbastecimiento.aspx.cs" Inherits="WebSGV.Views.AgregarAbastecimiento" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #0062cc;
+            --accent-color: #f0f7ff;
+            --border-color: #dee2e6;
+        }
+        
+        .abastecimiento-container {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header-container {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .abastecimiento-header {
+            color: var(--primary-color);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .numero-container {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            padding: 6px 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .numero-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 10px;
+            margin-bottom: 0;
+            color: var(--primary-color);
+        }
+        
+        .numero-input {
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            margin-bottom: 25px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 12px 20px;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .card-body {
+            padding: 20px;
+            background-color: #fafafa;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control {
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            height: auto;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 8px 20px;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .calculation-box {
+            background-color: var(--accent-color);
+            border: 1px solid #d1e7ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .calculation-result {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Estilos para campos calculados */
+        .calculated-field {
+            background-color: #f0f7ff;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        /* Indicador visual de tanque de combustible */
+        .fuel-section {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .fuel-tank {
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .fuel-level {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #67c977);
+            border-radius: 15px 0 0 15px;
+            width: 75%;
+        }
+        
+        .fuel-markers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .btn-icon {
+            margin-right: 5px;
+        }
+        
+        .observaciones-section {
+            margin-top: 20px;
+        }
+        
+        /* Añade espacio para firmas */
+        .signature-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .signature-box {
+            border-top: 1px solid #aaa;
+            margin-top: 40px;
+            padding-top: 5px;
+            text-align: center;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        /* Estilos para jQuery UI Autocomplete */
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+        
+        .ui-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .ui-state-active, 
+        .ui-state-focus {
+            background-color: #4a8af4 !important;
+            color: white !important;
+            border: none !important;
+            margin: 0 !important;
+        }
+    </style>
     <div class="container-fluid abastecimiento-container">
         <!-- Encabezado con número -->
-        <div class="d-flex justify-content-between align-items-center mb-4 header-container">
+        <div class="d-flex justify-content-between align-items-center header-container">
             <h3 class="abastecimiento-header text-uppercase">Parte de Abastecimiento de Combustible</h3>
             <div class="numero-container">
                 <label for="numeroAbastecimiento" class="numero-label">N°:</label>
-                <input type="text" id="numeroAbastecimiento" class="numero-input" placeholder="Ingrese el N°" value="018885" />
+                <asp:TextBox ID="numeroAbastecimiento" runat="server" CssClass="numero-input" Text="018885"></asp:TextBox>
             </div>
         </div>
 
         <!-- Información General -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header text-white bg-primary">
-                Información General
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-truck me-2"></i> Información General
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
-                        <label for="tipoVehiculo" class="form-label">Tipo:</label>
-                        <select id="tipoVehiculo" class="form-control">
-                            <option value="camioneta">Camioneta</option>
-                            <option value="camion">Camión</option>
-                            <option value="trailer">Trailer</option>
-                        </select>
+                        <label for="<%= tipoVehiculo.ClientID %>" class="form-label">Tipo:</label>
+                        <asp:DropDownList ID="tipoVehiculo" runat="server" CssClass="form-control">
+                            <asp:ListItem Value="camioneta">Camioneta</asp:ListItem>
+                            <asp:ListItem Value="camion" Selected="True">Camión</asp:ListItem>
+                            <asp:ListItem Value="trailer">Trailer</asp:ListItem>
+                            <asp:ListItem Value="otro">Otro</asp:ListItem>
+                        </asp:DropDownList>
                     </div>
                     <div class="col-md-3">
-                        <label for="txtPlaca" class="form-label">Placa:</label>
-                        <input type="text" id="txtPlaca" class="form-control" placeholder="Ingrese la placa" />
+                        <label for="<%= txtPlaca.ClientID %>" class="form-label">Placa:</label>
+                        <asp:TextBox ID="txtPlaca" runat="server" CssClass="form-control" placeholder="Seleccione una placa"></asp:TextBox>
                     </div>
                     <div class="col-md-3">
-                        <label for="txtCarreta" class="form-label">Carreta:</label>
-                        <input type="text" id="txtCarreta" class="form-control" placeholder="Ingrese carreta (opcional)" />
+                        <label for="<%= txtCarreta.ClientID %>" class="form-label">Carreta:</label>
+                        <asp:TextBox ID="txtCarreta" runat="server" CssClass="form-control" placeholder="Seleccione una carreta"></asp:TextBox>
                     </div>
                     <div class="col-md-3">
-                        <label for="txtConductor" class="form-label">Conductor:</label>
-                        <input type="text" id="txtConductor" class="form-control" placeholder="Nombre del conductor" />
+                        <label for="<%= txtConductor.ClientID %>" class="form-label">Conductor:</label>
+                        <asp:TextBox ID="txtConductor" runat="server" CssClass="form-control" placeholder="Seleccione un conductor"></asp:TextBox>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Ruta y Producto -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header text-white bg-primary">
-                Ruta y Producto
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-route me-2"></i> Ruta y Producto
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="txtRuta" class="form-label">Ruta:</label>
-                        <input type="text" id="txtRuta" class="form-control" placeholder="Ingrese la ruta" />
+                        <label for="<%= txtRuta.ClientID %>" class="form-label">Ruta:</label>
+                        <asp:TextBox ID="txtRuta" runat="server" CssClass="form-control" placeholder="Seleccione una ruta"></asp:TextBox>
                     </div>
                     <div class="col-md-6">
-                        <label for="txtProducto" class="form-label">Producto:</label>
-                        <input type="text" id="txtProducto" class="form-control" placeholder="Ingrese el producto" />
+                        <label for="<%= txtProducto.ClientID %>" class="form-label">Producto:</label>
+                        <asp:TextBox ID="txtProducto" runat="server" CssClass="form-control" placeholder="Ingrese el producto"></asp:TextBox>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Control de Combustible -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header text-white bg-primary">
-                Control de Combustible
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-gas-pump me-2"></i> Control de Combustible
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <label for="lugarAbastecimiento" class="form-label">Lugar de Abastecimiento:</label>
-                        <select id="lugarAbastecimiento" class="form-control">
-                            <option value="grifo">Grifo Cochera 03</option>
-                            <option value="otro">Otro</option>
-                        </select>
+                    <div class="col-md-4">
+                        <label for="<%= lugarAbastecimiento.ClientID %>" class="form-label">Lugar de Abastecimiento:</label>
+                        <asp:DropDownList ID="lugarAbastecimiento" runat="server" CssClass="form-control">
+                            <asp:ListItem Value="grifo" Selected="True">Grifo Cochera 03</asp:ListItem>
+                            <asp:ListItem Value="otro">Otro</asp:ListItem>
+                        </asp:DropDownList>
                     </div>
-                    <div class="col-md-3">
-                        <label for="txtFecha" class="form-label">Fecha:</label>
-                        <input type="date" id="txtFecha" class="form-control" />
+                    <div class="col-md-4">
+                        <label for="<%= txtFecha.ClientID %>" class="form-label">Fecha:</label>
+                        <asp:TextBox ID="txtFecha" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                     </div>
-                    <div class="col-md-3">
-                        <label for="txtHora" class="form-label">Hora:</label>
-                        <input type="time" id="txtHora" class="form-control" />
+                    <div class="col-md-4">
+                        <label for="<%= txtHora.ClientID %>" class="form-label">Hora:</label>
+                        <asp:TextBox ID="txtHora" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Detalles de Consumo -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header text-white bg-primary">
-                Detalles de Consumo
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-tachometer-alt me-2"></i> Detalles de Consumo
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 form-group">
-                        <label for="txtGLRuta" class="form-label">GL Ruta Asignada:</label>
-                        <input type="number" id="txtGLRuta" class="form-control" placeholder="Ej: 50" />
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLRuta.ClientID %>" class="form-label">GL Ruta Asignada:</label>
+                                <asp:TextBox ID="txtGLRuta" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 50" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLComprados.ClientID %>" class="form-label">GL Comprados en Ruta:</label>
+                                <asp:TextBox ID="txtGLComprados" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 193.5" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtTotalGL.ClientID %>" class="form-label">GL Total Abastecidos:</label>
+                                <asp:TextBox ID="txtTotalGL" runat="server" CssClass="form-control calculated-field" TextMode="Number" placeholder="Ej: 243.5" ReadOnly="true"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLFinal.ClientID %>" class="form-label">GL Trae al Finalizar:</label>
+                                <asp:TextBox ID="txtGLFinal" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 62" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLConsumidos.ClientID %>" class="form-label">GL Total Consumidos:</label>
+                                <asp:TextBox ID="txtGLConsumidos" runat="server" CssClass="form-control calculated-field" TextMode="Number" placeholder="Ej: 181.65" ReadOnly="true"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtPrecioDolar.ClientID %>" class="form-label">Precio del Dólar:</label>
+                                <asp:TextBox ID="txtPrecioDolar" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 1.795"></asp:TextBox>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtGLComprados" class="form-label">GL Comprados en Ruta:</label>
-                        <input type="number" id="txtGLComprados" class="form-control" placeholder="Ej: 193.5" />
-                    </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtTotalGL" class="form-label">GL Total Abastecidos:</label>
-                        <input type="number" id="txtTotalGL" class="form-control" placeholder="Ej: 243.5" />
-                    </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtGLFinal" class="form-label">GL Trae al Finalizar:</label>
-                        <input type="number" id="txtGLFinal" class="form-control" placeholder="Ej: 62" />
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtMontoTotal.ClientID %>" class="form-label">Monto Total GL:</label>
+                                <asp:TextBox ID="txtMontoTotal" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 193.5"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtDistancia.ClientID %>" class="form-label">Distancia en KM:</label>
+                                <asp:TextBox ID="txtDistancia" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 1935.9" onchange="calcularRendimiento()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtConsumoComputador.ClientID %>" class="form-label">Consumo Computador:</label>
+                                <asp:TextBox ID="txtConsumoComputador" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 184.2"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtHoraRetorno.ClientID %>" class="form-label">Hora Retorno:</label>
+                                <asp:TextBox ID="txtHoraRetorno" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="fuel-section mt-3">
+                            <h6 class="mb-2">Visualización de consumo de combustible</h6>
+                            <div class="fuel-tank">
+                                <div class="fuel-level" id="fuelLevelVisual"></div>
+                            </div>
+                            <div class="fuel-markers">
+                                <span>0%</span>
+                                <span>25%</span>
+                                <span>50%</span>
+                                <span>75%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-md-3 form-group">
-                        <label for="txtGLConsumidos" class="form-label">GL Total Consumidos:</label>
-                        <input type="number" id="txtGLConsumidos" class="form-control" placeholder="Ej: 181.65" />
-                    </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtPrecioDolar" class="form-label">Precio del Dólar:</label>
-                        <input type="number" step="0.01" id="txtPrecioDolar" class="form-control" placeholder="Ej: 1.795" />
-                    </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtMontoTotal" class="form-label">Monto Total GL:</label>
-                        <input type="number" step="0.01" id="txtMontoTotal" class="form-control" placeholder="Ej: 193.5" />
-                    </div>
-                    <div class="col-md-3 form-group">
-                        <label for="txtDistancia" class="form-label">Distancia en KM:</label>
-                        <input type="number" id="txtDistancia" class="form-control" placeholder="Ej: 1935.9" />
+                
+                <!-- Cálculos y Resultados -->
+                <div class="calculation-box mt-3">
+                    <div class="calculation-result">
+                        <span>Rendimiento promedio (KM/GL):</span>
+                        <span id="rendimientoPromedio">0.00</span>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-md-6 form-group">
-                        <label for="txtConsumoComputador" class="form-label">Consumo Computador:</label>
-                        <input type="number" step="0.01" id="txtConsumoComputador" class="form-control" placeholder="Ej: 184.2" />
+            </div>
+        </div>
+        
+        <!-- Observaciones -->
+        <div class="card mb-4 observaciones-section">
+            <div class="card-header">
+                <i class="fas fa-clipboard me-2"></i> Observaciones
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <asp:TextBox ID="txtObservaciones" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" placeholder="Ingrese observaciones adicionales aquí..."></asp:TextBox>
                     </div>
-                    <div class="col-md-6 form-group">
-                        <label for="txtHoraRetorno" class="form-label">Hora Retorno:</label>
-                        <input type="time" id="txtHoraRetorno" class="form-control" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de Firmas -->
+        <div class="signature-section">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="signature-box">
+                        <p>FIRMA ABASTECEDOR</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="signature-box">
+                        <p>FIRMA CONDUCTOR</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Botones -->
-        <div class="text-right">
-            <button type="reset" class="btn btn-secondary">Limpiar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+        <div class="text-end mt-4">
+            <asp:Button ID="btnImprimir" runat="server" CssClass="btn btn-success me-2" Text="Imprimir" OnClientClick="window.print(); return false;" />
+            <asp:Button ID="btnLimpiar" runat="server" CssClass="btn btn-secondary me-2" Text="Limpiar" OnClientClick="limpiarFormulario(); return false;" />
+            <asp:Button ID="btnGuardar" runat="server" CssClass="btn btn-primary" Text="Guardar" />
         </div>
     </div>
+
+    <!-- Scripts para cálculos automáticos -->
+    <script type="text/javascript">
+        // Función para calcular totales automáticamente
+        function calcularTotales() {
+            var glRuta = parseFloat(document.getElementById('<%= txtGLRuta.ClientID %>').value) || 0;
+            var glComprados = parseFloat(document.getElementById('<%= txtGLComprados.ClientID %>').value) || 0;
+            var glFinal = parseFloat(document.getElementById('<%= txtGLFinal.ClientID %>').value) || 0;
+
+            // Calcular total abastecido
+            var totalAbastecido = glRuta + glComprados;
+            document.getElementById('<%= txtTotalGL.ClientID %>').value = totalAbastecido.toFixed(2);
+
+            // Calcular total consumido
+            var totalConsumido = totalAbastecido - glFinal;
+            document.getElementById('<%= txtGLConsumidos.ClientID %>').value = totalConsumido.toFixed(2);
+            
+            // Actualizar visualización del nivel de combustible
+            actualizarNivelCombustible(glFinal, totalAbastecido);
+            
+            // Calcular rendimiento si hay distancia
+            calcularRendimiento();
+        }
+        
+        // Función para calcular rendimiento
+        function calcularRendimiento() {
+            var distancia = parseFloat(document.getElementById('<%= txtDistancia.ClientID %>').value) || 0;
+            var consumido = parseFloat(document.getElementById('<%= txtGLConsumidos.ClientID %>').value) || 0;
+            
+            if (distancia > 0 && consumido > 0) {
+                var rendimiento = distancia / consumido;
+                document.getElementById('rendimientoPromedio').textContent = rendimiento.toFixed(2);
+            } else {
+                document.getElementById('rendimientoPromedio').textContent = "0.00";
+            }
+        }
+        
+        // Función para actualizar la visualización del nivel de combustible
+        function actualizarNivelCombustible(actual, total) {
+            if (total > 0) {
+                var porcentaje = (actual / total) * 100;
+                document.getElementById('fuelLevelVisual').style.width = porcentaje + '%';
+            } else {
+                document.getElementById('fuelLevelVisual').style.width = '0%';
+            }
+        }
+        
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            document.getElementById('<%= txtPlaca.ClientID %>').value = '';
+            document.getElementById('<%= txtCarreta.ClientID %>').value = '';
+            document.getElementById('<%= txtConductor.ClientID %>').value = '';
+            document.getElementById('<%= txtRuta.ClientID %>').value = '';
+            document.getElementById('<%= txtProducto.ClientID %>').value = '';
+            document.getElementById('<%= txtGLRuta.ClientID %>').value = '';
+            document.getElementById('<%= txtGLComprados.ClientID %>').value = '';
+            document.getElementById('<%= txtTotalGL.ClientID %>').value = '';
+            document.getElementById('<%= txtGLFinal.ClientID %>').value = '';
+            document.getElementById('<%= txtGLConsumidos.ClientID %>').value = '';
+            document.getElementById('<%= txtPrecioDolar.ClientID %>').value = '';
+            document.getElementById('<%= txtMontoTotal.ClientID %>').value = '';
+            document.getElementById('<%= txtDistancia.ClientID %>').value = '';
+            document.getElementById('<%= txtConsumoComputador.ClientID %>').value = '';
+            document.getElementById('<%= txtObservaciones.ClientID %>').value = '';
+            document.getElementById('rendimientoPromedio').textContent = '0.00';
+            document.getElementById('fuelLevelVisual').style.width = '0%';
+        }
+        
+        // Inicializar cálculos al cargar la página
+        window.onload = function() {
+            // Establecer fecha actual si no hay fecha
+            var fechaInput = document.getElementById('<%= txtFecha.ClientID %>');
+            if (!fechaInput.value) {
+                var hoy = new Date().toISOString().split('T')[0];
+                fechaInput.value = hoy;
+            }
+
+            // Iniciar cálculos
+            calcularTotales();
+        };
+    </script>
+
+    <!-- Scripts para autocomplete con jQuery UI -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Autocompletado para placas
+            $("#<%= txtPlaca.ClientID %>").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "AgregarAbastecimiento.aspx/GetTractoPlacas",
+                        data: JSON.stringify({ prefixText: request.term }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            response(data.d);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error en autocompletado de placas:", error);
+                        }
+                    });
+                },
+                minLength: 1
+            });
+
+            // Autocompletado para carretas
+            $("#<%= txtCarreta.ClientID %>").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "AgregarAbastecimiento.aspx/GetCarretas",
+                        data: JSON.stringify({ prefixText: request.term }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            response(data.d);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error en autocompletado de carretas:", error);
+                        }
+                    });
+                },
+                minLength: 1
+            });
+
+            // Autocompletado para conductores
+            $("#<%= txtConductor.ClientID %>").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "AgregarAbastecimiento.aspx/GetConductores",
+                        data: JSON.stringify({ prefixText: request.term }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function(data) {
+                            response(data.d);
+                        },
+                        error: function(xhr, status, error) {
+                            console.log("Error en autocompletado de conductores:", error);
+                        }
+                    });
+                },
+                minLength: 1
+            });
+            
+            // Autocompletado para rutas
+            $("#<%= txtRuta.ClientID %>").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        url: "AgregarAbastecimiento.aspx/GetRutas",
+                        data: JSON.stringify({ prefixText: request.term }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            response(data.d);
+                        },
+                        error: function (xhr, status, error) {
+                            console.log("Error en autocompletado de rutas:", error);
+                        }
+                    });
+                },
+                minLength: 1
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        console.log("jQuery está disponible: " + (typeof jQuery !== 'undefined'));
+        console.log("jQuery UI está disponible: " + (typeof jQuery.ui !== 'undefined'));
+
+        // Prueba directa de uno de los métodos WebMethod
+        function testWebMethod() {
+            $.ajax({
+                type: "POST",
+                url: "AgregarAbastecimiento.aspx/GetTractoPlacas",
+                data: JSON.stringify({ prefixText: "A" }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log("WebMethod respondió exitosamente con datos:", data.d);
+                    alert("WebMethod funcionó! Datos: " + JSON.stringify(data.d));
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en WebMethod:", error);
+                    alert("Error en WebMethod: " + error);
+                }
+            });
+        }
+
+        // Llamar a la prueba cuando se cargue la página
+        $(document).ready(function () {
+            console.log("Documento listo");
+            setTimeout(testWebMethod, 2000); // Probar después de 2 segundos
+        });
+    </script>
 </asp:Content>
