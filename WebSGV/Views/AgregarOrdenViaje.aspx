@@ -107,6 +107,10 @@
             <div class="tab-pane fade" id="liquidacion" role="tabpanel" aria-labelledby="liquidacion-tab">
                 <h3 class="tab-header">Liquidación</h3>
                 <div id="formLiquidacion">
+
+                    <!-- Campo oculto para gastos adicionales - ESTE ES EL CAMBIO IMPORTANTE -->
+                    <input type="hidden" id="hiddenGastosAdicionales" name="gastosAdicionales" value="[]" />
+
                     <!-- Tabla de ingresos -->
                     <h5>Ingresos</h5>
                     <table class="table table-bordered liquidacion-tabla-ingresos">
@@ -462,6 +466,12 @@
                     // Escuchar cambios en los campos de las tablas de Ingresos y Gastos
                     $(document).on('input change', '#ingresosBody input, #gastosFijosBody input, #gastosAdicionalesBody input', function () {
                         actualizarResumen();
+                        actualizarGastosAdicionales(); // Actualizar el campo oculto al cambiar los datos
+                    });
+
+                    // Escuchar cambios específicamente en los campos de gastos adicionales
+                    $(document).on('change input', ".nombreCategoria, .descripcion, .soles, .dolares", function () {
+                        actualizarGastosAdicionales();
                     });
 
                     // Limpiar campos y calcular los totales iniciales al cargar la página
@@ -490,8 +500,8 @@
                     if ($('#<%= txtOrdenViaje.ClientID %>').val().trim() === "") {
                         errores.push("El campo 'N° Orden Viaje' es obligatorio.");
                         $('#<%= txtOrdenViaje.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtOrdenViaje.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= txtOrdenViaje.ClientID %>').removeClass('is-invalid');
                     }
 
                     // Validar fechas
@@ -505,29 +515,29 @@
                     if (!fechaSalida) {
                         errores.push("La 'Fecha de Salida' es obligatoria.");
                         $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtFechaSalida.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= txtFechaSalida.ClientID %>').removeClass('is-invalid');
                     }
 
                     if (!horaSalida) {
                         errores.push("La 'Hora de Salida' es obligatoria.");
                         $('#<%= txtHoraSalida.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtHoraSalida.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= txtHoraSalida.ClientID %>').removeClass('is-invalid');
                     }
 
                     if (!fechaLlegada) {
                         errores.push("La 'Fecha de Llegada' es obligatoria.");
                         $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtFechaLlegada.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= txtFechaLlegada.ClientID %>').removeClass('is-invalid');
                     }
 
                     if (!horaLlegada) {
                         errores.push("La 'Hora de Llegada' es obligatoria.");
                         $('#<%= txtHoraLlegada.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtHoraLlegada.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= txtHoraLlegada.ClientID %>').removeClass('is-invalid');
                     }
 
                     if (fechaSalida && fechaLlegada) {
@@ -537,12 +547,12 @@
                         if (fechaSalidaDate > fechaLlegadaDate) {
                             errores.push("La 'Fecha de Salida' no puede ser mayor a la 'Fecha de Llegada'.");
                             $('#<%= txtFechaSalida.ClientID %>').addClass('is-invalid');
-                            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
-                        }
+                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+            }
 
-                        if (fechaLlegadaDate > fechaActual) {
-                            errores.push("La 'Fecha de Llegada' no puede ser mayor a la fecha actual (" + fechaActual.toLocaleDateString() + ").");
-                            $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
+            if (fechaLlegadaDate > fechaActual) {
+                errores.push("La 'Fecha de Llegada' no puede ser mayor a la fecha actual (" + fechaActual.toLocaleDateString() + ").");
+                $('#<%= txtFechaLlegada.ClientID %>').addClass('is-invalid');
                         }
                     }
 
@@ -550,29 +560,29 @@
                     if ($('#<%= ddlCliente.ClientID %>').val() === "") {
                         errores.push("Debe seleccionar un 'Cliente'.");
                         $('#<%= ddlCliente.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= ddlCliente.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= ddlCliente.ClientID %>').removeClass('is-invalid');
                     }
 
                     if ($('#<%= ddlPlacaTracto.ClientID %>').val() === "") {
                         errores.push("Debe seleccionar una 'Placa Tracto'.");
                         $('#<%= ddlPlacaTracto.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= ddlPlacaTracto.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= ddlPlacaTracto.ClientID %>').removeClass('is-invalid');
                     }
 
                     if ($('#<%= ddlPlacaCarreta.ClientID %>').val() === "") {
                         errores.push("Debe seleccionar una 'Placa Carreta'.");
                         $('#<%= ddlPlacaCarreta.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= ddlPlacaCarreta.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= ddlPlacaCarreta.ClientID %>').removeClass('is-invalid');
                     }
 
                     if ($('#<%= ddlConductor.ClientID %>').val() === "") {
                         errores.push("Debe seleccionar un 'Conductor'.");
                         $('#<%= ddlConductor.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= ddlConductor.ClientID %>').removeClass('is-invalid');
+        } else {
+            $('#<%= ddlConductor.ClientID %>').removeClass('is-invalid');
                     }
 
                     // Mostrar errores si los hay
@@ -586,15 +596,15 @@
                     return true; // Permitir el postback para validaciones del servidor
                 }
 
-                // Función para agregar una fila en la tabla de gastos
+                // Función para agregar una fila en la tabla de gastos - CORREGIDA
                 function agregarFila() {
                     const nuevaFila = `
             <tr>
                 <td class="numeroFila"></td>
-                <td><input type="text" class="form-control" placeholder="Gasto Adicional"></td>
-                <td><input type="text" class="form-control" placeholder="Descripción"></td>
-                <td><input type="number" class="form-control" placeholder="Soles"></td>
-                <td><input type="number" class="form-control" placeholder="Dólares"></td>
+                <td><input type="text" class="form-control nombreCategoria" placeholder="Gasto Adicional"></td>
+                <td><input type="text" class="form-control descripcion" placeholder="Descripción"></td>
+                <td><input type="number" class="form-control soles" placeholder="Soles" min="0" value="0" step="0.01"></td>
+                <td><input type="number" class="form-control dolares" placeholder="Dólares" min="0" value="0" step="0.01"></td>
                 <td class="text-center">
                     <button type="button" class="btn btn-danger btnEliminarFila">Eliminar</button>
                 </td>
@@ -603,14 +613,16 @@
 
                     $("#gastosAdicionalesBody").append(nuevaFila);
                     recalcularNumeros();
-                    actualizarResumen(); // Actualizar el resumen después de agregar una fila
+                    actualizarResumen();
+                    actualizarGastosAdicionales(); // Actualizar el campo oculto al agregar una fila
                 }
 
-                // Evento para eliminar una fila
+                // Evento para eliminar una fila - CORREGIDO
                 $(document).on("click", ".btnEliminarFila", function () {
                     $(this).closest("tr").remove();
                     recalcularNumeros();
-                    actualizarResumen(); // Actualizar el resumen después de eliminar una fila
+                    actualizarResumen();
+                    actualizarGastosAdicionales(); // Actualizar el campo oculto al eliminar una fila
                 });
 
                 // Función para recalcular los números de las filas
@@ -639,6 +651,8 @@
                         $(this).find("td:eq(3) input").val(""); // Soles
                         $(this).find("td:eq(4) input").val(""); // Dólares
                     });
+
+                    actualizarGastosAdicionales(); // Actualizar el campo oculto después de limpiar
                 }
 
                 // Función para actualizar el resumen de totales
@@ -732,45 +746,45 @@
 
                     // Validar N° Guía Transportista
                     const guiaTransportista = $('#<%= txtGuiaTransportista.ClientID %>').val().trim();
-                    if (guiaTransportista === "") {
-                        errores.push("El campo 'N° Guía Transportista' es obligatorio.");
-                        $('#<%= txtGuiaTransportista.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtGuiaTransportista.ClientID %>').removeClass('is-invalid');
-                    }
+        if (guiaTransportista === "") {
+            errores.push("El campo 'N° Guía Transportista' es obligatorio.");
+            $('#<%= txtGuiaTransportista.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtGuiaTransportista.ClientID %>').removeClass('is-invalid');
+        }
 
-                    // Validar N° Guía Cliente
-                    const guiaCliente = $('#<%= txtGuiaCliente.ClientID %>').val().trim();
-                    if (guiaCliente === "") {
-                        errores.push("El campo 'N° Guía Cliente' es obligatorio.");
-                        $('#<%= txtGuiaCliente.ClientID %>').addClass('is-invalid');
-                    } else {
-                        $('#<%= txtGuiaCliente.ClientID %>').removeClass('is-invalid');
-                    }
+        // Validar N° Guía Cliente
+        const guiaCliente = $('#<%= txtGuiaCliente.ClientID %>').val().trim();
+        if (guiaCliente === "") {
+            errores.push("El campo 'N° Guía Cliente' es obligatorio.");
+            $('#<%= txtGuiaCliente.ClientID %>').addClass('is-invalid');
+        } else {
+            $('#<%= txtGuiaCliente.ClientID %>').removeClass('is-invalid');
+        }
 
-                    // Validar Ruta
-                    const ruta = $('#ddlRuta').val();
-                    if (ruta === "") {
-                        errores.push("Debe seleccionar una 'Ruta'.");
-                        $('#ddlRuta').addClass('is-invalid');
-                    } else {
-                        $('#ddlRuta').removeClass('is-invalid');
-                    }
+        // Validar Ruta
+        const ruta = $('#ddlRuta').val();
+        if (ruta === "") {
+            errores.push("Debe seleccionar una 'Ruta'.");
+            $('#ddlRuta').addClass('is-invalid');
+        } else {
+            $('#ddlRuta').removeClass('is-invalid');
+        }
 
-                    // Validar Planta de Descarga y N° Manifiesto si la ruta es "Sullana-Guayaquil-Sullana"
-                    if (ruta === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
-                        const plantaDescarga = $('#<%= ddlPlantaDescarga.ClientID %>').val();
-                        if (plantaDescarga === "") {
-                            errores.push("Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.");
-                            $('#<%= ddlPlantaDescarga.ClientID %>').addClass('is-invalid');
+        // Validar Planta de Descarga y N° Manifiesto si la ruta es "Sullana-Guayaquil-Sullana"
+        if (ruta === "2") { // idRuta = 2 para Sullana-Guayaquil-Sullana
+            const plantaDescarga = $('#<%= ddlPlantaDescarga.ClientID %>').val();
+            if (plantaDescarga === "") {
+                errores.push("Debe seleccionar una 'Planta de Descarga' para la ruta Sullana-Guayaquil-Sullana.");
+                $('#<%= ddlPlantaDescarga.ClientID %>').addClass('is-invalid');
             } else {
                 $('#<%= ddlPlantaDescarga.ClientID %>').removeClass('is-invalid');
-                        }
+            }
 
-                        const manifiesto = $('#<%= txtManifiesto.ClientID %>').val().trim();
-                        if (manifiesto === "") {
-                            errores.push("El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.");
-                            $('#<%= txtManifiesto.ClientID %>').addClass('is-invalid');
+            const manifiesto = $('#<%= txtManifiesto.ClientID %>').val().trim();
+            if (manifiesto === "") {
+                errores.push("El campo 'N° Manifiesto' es obligatorio para la ruta Sullana-Guayaquil-Sullana.");
+                $('#<%= txtManifiesto.ClientID %>').addClass('is-invalid');
             } else {
                 $('#<%= txtManifiesto.ClientID %>').removeClass('is-invalid');
                         }
@@ -802,6 +816,24 @@
                         errores.push('Por favor, seleccione un producto y una cantidad válida en todas las filas de "Productos asociados".');
                     }
 
+                    // Validar gastos adicionales
+                    let gastosValidos = true;
+                    $("#gastosAdicionalesBody tr").each(function () {
+                        const nombreCategoria = $(this).find(".nombreCategoria").val().trim();
+                        const soles = parseFloat($(this).find(".soles").val()) || 0;
+                        const dolares = parseFloat($(this).find(".dolares").val()) || 0;
+
+                        if (nombreCategoria && (soles < 0 || dolares < 0)) {
+                            errores.push(`Los valores de 'Soles' y 'Dólares' para el gasto "${nombreCategoria}" no pueden ser negativos.`);
+                            $(this).find(".soles").addClass('is-invalid');
+                            $(this).find(".dolares").addClass('is-invalid');
+                            gastosValidos = false;
+                        } else {
+                            $(this).find(".soles").removeClass('is-invalid');
+                            $(this).find(".dolares").removeClass('is-invalid');
+                        }
+                    });
+
                     // Mostrar errores si los hay
                     if (errores.length > 0) {
                         alert(errores.join("\n"));
@@ -814,6 +846,9 @@
                         name: 'productosData',
                         value: JSON.stringify(productosData)
                     }).appendTo('#formGuias');
+
+                    // Actualizar los gastos adicionales antes de enviar el formulario
+                    actualizarGastosAdicionales();
 
                     // Si las validaciones del cliente pasan, permitir el postback para validaciones del servidor
                     return true;
@@ -927,6 +962,37 @@
                         return false;
                     }
                     return true;
+                }
+
+                // FUNCIÓN CORREGIDA: Actualizar el campo oculto con los datos de gastos adicionales
+                function actualizarGastosAdicionales() {
+                    // Array para almacenar los datos de gastos adicionales
+                    let gastosAdicionales = [];
+
+                    // Recorrer cada fila en la tabla de gastos adicionales
+                    $("#gastosAdicionalesBody tr").each(function () {
+                        // Obtener los valores de cada campo
+                        let nombreCategoria = $(this).find(".nombreCategoria").val();
+                        let descripcion = $(this).find(".descripcion").val();
+                        let soles = parseFloat($(this).find(".soles").val()) || 0;
+                        let dolares = parseFloat($(this).find(".dolares").val()) || 0;
+
+                        // Añadir al array solo si hay un nombre de categoría
+                        if (nombreCategoria) {
+                            gastosAdicionales.push({
+                                nombreCategoria: nombreCategoria,
+                                descripcion: descripcion,
+                                soles: soles,
+                                dolares: dolares
+                            });
+                        }
+                    });
+
+                    // Convertir el array a JSON y guardarlo en el campo oculto
+                    $('input[name="gastosAdicionales"]').val(JSON.stringify(gastosAdicionales));
+
+                    // Mostrar en consola para depuración
+                    console.log("Gastos adicionales actualizados:", JSON.stringify(gastosAdicionales));
                 }
             </script>
 </asp:Content>

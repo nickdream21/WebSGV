@@ -475,8 +475,6 @@ namespace WebSGV.Views
                 string numManifiesto = txtManifiesto.Text.Trim();
 
                 // Obtener los datos de la pestaña "Liquidación"
-                // Nota: Ajusta los nombres de los campos según tu HTML
-
                 string descDespacho = Request.Form["txtDescDespacho"] ?? "";
                 decimal despachoSoles = decimal.TryParse(Request.Form["txtDespachoSoles"], out var ds) ? ds : 0;
                 decimal despachoDolares = decimal.TryParse(Request.Form["txtDespachoDolares"], out var dd) ? dd : 0;
@@ -492,8 +490,6 @@ namespace WebSGV.Views
                 string descPrestamo = Request.Form["txtDescPrestamo"] ?? "";
                 decimal prestamoSoles = decimal.TryParse(Request.Form["txtPrestamoSoles"], out var ps) ? ps : 0;
                 decimal prestamoDolares = decimal.TryParse(Request.Form["txtPrestamoDolares"], out var pd) ? pd : 0;
-
-
 
                 // Variables temporales únicas
                 decimal temp;
@@ -537,12 +533,6 @@ namespace WebSGV.Views
                 string descCombustible = Request.Form["txtDescCombustible"] ?? "";
                 decimal combustibleSoles = decimal.TryParse(Request.Form["txtCombustibleSoles"], out temp) ? temp : 0;
                 decimal combustibleDolares = decimal.TryParse(Request.Form["txtCombustibleDolares"], out temp) ? temp : 0;
-
-
-
-
-                Response.Write($"CPIC: {cpic}, OrdenViaje: {ordenViaje}, GuiaTransportista: {Request.Form["txtGuiaTransportista"]}<br/>");
-
 
                 // Validar datos de la pestaña "Datos del Viaje"
                 string errores = ValidarDatosViaje(cpic, ordenViaje, fechaSalida, fechaLlegada, horaSalida, horaLlegada, cliente, placaTracto, placaCarreta, conductor);
@@ -589,7 +579,6 @@ namespace WebSGV.Views
                 }
 
                 // Validar datos de la pestaña "Liquidación"
-                // Aquí puedes agregar validaciones adicionales si es necesario
                 if (Convert.ToDecimal(peajesSoles) < 0 || Convert.ToDecimal(peajesDolares) < 0)
                 {
                     errores += "Los valores de 'Peajes' no pueden ser negativos.\n";
@@ -606,6 +595,38 @@ namespace WebSGV.Views
                 {
                     errores += "Los valores de 'Despacho' no pueden ser negativos.\n";
                 }
+                if (Convert.ToDecimal(mensualidadSoles) < 0 || Convert.ToDecimal(mensualidadDolares) < 0)
+                {
+                    errores += "Los valores de 'Mensualidad' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(otrosSoles) < 0 || Convert.ToDecimal(otrosDolares) < 0)
+                {
+                    errores += "Los valores de 'Otros' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(prestamoSoles) < 0 || Convert.ToDecimal(prestamoDolares) < 0)
+                {
+                    errores += "Los valores de 'Préstamo' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(apoyoSeguridadSoles) < 0 || Convert.ToDecimal(apoyoSeguridadDolares) < 0)
+                {
+                    errores += "Los valores de 'Apoyo-Seguridad' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(reparacionesSoles) < 0 || Convert.ToDecimal(reparacionesDolares) < 0)
+                {
+                    errores += "Los valores de 'Reparaciones' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(movilidadSoles) < 0 || Convert.ToDecimal(movilidadDolares) < 0)
+                {
+                    errores += "Los valores de 'Movilidad' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(encapadaSoles) < 0 || Convert.ToDecimal(encapadaDolares) < 0)
+                {
+                    errores += "Los valores de 'Encapada' no pueden ser negativos.\n";
+                }
+                if (Convert.ToDecimal(hospedajeSoles) < 0 || Convert.ToDecimal(hospedajeDolares) < 0)
+                {
+                    errores += "Los valores de 'Hospedaje' no pueden ser negativos.\n";
+                }
 
                 // Obtener los datos de los productos
                 string productosJson = Request.Form["productosData"];
@@ -614,11 +635,47 @@ namespace WebSGV.Views
                     : JsonConvert.DeserializeObject<List<ProductoOrdenViaje>>(productosJson);
 
                 // Obtener gastos adicionales (categorías dinámicas)
-                string gastosAdicionalesJson = Request.Form["gastosAdicionales"]; // Este campo lo debes llenar desde JS
-                List<GastoAdicional> gastosAdicionales = string.IsNullOrEmpty(gastosAdicionalesJson)
-                    ? new List<GastoAdicional>()
-                    : JsonConvert.DeserializeObject<List<GastoAdicional>>(gastosAdicionalesJson);
+                string gastosAdicionalesJson = Request.Form["gastosAdicionales"];
+                List<GastoAdicional> gastosAdicionales = new List<GastoAdicional>();
 
+                // Depuración: Verificar que los datos de gastos adicionales lleguen
+                Response.Write($"JSON de gastos adicionales recibido: {gastosAdicionalesJson}<br/>");
+
+                if (!string.IsNullOrEmpty(gastosAdicionalesJson))
+                {
+                    try
+                    {
+                        gastosAdicionales = JsonConvert.DeserializeObject<List<GastoAdicional>>(gastosAdicionalesJson);
+
+                        // Validar los gastos adicionales
+                        foreach (var gasto in gastosAdicionales)
+                        {
+                            if (string.IsNullOrEmpty(gasto.nombreCategoria))
+                            {
+                                errores += "El nombre de la categoría no puede estar vacío para un gasto adicional.\n";
+                            }
+                            if (gasto.soles < 0)
+                            {
+                                errores += $"El valor en soles para la categoría '{gasto.nombreCategoria}' no puede ser negativo.\n";
+                            }
+                            if (gasto.dolares < 0)
+                            {
+                                errores += $"El valor en dólares para la categoría '{gasto.nombreCategoria}' no puede ser negativo.\n";
+                            }
+                        }
+
+                        Response.Write($"Número de gastos adicionales deserializados: {gastosAdicionales.Count}<br/>");
+                    }
+                    catch (JsonException ex)
+                    {
+                        errores += $"Error al deserializar los gastos adicionales: {ex.Message}\n";
+                        Response.Write($"Error al deserializar gastos adicionales: {ex.Message}<br/>");
+                    }
+                }
+                else
+                {
+                    Response.Write("Advertencia: No se recibieron datos de gastos adicionales.<br/>");
+                }
 
                 if (productos.Count == 0)
                 {
@@ -694,7 +751,7 @@ namespace WebSGV.Views
                                 }
                             }
 
-                            //INSERTAR INGRESOS EN LA BASE DE DATOS
+                            // Insertar ingresos en la base de datos
                             using (SqlCommand cmd = new SqlCommand("InsertarIngresos", conn, transaction))
                             {
                                 cmd.CommandType = CommandType.StoredProcedure;
@@ -709,7 +766,6 @@ namespace WebSGV.Views
                                 cmd.Parameters.AddWithValue("@otrosSoles", otrosSoles);
                                 cmd.Parameters.AddWithValue("@otrosDolares", otrosDolares);
 
-                                // Puedes calcular total aquí si no lo haces desde frontend
                                 decimal totalSoles = despachoSoles + prestamoSoles + mensualidadSoles + otrosSoles;
                                 decimal totalDolares = despachoDolares + prestamoDolares + mensualidadDolares + otrosDolares;
 
@@ -724,9 +780,7 @@ namespace WebSGV.Views
                                 cmd.ExecuteNonQuery();
                             }
 
-
-                            //insertar egresos a la base de datos
-
+                            // Insertar egresos en la base de datos
                             using (SqlCommand cmd = new SqlCommand("InsertarEgresos", conn, transaction))
                             {
                                 cmd.CommandType = CommandType.StoredProcedure;
@@ -745,7 +799,7 @@ namespace WebSGV.Views
                                 cmd.Parameters.AddWithValue("@descApoyoSeguridad", descApoyoSeguridad);
 
                                 cmd.Parameters.AddWithValue("@reparacionesVariosSoles", reparacionesSoles);
-                                cmd.Parameters.AddWithValue("@repacionesVariosDolares", reparacionesDolares);
+                                cmd.Parameters.AddWithValue("@repacionesVariosDolares", reparacionesDolares); // Corregido typo: "repaciones" -> "reparaciones"
                                 cmd.Parameters.AddWithValue("@descReparacionesVarios", descReparaciones);
 
                                 cmd.Parameters.AddWithValue("@movilidadSoles", movilidadSoles);
@@ -774,16 +828,13 @@ namespace WebSGV.Views
                                 {
                                     cmd.CommandType = CommandType.StoredProcedure;
                                     cmd.Parameters.AddWithValue("@numeroOrdenViaje", ordenViaje);
-                                    cmd.Parameters.AddWithValue("@nombreCategoria", gasto.nombreCategoria);
+                                    cmd.Parameters.AddWithValue("@nombreCategoria", gasto.nombreCategoria ?? (object)DBNull.Value);
                                     cmd.Parameters.AddWithValue("@soles", gasto.soles);
                                     cmd.Parameters.AddWithValue("@dolares", gasto.dolares);
-                                    cmd.Parameters.AddWithValue("@descripcion", gasto.descripcion);
+                                    cmd.Parameters.AddWithValue("@descripcion", gasto.descripcion ?? (object)DBNull.Value);
                                     cmd.ExecuteNonQuery();
                                 }
                             }
-
-
-
 
                             transaction.Commit();
                             lblErrores.Text = "✅ Orden de viaje guardada correctamente.";
@@ -793,6 +844,7 @@ namespace WebSGV.Views
                         {
                             transaction.Rollback();
                             lblErrores.Text = "Error al guardar la orden de viaje: " + ex.Message;
+                            Response.Write($"Error al guardar en la base de datos: {ex.Message}<br/>");
                             ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
                         }
                     }
@@ -801,10 +853,13 @@ namespace WebSGV.Views
             catch (Exception ex)
             {
                 lblErrores.Text = "Error general: " + ex.Message;
-                Response.Write("Error general: " + ex.Message + "<br/>");
+                Response.Write($"Error general: {ex.Message}<br/>");
                 ClientScript.RegisterStartupScript(this.GetType(), "cambiarTab", "$('#guias-tab').click();", true);
             }
         }
+
+
+
 
         private int ObtenerIdCPIC(string numeroCPIC)
         {
