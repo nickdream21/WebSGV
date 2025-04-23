@@ -209,6 +209,7 @@
     <Content Include="Views\AgregarAbastecimiento.aspx" />
     <Content Include="Views\AgregarCPIC.aspx" />
     <Content Include="Views\AgregarFactura.aspx" />
+    <Content Include="Views\AgregarIndicadores.aspx" />
     <Content Include="Views\AgregarOrdenViaje.aspx" />
     <Content Include="Views\BuscarAbastecimiento.aspx" />
     <Content Include="Views\BuscarCPIC.aspx" />
@@ -295,6 +296,13 @@
     </Compile>
     <Compile Include="Views\AgregarFactura.aspx.designer.cs">
       <DependentUpon>AgregarFactura.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AgregarIndicadores.aspx.cs">
+      <DependentUpon>AgregarIndicadores.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\AgregarIndicadores.aspx.designer.cs">
+      <DependentUpon>AgregarIndicadores.aspx</DependentUpon>
     </Compile>
     <Compile Include="Views\AgregarOrdenViaje.aspx.cs">
       <DependentUpon>AgregarOrdenViaje.aspx</DependentUpon>

@@ -100,6 +100,19 @@
                             <a class="dropdown-item" href="#">Almacén</a>
                         </div>
                     </li>
+
+
+                    <!-- INDICADORES - NUEVO ELEMENTO -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownIndicadores" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Indicadores
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownIndicadores">
+                            <a class="dropdown-item" href="AgregarIndicadores.aspx">Registrar Indicadores</a>
+                            <a class="dropdown-item" href="BuscarIndicadores.aspx">Buscar Indicadores</a>
+                        </div>
+                    </li>
+
+
                 </ul>
             </div>
         </nav>
