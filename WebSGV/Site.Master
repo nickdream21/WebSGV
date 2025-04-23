@@ -41,7 +41,7 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCPIC" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">CPIC
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownCPIC">
-                            <a class="dropdown-item" href="#">Buscar CPIC</a>
+                            <a class="dropdown-item" href="BuscarCPIC.aspx">Buscar CPIC</a>
                             <a class="dropdown-item" href="AgregarCPIC.aspx">AgregarCPIC</a>
                         </div>
                     </li>
@@ -51,7 +51,7 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownFactura" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Factura
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownFactura">
-                            <a class="dropdown-item" href="#">Buscar Factura</a>
+                            <a class="dropdown-item" href="BuscarFactura.aspx">Buscar Factura</a>
                             <a class="dropdown-item" href="AgregarFactura.aspx">Agregar Factura</a>
                         </div>
                     </li>
@@ -72,7 +72,7 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownAbastecimiento">
                             <a class="dropdown-item" href="AgregarAbastecimiento.aspx">Agregar</a>
-                            <a class="dropdown-item" href="#">Buscar</a>
+                            <a class="dropdown-item" href="BuscarAbastecimiento.aspx">Buscar</a>
                         </div>
                     </li>
 

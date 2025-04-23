@@ -25,6 +25,15 @@ namespace WebSGV.Views
                 // Validar y formatear el número de factura
                 string numeroFactura = ValidarYFormatearNumeroFactura(txtNumFactura.Text);
 
+                // Validar el número de pedido
+                string numeroPedido = txtNumPedido.Text.Trim();
+                if (!ValidarNumeroPedido(numeroPedido))
+                {
+                    lblMensaje.Text = "El número de pedido debe tener exactamente 10 dígitos numéricos.";
+                    lblMensaje.CssClass = "text-danger";
+                    return;
+                }
+
                 // Validar el importe total
                 if (!decimal.TryParse(txtImporteTotal.Text, out decimal valorTotal) || valorTotal <= 0)
                 {
@@ -61,12 +70,16 @@ namespace WebSGV.Views
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        // Pasar los parámetros al procedimiento almacenado
+                        // Pasar los parámetros al procedimiento almacenado (incluyendo nuevo número de pedido)
                         command.Parameters.AddWithValue("@numeroFactura", numeroFactura);
+                        command.Parameters.AddWithValue("@numeroPedido", numeroPedido);
                         command.Parameters.AddWithValue("@valorTotal", valorTotal);
                         command.Parameters.AddWithValue("@fechaEmision", fechaEmision);
 
                         command.ExecuteNonQuery();
+
+                        // Limpiar campos después de guardar correctamente
+                        LimpiarFormulario();
 
                         // Mostrar mensaje de éxito
                         lblMensaje.Text = "Factura registrada correctamente.";
@@ -91,8 +104,25 @@ namespace WebSGV.Views
             }
         }
 
+        /// <summary>
+        /// Limpia los campos del formulario después de guardar.
+        /// </summary>
+        private void LimpiarFormulario()
+        {
+            txtNumFactura.Text = string.Empty;
+            txtNumPedido.Text = string.Empty;
+            txtImporteTotal.Text = string.Empty;
+            txtFechaEmision.Text = string.Empty;
+        }
 
-
+        /// <summary>
+        /// Valida que el número de pedido tenga exactamente 10 dígitos.
+        /// </summary>
+        private bool ValidarNumeroPedido(string numeroPedido)
+        {
+            string pattern = @"^\d{10}$"; // Exactamente 10 dígitos
+            return Regex.IsMatch(numeroPedido, pattern);
+        }
 
         /// <summary>
         /// Valida y ajusta el formato del número de factura.
@@ -122,5 +152,4 @@ namespace WebSGV.Views
             throw new FormatException("El número de factura debe tener el formato 'F222 - 00004267'.");
         }
     }
-
 }

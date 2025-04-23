@@ -1,56 +1,72 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Web;
+using System.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Drawing;
+using System.IO;
 using System.Web.UI.DataVisualization.Charting;
-using System.Configuration;
 
 namespace WebSGV.Views
 {
     public partial class Reportes : System.Web.UI.Page
     {
+        private string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                // Inicializar controles y cargar datos iniciales
+                // Establecer fechas predeterminadas (último mes)
+                txtFechaDesde.Text = DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd");
+                txtFechaHasta.Text = DateTime.Now.ToString("yyyy-MM-dd");
+
+                // Cargar datos iniciales en los dropdown
                 CargarConductores();
                 CargarVehiculos();
-                CargarRutas();
-                CargarTiposReporteDetalle("conductor"); // Por defecto, cargamos los reportes de conductor
+                CargarPedidos();
+                CargarProductos();
+                CargarLugaresAbastecimiento();
+                CargarTiposReporteDetalle("conductor"); // Por defecto carga los tipos de reporte para conductor
             }
         }
 
-        #region Métodos de carga de datos iniciales
+        #region Carga de Datos Iniciales
 
         private void CargarConductores()
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString))
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT idConductor, CONCAT(nombres, ' ', apellidos) AS NombreCompleto FROM Conductor ORDER BY apellidos", conn))
-                    {
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
+                    string query = @"SELECT idConductor, 
+                                    CONCAT(nombre, ' ', apPaterno, ' ', apMaterno) as NombreCompleto 
+                                    FROM Conductor 
+                                    ORDER BY apPaterno, apMaterno, nombre";
 
-                        ddlConductor.DataSource = dt;
-                        ddlConductor.DataBind();
-                        ddlConductor.Items.Insert(0, new ListItem("Todos los conductores", ""));
-                    }
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    ddlConductor.DataSource = dt;
+                    ddlConductor.DataBind();
+
+                    // Agregar el item por defecto
+                    ddlConductor.Items.Insert(0, new ListItem("Todos los conductores", ""));
                 }
             }
             catch (Exception ex)
             {
-                // Manejar el error
-                Response.Write("<script>alert('Error al cargar conductores: " + ex.Message.Replace("'", "\\'") + "');</script>");
+                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
+                if (ddlConductor.Items.Count == 0)
+                    ddlConductor.Items.Add(new ListItem("Todos los conductores", ""));
+
+                // En un entorno de producción, se debería registrar este error
+                System.Diagnostics.Debug.WriteLine("Error al cargar conductores: " + ex.Message);
             }
         }
 
@@ -58,51 +74,135 @@ namespace WebSGV.Views
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString))
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT idTracto, placaTracto FROM Tracto ORDER BY placaTracto", conn))
-                    {
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
+                    string query = @"SELECT idTracto, placaTracto, marca, modelo 
+                                  FROM Tracto 
+                                  ORDER BY placaTracto";
 
-                        ddlVehiculo.DataSource = dt;
-                        ddlVehiculo.DataBind();
-                        ddlVehiculo.Items.Insert(0, new ListItem("Todos los vehículos", ""));
-                    }
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    ddlVehiculo.DataSource = dt;
+                    ddlVehiculo.DataBind();
+
+                    // Agregar el item por defecto
+                    ddlVehiculo.Items.Insert(0, new ListItem("Todos los vehículos", ""));
                 }
             }
             catch (Exception ex)
             {
-                // Manejar el error
-                Response.Write("<script>alert('Error al cargar vehículos: " + ex.Message.Replace("'", "\\'") + "');</script>");
+                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
+                if (ddlVehiculo.Items.Count == 0)
+                    ddlVehiculo.Items.Add(new ListItem("Todos los vehículos", ""));
+
+                System.Diagnostics.Debug.WriteLine("Error al cargar vehículos: " + ex.Message);
             }
         }
 
-        private void CargarRutas()
+        private void CargarPedidos()
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString))
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("SELECT idRuta, nombre FROM Ruta ORDER BY nombre", conn))
-                    {
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
+                    string query = @"SELECT idCPIC, numeroCPIC 
+                                  FROM CPIC 
+                                  ORDER BY fechaEmision DESC";
 
-                        ddlRuta.DataSource = dt;
-                        ddlRuta.DataBind();
-                        ddlRuta.Items.Insert(0, new ListItem("Todas las rutas", ""));
-                    }
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    ddlCPIC.DataSource = dt;
+                    ddlCPIC.DataBind();
+
+                    // Agregar el item por defecto
+                    ddlCPIC.Items.Insert(0, new ListItem("Todos los pedidos", ""));
                 }
             }
             catch (Exception ex)
             {
-                // Manejar el error
-                Response.Write("<script>alert('Error al cargar rutas: " + ex.Message.Replace("'", "\\'") + "');</script>");
+                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
+                if (ddlCPIC.Items.Count == 0)
+                    ddlCPIC.Items.Add(new ListItem("Todos los pedidos", ""));
+
+                System.Diagnostics.Debug.WriteLine("Error al cargar pedidos: " + ex.Message);
+            }
+        }
+
+        private void CargarProductos()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"SELECT idProducto, nombre 
+                                  FROM Producto 
+                                  ORDER BY nombre";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    ddlProducto.DataSource = dt;
+                    ddlProducto.DataBind();
+
+                    // Agregar el item por defecto
+                    ddlProducto.Items.Insert(0, new ListItem("Todos los productos", ""));
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
+                if (ddlProducto.Items.Count == 0)
+                    ddlProducto.Items.Add(new ListItem("Todos los productos", ""));
+
+                System.Diagnostics.Debug.WriteLine("Error al cargar productos: " + ex.Message);
+            }
+        }
+
+        private void CargarLugaresAbastecimiento()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"SELECT idLugarAbastecimiento, nombreAbastecimiento 
+                                  FROM LugarAbastecimiento 
+                                  ORDER BY nombreAbastecimiento";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    conn.Open();
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    ddlLugarAbastecimiento.DataSource = dt;
+                    ddlLugarAbastecimiento.DataBind();
+
+                    // Agregar el item por defecto
+                    ddlLugarAbastecimiento.Items.Insert(0, new ListItem("Todos los lugares", ""));
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
+                if (ddlLugarAbastecimiento.Items.Count == 0)
+                    ddlLugarAbastecimiento.Items.Add(new ListItem("Todos los lugares", ""));
+
+                System.Diagnostics.Debug.WriteLine("Error al cargar lugares de abastecimiento: " + ex.Message);
             }
         }
 
@@ -113,40 +213,68 @@ namespace WebSGV.Views
             switch (tipoReporte)
             {
                 case "conductor":
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rendimiento por conductor", "rendimiento_conductor"));
                     ddlTipoReporteDetalle.Items.Add(new ListItem("Viajes realizados", "viajes_conductor"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Ingresos generados", "ingresos_conductor"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Productos transportados", "productos_conductor"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Ingresos y gastos", "financiero_conductor"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rendimiento de combustible", "combustible_conductor"));
                     break;
+
                 case "vehiculo":
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Consumo de combustible", "consumo_vehiculo"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Mantenimientos realizados", "mantenimiento_vehiculo"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Kilometraje por vehículo", "kilometraje_vehiculo"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Historial de viajes", "viajes_vehiculo"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Consumo de combustible", "combustible_vehiculo"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rendimiento por ruta", "rendimiento_vehiculo"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Gastos de mantenimiento", "mantenimiento_vehiculo"));
                     break;
-                case "ruta":
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rentabilidad por ruta", "rentabilidad_ruta"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Tiempo promedio por ruta", "tiempo_ruta"));
+
+                case "pedido":
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Detalle de pedido", "detalle_pedido"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Vehículos asignados", "vehiculos_pedido"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Conductores asignados", "conductores_pedido"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Balance financiero", "financiero_pedido"));
                     break;
+
                 case "financiero":
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Ingresos vs Gastos", "ingresos_gastos"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rentabilidad mensual", "rentabilidad_mensual"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Balance general", "balance_financiero"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Ingresos detallados", "ingresos_detalle"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Egresos detallados", "egresos_detalle"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Análisis comparativo", "comparativo_financiero"));
                     break;
+
                 case "combustible":
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Consumo por vehículo", "consumo_por_vehiculo"));
-                    ddlTipoReporteDetalle.Items.Add(new ListItem("Gasto en combustible", "gasto_combustible"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Consumo general", "consumo_combustible"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rendimiento por vehículo", "rendimiento_combustible"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Rendimiento por ruta", "ruta_combustible"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Análisis de sobrantes", "sobrante_combustible"));
+                    break;
+
+                case "producto":
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Productos más transportados", "ranking_producto"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Productos por cliente", "cliente_producto"));
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Productos por destino", "destino_producto"));
+                    break;
+
+                case "personalizado":
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Reporte dinámico", "dinamico_personalizado"));
+                    pnlFiltrosPersonalizados.Visible = true;
+                    break;
+
+                default:
+                    ddlTipoReporteDetalle.Items.Add(new ListItem("Listado general", "listado_general"));
                     break;
             }
         }
 
         #endregion
 
-        #region Eventos de UI
+        #region Eventos de Navegación y UI
 
         protected void lnkTipoReporte_Click(object sender, EventArgs e)
         {
+            // Obtener el tipo de reporte seleccionado desde el CommandArgument
             LinkButton lnkButton = (LinkButton)sender;
             string tipoReporte = lnkButton.CommandArgument;
 
-            // Actualizar título
+            // Actualizar título del reporte
             switch (tipoReporte)
             {
                 case "conductor":
@@ -155,8 +283,8 @@ namespace WebSGV.Views
                 case "vehiculo":
                     litTituloReporte.Text = "Reportes por Vehículo";
                     break;
-                case "ruta":
-                    litTituloReporte.Text = "Reportes por Ruta";
+                case "pedido":
+                    litTituloReporte.Text = "Reportes por Pedido";
                     break;
                 case "financiero":
                     litTituloReporte.Text = "Reportes Financieros";
@@ -164,764 +292,827 @@ namespace WebSGV.Views
                 case "combustible":
                     litTituloReporte.Text = "Reportes de Combustible";
                     break;
+                case "producto":
+                    litTituloReporte.Text = "Reportes por Producto";
+                    break;
+                case "personalizado":
+                    litTituloReporte.Text = "Reporte Personalizado";
+                    break;
             }
 
-            // Actualizar estado de botones
+            // Cambiar clase active en los botones de navegación
             lnkConductor.CssClass = lnkConductor.CssClass.Replace(" active", "");
             lnkVehiculo.CssClass = lnkVehiculo.CssClass.Replace(" active", "");
-            lnkRuta.CssClass = lnkRuta.CssClass.Replace(" active", "");
+            lnkPedido.CssClass = lnkPedido.CssClass.Replace(" active", "");
             lnkFinanciero.CssClass = lnkFinanciero.CssClass.Replace(" active", "");
             lnkCombustible.CssClass = lnkCombustible.CssClass.Replace(" active", "");
+            lnkProducto.CssClass = lnkProducto.CssClass.Replace(" active", "");
+            lnkPersonalizado.CssClass = lnkPersonalizado.CssClass.Replace(" active", "");
 
             lnkButton.CssClass += " active";
 
-            // Mostrar/ocultar paneles de filtros
-            pnlFiltroConductor.Visible = tipoReporte == "conductor";
-            pnlFiltroVehiculo.Visible = tipoReporte == "vehiculo";
-            pnlFiltroRuta.Visible = tipoReporte == "ruta";
+            // Mostrar/Ocultar los filtros específicos según el tipo de reporte
+            pnlFiltroConductor.Visible = (tipoReporte == "conductor");
+            pnlFiltroVehiculo.Visible = (tipoReporte == "vehiculo");
+            pnlFiltroPedido.Visible = (tipoReporte == "pedido");
+            pnlFiltroFinanciero.Visible = (tipoReporte == "financiero");
+            pnlFiltroCombustible.Visible = (tipoReporte == "combustible");
+            pnlFiltroProducto.Visible = (tipoReporte == "producto");
+            pnlFiltrosPersonalizados.Visible = (tipoReporte == "personalizado");
 
-            // Mostrar/ocultar paneles de filtros avanzados
-            pnlFiltrosAvanzadosConductor.Visible = tipoReporte == "conductor";
-            pnlFiltrosAvanzadosVehiculo.Visible = tipoReporte == "vehiculo";
+            // Mostrar/Ocultar los paneles de filtros avanzados correspondientes
+            pnlFiltrosAvanzadosConductor.Visible = (tipoReporte == "conductor");
+            pnlFiltrosAvanzadosVehiculo.Visible = (tipoReporte == "vehiculo");
+            pnlFiltrosAvanzadosPedido.Visible = (tipoReporte == "pedido");
+            pnlFiltrosAvanzadosFinanciero.Visible = (tipoReporte == "financiero");
+            pnlFiltrosAvanzadosCombustible.Visible = (tipoReporte == "combustible");
+            pnlFiltrosAvanzadosProducto.Visible = (tipoReporte == "producto");
+            pnlFiltrosAvanzadosPersonalizado.Visible = (tipoReporte == "personalizado");
 
-            // Cargar tipos de reporte detalle
+            // Cargar los tipos de reportes detallados
             CargarTiposReporteDetalle(tipoReporte);
+
+            // Resetear los resultados
+            pnlResultados.Visible = false;
         }
 
         protected void ddlTipoReporteDetalle_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Esta función se dispara cuando se cambia el tipo de reporte detalle
-            // Por ahora simplemente ocultamos el panel de resultados para que 
-            // el usuario genere un nuevo reporte
+            // Actualizar UI según el tipo de reporte detallado seleccionado
+            // Esta función se amplía según las necesidades específicas de cada tipo de reporte
+        }
+
+        protected void btnLimpiarFiltros_Click(object sender, EventArgs e)
+        {
+            // Limpiar todos los filtros
+            txtFechaDesde.Text = DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd");
+            txtFechaHasta.Text = DateTime.Now.ToString("yyyy-MM-dd");
+
+            // Restablecer dropdowns a su valor inicial (primer item)
+            if (ddlConductor.Items.Count > 0) ddlConductor.SelectedIndex = 0;
+            if (ddlVehiculo.Items.Count > 0) ddlVehiculo.SelectedIndex = 0;
+            if (ddlCPIC.Items.Count > 0) ddlCPIC.SelectedIndex = 0;
+            if (ddlTipoTransaccion.Items.Count > 0) ddlTipoTransaccion.SelectedIndex = 0;
+            if (ddlLugarAbastecimiento.Items.Count > 0) ddlLugarAbastecimiento.SelectedIndex = 0;
+            if (ddlProducto.Items.Count > 0) ddlProducto.SelectedIndex = 0;
+
+            // Limpiar filtros avanzados
+            txtDNIConductor.Text = "";
+            txtNombreConductor.Text = "";
+            txtPlacaVehiculo.Text = "";
+
+            if (ddlMarcaVehiculo.Items.Count > 0) ddlMarcaVehiculo.SelectedIndex = 0;
+            if (ddlModeloVehiculo.Items.Count > 0) ddlModeloVehiculo.SelectedIndex = 0;
+
+            txtNumeroFactura.Text = "";
+            txtValorMinimo.Text = "";
+            txtValorMaximo.Text = "";
+
+            if (ddlMoneda.Items.Count > 0) ddlMoneda.SelectedIndex = 0;
+
+            txtMontoMinimo.Text = "";
+            txtMontoMaximo.Text = "";
+            txtProductoCombustible.Text = "";
+            txtNumeroAbastecimiento.Text = "";
+            txtGalonesMinimos.Text = "";
+            txtRendimientoMinimo.Text = "";
+
+            // Limpiar filtros personalizados
+            if (pnlFiltrosPersonalizados.Visible)
+            {
+                chkConductorInfo.Checked = false;
+                chkVehiculoInfo.Checked = false;
+                chkRutaInfo.Checked = false;
+                chkProductoInfo.Checked = false;
+                chkIngresoInfo.Checked = false;
+                chkEgresoInfo.Checked = false;
+                chkCombustibleInfo.Checked = false;
+                chkClienteInfo.Checked = false;
+                chkFacturaInfo.Checked = false;
+
+                if (ddlAgrupamiento.Items.Count > 0) ddlAgrupamiento.SelectedIndex = 0;
+                if (ddlOrdenamiento.Items.Count > 0) ddlOrdenamiento.SelectedIndex = 0;
+            }
+
+            // Ocultar resultados
             pnlResultados.Visible = false;
         }
 
-        protected void btnGenerarReporte_Click(object sender, EventArgs e)
+        protected void btnAplicarFiltrosAvanzados_Click(object sender, EventArgs e)
         {
-            // Obtener tipo de reporte seleccionado
-            string tipoReporte = "";
-            if (lnkConductor.CssClass.Contains("active")) tipoReporte = "conductor";
-            else if (lnkVehiculo.CssClass.Contains("active")) tipoReporte = "vehiculo";
-            else if (lnkRuta.CssClass.Contains("active")) tipoReporte = "ruta";
-            else if (lnkFinanciero.CssClass.Contains("active")) tipoReporte = "financiero";
-            else if (lnkCombustible.CssClass.Contains("active")) tipoReporte = "combustible";
-
-            string tipoReporteDetalle = ddlTipoReporteDetalle.SelectedValue;
-
-            // Generar el reporte según el tipo
-            GenerarReporte(tipoReporte, tipoReporteDetalle);
-        }
-
-        protected void btnExportarExcel_Click(object sender, EventArgs e)
-        {
-            // Implementar la exportación a Excel
-            Response.Clear();
-            Response.Buffer = true;
-            Response.AddHeader("content-disposition", "attachment;filename=Reporte_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xls");
-            Response.Charset = "";
-            Response.ContentType = "application/vnd.ms-excel";
-
-            System.IO.StringWriter sw = new System.IO.StringWriter();
-            HtmlTextWriter hw = new HtmlTextWriter(sw);
-
-            // Estilo para la tabla Excel
-            Response.Write("<style> .textmode { mso-number-format:\\@; } </style>");
-
-            // Renderizar solo el GridView en el Excel
-            gvReporte.RenderControl(hw);
-            Response.Output.Write(sw.ToString());
-            Response.Flush();
-            Response.End();
-        }
-
-        // Este método es necesario para la exportación a Excel
-        public override void VerifyRenderingInServerForm(Control control)
-        {
-            // No hacer nada, este método se sobrescribe para evitar errores
-            // durante la exportación a Excel
+            // Esta función simplemente cierra el modal de filtros avanzados
+            // La aplicación de los filtros ocurre al generar el reporte
         }
 
         protected void gvReporte_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             gvReporte.PageIndex = e.NewPageIndex;
-
-            // Obtener tipo de reporte seleccionado
-            string tipoReporte = "";
-            if (lnkConductor.CssClass.Contains("active")) tipoReporte = "conductor";
-            else if (lnkVehiculo.CssClass.Contains("active")) tipoReporte = "vehiculo";
-            else if (lnkRuta.CssClass.Contains("active")) tipoReporte = "ruta";
-            else if (lnkFinanciero.CssClass.Contains("active")) tipoReporte = "financiero";
-            else if (lnkCombustible.CssClass.Contains("active")) tipoReporte = "combustible";
-
-            string tipoReporteDetalle = ddlTipoReporteDetalle.SelectedValue;
-
-            // Regenerar el reporte según el tipo
-            GenerarReporte(tipoReporte, tipoReporteDetalle);
+            GenerarReporte(); // Volver a cargar los datos con la página actualizada
         }
 
         protected void gvReporte_Sorting(object sender, GridViewSortEventArgs e)
         {
-            // Implementar la lógica de ordenamiento del GridView
-            // Esta funcionalidad se puede implementar si es necesario
+            // Implementar la lógica de ordenamiento básica
+            ViewState["SortExpression"] = e.SortExpression;
+            ViewState["SortDirection"] =
+                ViewState["SortExpression"] != null && ViewState["SortExpression"].ToString() == e.SortExpression &&
+                ViewState["SortDirection"].ToString() == "ASC" ? "DESC" : "ASC";
+
+            GenerarReporte(); // Volver a cargar los datos con el ordenamiento actualizado
         }
 
-        protected void btnAplicarFiltrosAvanzados_Click(object sender, EventArgs e)
+        protected void btnExportarExcel_Click(object sender, EventArgs e)
         {
-            // Cerrar el modal de filtros avanzados y regenerar el reporte
-            ScriptManager.RegisterStartupScript(this, GetType(), "cerrarModal", "$('#filtrosAvanzadosModal').modal('hide');", true);
+            // Implementación básica para exportar a Excel
+            // Esta función se ampliará cuando los reportes estén operativos
+            Response.Write("<script>alert('Función de exportación a Excel en desarrollo.');</script>");
+        }
 
-            // Obtener tipo de reporte seleccionado
-            string tipoReporte = "";
-            if (lnkConductor.CssClass.Contains("active")) tipoReporte = "conductor";
-            else if (lnkVehiculo.CssClass.Contains("active")) tipoReporte = "vehiculo";
-            else if (lnkRuta.CssClass.Contains("active")) tipoReporte = "ruta";
-            else if (lnkFinanciero.CssClass.Contains("active")) tipoReporte = "financiero";
-            else if (lnkCombustible.CssClass.Contains("active")) tipoReporte = "combustible";
-
-            string tipoReporteDetalle = ddlTipoReporteDetalle.SelectedValue;
-
-            // Regenerar el reporte según el tipo
-            GenerarReporte(tipoReporte, tipoReporteDetalle);
+        protected void btnExportarPDF_Click(object sender, EventArgs e)
+        {
+            // Implementación básica para exportar a PDF
+            // Esta función se ampliará cuando los reportes estén operativos
+            Response.Write("<script>alert('Función de exportación a PDF en desarrollo.');</script>");
         }
 
         #endregion
 
-        #region Métodos de generación de reportes
+        #region Generación de Reportes
 
-        private void GenerarReporte(string tipoReporte, string tipoReporteDetalle)
+        protected void btnGenerarReporte_Click(object sender, EventArgs e)
         {
-            // Este método generará el reporte según el tipo y subtipo seleccionados
+            try
+            {
+                GenerarReporte();
+            }
+            catch (Exception ex)
+            {
+                // Mostrar mensaje de error genérico
+                Response.Write("<script>alert('Error al generar el reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
+            }
+        }
+
+        private void GenerarReporte()
+        {
+            // Para esta versión básica, generaremos un reporte de muestra
+            // con datos ficticios solo para probar la interfaz
+            GenerarReporteDePrueba();
+
+            // Mostrar panel de resultados
+            pnlResultados.Visible = true;
+        }
+
+        private void GenerarReporteDePrueba()
+        {
+            // Crear una tabla con datos de muestra para probar la interfaz
+            DataTable dt = new DataTable();
+
+            // Agregar columnas según el tipo de reporte seleccionado
+            string tipoReporte = ObtenerTipoReporteSeleccionado();
+            string tipoReporteDetalle = ddlTipoReporteDetalle.SelectedValue;
+
+            // Columnas básicas que todos los reportes tendrán
+            dt.Columns.Add("ID", typeof(int));
+            dt.Columns.Add("Fecha", typeof(DateTime));
+
+            // Añadir columnas según el tipo de reporte
             switch (tipoReporte)
             {
                 case "conductor":
-                    GenerarReporteConductor(tipoReporteDetalle);
+                    dt.Columns.Add("DNI", typeof(string));
+                    dt.Columns.Add("Nombre", typeof(string));
+                    dt.Columns.Add("Vehículo", typeof(string));
+                    dt.Columns.Add("Destino", typeof(string));
                     break;
+
                 case "vehiculo":
-                    GenerarReporteVehiculo(tipoReporteDetalle);
+                    dt.Columns.Add("Placa", typeof(string));
+                    dt.Columns.Add("Marca", typeof(string));
+                    dt.Columns.Add("Conductor", typeof(string));
+                    dt.Columns.Add("Kilometraje", typeof(decimal));
                     break;
-                case "ruta":
-                    GenerarReporteRuta(tipoReporteDetalle);
+
+                case "pedido":
+                    dt.Columns.Add("Número", typeof(string));
+                    dt.Columns.Add("Cliente", typeof(string));
+                    dt.Columns.Add("Valor", typeof(decimal));
+                    dt.Columns.Add("Estado", typeof(string));
                     break;
+
                 case "financiero":
-                    GenerarReporteFinanciero(tipoReporteDetalle);
+                    dt.Columns.Add("Concepto", typeof(string));
+                    dt.Columns.Add("Ingresos", typeof(decimal));
+                    dt.Columns.Add("Egresos", typeof(decimal));
+                    dt.Columns.Add("Balance", typeof(decimal));
                     break;
+
                 case "combustible":
-                    GenerarReporteCombustible(tipoReporteDetalle);
+                    dt.Columns.Add("Vehículo", typeof(string));
+                    dt.Columns.Add("Galones", typeof(decimal));
+                    dt.Columns.Add("Costo", typeof(decimal));
+                    dt.Columns.Add("Rendimiento", typeof(decimal));
+                    break;
+
+                case "producto":
+                    dt.Columns.Add("Producto", typeof(string));
+                    dt.Columns.Add("Cantidad", typeof(int));
+                    dt.Columns.Add("Cliente", typeof(string));
+                    dt.Columns.Add("Destino", typeof(string));
+                    break;
+
+                case "personalizado":
+                    // Para reporte personalizado añadimos varias columnas posibles
+                    dt.Columns.Add("Conductor", typeof(string));
+                    dt.Columns.Add("Vehículo", typeof(string));
+                    dt.Columns.Add("Cliente", typeof(string));
+                    dt.Columns.Add("Producto", typeof(string));
+                    dt.Columns.Add("Valor", typeof(decimal));
+                    break;
+            }
+
+            // Añadir filas de datos de muestra
+            for (int i = 1; i <= 10; i++)
+            {
+                DataRow row = dt.NewRow();
+                row["ID"] = i;
+                row["Fecha"] = DateTime.Now.AddDays(-i);
+
+                switch (tipoReporte)
+                {
+                    case "conductor":
+                        row["DNI"] = "4589" + i.ToString("D4");
+                        row["Nombre"] = "Conductor " + i;
+                        row["Vehículo"] = "ABC-" + i.ToString("D3");
+                        row["Destino"] = "Destino " + i;
+                        break;
+
+                    case "vehiculo":
+                        row["Placa"] = "ABC-" + i.ToString("D3");
+                        row["Marca"] = "Marca " + (i % 3 + 1);
+                        row["Conductor"] = "Conductor " + i;
+                        row["Kilometraje"] = 10000 + (i * 500);
+                        break;
+
+                    case "pedido":
+                        row["Número"] = "PED-" + i.ToString("D4");
+                        row["Cliente"] = "Cliente " + (i % 5 + 1);
+                        row["Valor"] = 1000 * i;
+                        row["Estado"] = i % 3 == 0 ? "Pendiente" : "Completado";
+                        break;
+
+                    case "financiero":
+                        row["Concepto"] = "Concepto " + i;
+                        row["Ingresos"] = 2000 * i;
+                        row["Egresos"] = 1000 * i;
+                        row["Balance"] = 1000 * i;
+                        break;
+
+                    case "combustible":
+                        row["Vehículo"] = "ABC-" + i.ToString("D3");
+                        row["Galones"] = 50 + (i * 2);
+                        row["Costo"] = 200 + (i * 10);
+                        row["Rendimiento"] = 10 + (i % 5);
+                        break;
+
+                    case "producto":
+                        row["Producto"] = "Producto " + (i % 4 + 1);
+                        row["Cantidad"] = 100 * i;
+                        row["Cliente"] = "Cliente " + (i % 5 + 1);
+                        row["Destino"] = "Destino " + (i % 3 + 1);
+                        break;
+
+                    case "personalizado":
+                        row["Conductor"] = "Conductor " + (i % 3 + 1);
+                        row["Vehículo"] = "ABC-" + i.ToString("D3");
+                        row["Cliente"] = "Cliente " + (i % 4 + 1);
+                        row["Producto"] = "Producto " + (i % 5 + 1);
+                        row["Valor"] = 1000 * i;
+                        break;
+                }
+
+                dt.Rows.Add(row);
+            }
+
+            // Configurar GridView para mostrar los datos
+            gvReporte.DataSource = dt;
+            gvReporte.Columns.Clear();
+
+            // Agregar columnas al GridView según el tipo de reporte
+            BoundField bfID = new BoundField();
+            bfID.DataField = "ID";
+            bfID.HeaderText = "ID";
+            bfID.SortExpression = "ID";
+            gvReporte.Columns.Add(bfID);
+
+            BoundField bfFecha = new BoundField();
+            bfFecha.DataField = "Fecha";
+            bfFecha.HeaderText = "Fecha";
+            bfFecha.SortExpression = "Fecha";
+            bfFecha.DataFormatString = "{0:dd/MM/yyyy}";
+            gvReporte.Columns.Add(bfFecha);
+
+            // Añadir columnas específicas según el tipo de reporte
+            switch (tipoReporte)
+            {
+                case "conductor":
+                    BoundField bfDNI = new BoundField();
+                    bfDNI.DataField = "DNI";
+                    bfDNI.HeaderText = "DNI";
+                    bfDNI.SortExpression = "DNI";
+                    gvReporte.Columns.Add(bfDNI);
+
+                    BoundField bfNombre = new BoundField();
+                    bfNombre.DataField = "Nombre";
+                    bfNombre.HeaderText = "Nombre";
+                    bfNombre.SortExpression = "Nombre";
+                    gvReporte.Columns.Add(bfNombre);
+
+                    BoundField bfVehiculo = new BoundField();
+                    bfVehiculo.DataField = "Vehículo";
+                    bfVehiculo.HeaderText = "Vehículo";
+                    bfVehiculo.SortExpression = "Vehículo";
+                    gvReporte.Columns.Add(bfVehiculo);
+
+                    BoundField bfDestino = new BoundField();
+                    bfDestino.DataField = "Destino";
+                    bfDestino.HeaderText = "Destino";
+                    bfDestino.SortExpression = "Destino";
+                    gvReporte.Columns.Add(bfDestino);
+                    break;
+
+                case "vehiculo":
+                    BoundField bfPlaca = new BoundField();
+                    bfPlaca.DataField = "Placa";
+                    bfPlaca.HeaderText = "Placa";
+                    bfPlaca.SortExpression = "Placa";
+                    gvReporte.Columns.Add(bfPlaca);
+
+                    BoundField bfMarca = new BoundField();
+                    bfMarca.DataField = "Marca";
+                    bfMarca.HeaderText = "Marca";
+                    bfMarca.SortExpression = "Marca";
+                    gvReporte.Columns.Add(bfMarca);
+
+                    BoundField bfConductorVeh = new BoundField();
+                    bfConductorVeh.DataField = "Conductor";
+                    bfConductorVeh.HeaderText = "Conductor";
+                    bfConductorVeh.SortExpression = "Conductor";
+                    gvReporte.Columns.Add(bfConductorVeh);
+
+                    BoundField bfKilometraje = new BoundField();
+                    bfKilometraje.DataField = "Kilometraje";
+                    bfKilometraje.HeaderText = "Kilometraje";
+                    bfKilometraje.SortExpression = "Kilometraje";
+                    bfKilometraje.DataFormatString = "{0:N0}";
+                    gvReporte.Columns.Add(bfKilometraje);
+                    break;
+
+                case "pedido":
+                    BoundField bfNumero = new BoundField();
+                    bfNumero.DataField = "Número";
+                    bfNumero.HeaderText = "Nº Pedido";
+                    bfNumero.SortExpression = "Número";
+                    gvReporte.Columns.Add(bfNumero);
+
+                    BoundField bfCliente = new BoundField();
+                    bfCliente.DataField = "Cliente";
+                    bfCliente.HeaderText = "Cliente";
+                    bfCliente.SortExpression = "Cliente";
+                    gvReporte.Columns.Add(bfCliente);
+
+                    BoundField bfValor = new BoundField();
+                    bfValor.DataField = "Valor";
+                    bfValor.HeaderText = "Valor";
+                    bfValor.SortExpression = "Valor";
+                    bfValor.DataFormatString = "{0:C}";
+                    gvReporte.Columns.Add(bfValor);
+
+                    BoundField bfEstado = new BoundField();
+                    bfEstado.DataField = "Estado";
+                    bfEstado.HeaderText = "Estado";
+                    bfEstado.SortExpression = "Estado";
+                    gvReporte.Columns.Add(bfEstado);
+                    break;
+
+                case "financiero":
+                    BoundField bfConcepto = new BoundField();
+                    bfConcepto.DataField = "Concepto";
+                    bfConcepto.HeaderText = "Concepto";
+                    bfConcepto.SortExpression = "Concepto";
+                    gvReporte.Columns.Add(bfConcepto);
+
+                    BoundField bfIngresos = new BoundField();
+                    bfIngresos.DataField = "Ingresos";
+                    bfIngresos.HeaderText = "Ingresos";
+                    bfIngresos.SortExpression = "Ingresos";
+                    bfIngresos.DataFormatString = "{0:C}";
+                    gvReporte.Columns.Add(bfIngresos);
+
+                    BoundField bfEgresos = new BoundField();
+                    bfEgresos.DataField = "Egresos";
+                    bfEgresos.HeaderText = "Egresos";
+                    bfEgresos.SortExpression = "Egresos";
+                    bfEgresos.DataFormatString = "{0:C}";
+                    gvReporte.Columns.Add(bfEgresos);
+
+                    BoundField bfBalance = new BoundField();
+                    bfBalance.DataField = "Balance";
+                    bfBalance.HeaderText = "Balance";
+                    bfBalance.SortExpression = "Balance";
+                    bfBalance.DataFormatString = "{0:C}";
+                    gvReporte.Columns.Add(bfBalance);
+                    break;
+
+                case "combustible":
+                    BoundField bfVehiculoComb = new BoundField();
+                    bfVehiculoComb.DataField = "Vehículo";
+                    bfVehiculoComb.HeaderText = "Vehículo";
+                    bfVehiculoComb.SortExpression = "Vehículo";
+                    gvReporte.Columns.Add(bfVehiculoComb);
+
+                    BoundField bfGalones = new BoundField();
+                    bfGalones.DataField = "Galones";
+                    bfGalones.HeaderText = "Galones";
+                    bfGalones.SortExpression = "Galones";
+                    bfGalones.DataFormatString = "{0:N2}";
+                    gvReporte.Columns.Add(bfGalones);
+
+                    BoundField bfCosto = new BoundField();
+                    bfCosto.DataField = "Costo";
+                    bfCosto.HeaderText = "Costo";
+                    bfCosto.SortExpression = "Costo";
+                    bfCosto.DataFormatString = "{0:C}";
+                    gvReporte.Columns.Add(bfCosto);
+
+                    BoundField bfRendimiento = new BoundField();
+                    bfRendimiento.DataField = "Rendimiento";
+                    bfRendimiento.HeaderText = "Rendimiento (km/gal)";
+                    bfRendimiento.SortExpression = "Rendimiento";
+                    bfRendimiento.DataFormatString = "{0:N2}";
+                    gvReporte.Columns.Add(bfRendimiento);
+                    break;
+
+                case "producto":
+                    BoundField bfProducto = new BoundField();
+                    bfProducto.DataField = "Producto";
+                    bfProducto.HeaderText = "Producto";
+                    bfProducto.SortExpression = "Producto";
+                    gvReporte.Columns.Add(bfProducto);
+
+                    BoundField bfCantidad = new BoundField();
+                    bfCantidad.DataField = "Cantidad";
+                    bfCantidad.HeaderText = "Cantidad";
+                    bfCantidad.SortExpression = "Cantidad";
+                    bfCantidad.DataFormatString = "{0:N0}";
+                    gvReporte.Columns.Add(bfCantidad);
+
+                    BoundField bfClienteProd = new BoundField();
+                    bfClienteProd.DataField = "Cliente";
+                    bfClienteProd.HeaderText = "Cliente";
+                    bfClienteProd.SortExpression = "Cliente";
+                    gvReporte.Columns.Add(bfClienteProd);
+
+                    BoundField bfDestinoProd = new BoundField();
+                    bfDestinoProd.DataField = "Destino";
+                    bfDestinoProd.HeaderText = "Destino";
+                    bfDestinoProd.SortExpression = "Destino";
+                    gvReporte.Columns.Add(bfDestinoProd);
+                    break;
+
+                case "personalizado":
+                    // Para reporte personalizado, verificamos qué campos ha seleccionado el usuario
+                    if (chkConductorInfo.Checked)
+                    {
+                        BoundField bfConductorPers = new BoundField();
+                        bfConductorPers.DataField = "Conductor";
+                        bfConductorPers.HeaderText = "Conductor";
+                        bfConductorPers.SortExpression = "Conductor";
+                        gvReporte.Columns.Add(bfConductorPers);
+                    }
+
+                    if (chkVehiculoInfo.Checked)
+                    {
+                        BoundField bfVehiculoPers = new BoundField();
+                        bfVehiculoPers.DataField = "Vehículo";
+                        bfVehiculoPers.HeaderText = "Vehículo";
+                        bfVehiculoPers.SortExpression = "Vehículo";
+                        gvReporte.Columns.Add(bfVehiculoPers);
+                    }
+
+                    if (chkClienteInfo.Checked)
+                    {
+                        BoundField bfClientePers = new BoundField();
+                        bfClientePers.DataField = "Cliente";
+                        bfClientePers.HeaderText = "Cliente";
+                        bfClientePers.SortExpression = "Cliente";
+                        gvReporte.Columns.Add(bfClientePers);
+                    }
+
+                    if (chkProductoInfo.Checked)
+                    {
+                        BoundField bfProductoPers = new BoundField();
+                        bfProductoPers.DataField = "Producto";
+                        bfProductoPers.HeaderText = "Producto";
+                        bfProductoPers.SortExpression = "Producto";
+                        gvReporte.Columns.Add(bfProductoPers);
+                    }
+
+                    if (chkIngresoInfo.Checked || chkEgresoInfo.Checked)
+                    {
+                        BoundField bfValorPers = new BoundField();
+                        bfValorPers.DataField = "Valor";
+                        bfValorPers.HeaderText = "Valor";
+                        bfValorPers.SortExpression = "Valor";
+                        bfValorPers.DataFormatString = "{0:C}";
+                        gvReporte.Columns.Add(bfValorPers);
+                    }
+                    break;
+            }
+
+            // Añadir botón de detalles para todos los reportes
+            ButtonField btnDetalles = new ButtonField();
+            btnDetalles.ButtonType = ButtonType.Button;
+            btnDetalles.Text = "Ver Detalles";
+            btnDetalles.CommandName = "VerDetalles";
+            btnDetalles.ControlStyle.CssClass = "btn btn-sm btn-info btn-detalle-orden";
+            gvReporte.Columns.Add(btnDetalles);
+
+            gvReporte.DataBind();
+
+            // Configurar el título de los resultados según el tipo de reporte
+            litTituloResultados.Text = ObtenerTituloReporte(tipoReporte, tipoReporteDetalle);
+
+            // Configurar el contador de registros
+            lblTotalRegistros.Text = $"Total de registros: {dt.Rows.Count}";
+
+            // Generar datos de muestra para los indicadores
+            GenerarIndicadoresMuestra(tipoReporte);
+
+            // Generar gráfico de muestra
+            GenerarGraficoMuestra(tipoReporte);
+        }
+
+        private string ObtenerTituloReporte(string tipoReporte, string tipoReporteDetalle)
+        {
+            switch (tipoReporte)
+            {
+                case "conductor":
+                    return "Reporte de Conductor: " + (string.IsNullOrEmpty(ddlConductor.SelectedValue) ?
+                        "Todos los conductores" : ddlConductor.SelectedItem.Text);
+
+                case "vehiculo":
+                    return "Reporte de Vehículo: " + (string.IsNullOrEmpty(ddlVehiculo.SelectedValue) ?
+                        "Todos los vehículos" : ddlVehiculo.SelectedItem.Text);
+
+                case "pedido":
+                    return "Reporte de Pedido: " + (string.IsNullOrEmpty(ddlCPIC.SelectedValue) ?
+                        "Todos los pedidos" : ddlCPIC.SelectedItem.Text);
+
+                case "financiero":
+                    return "Reporte Financiero: " + ddlTipoReporteDetalle.SelectedItem.Text;
+
+                case "combustible":
+                    return "Reporte de Combustible: " + ddlTipoReporteDetalle.SelectedItem.Text;
+
+                case "producto":
+                    return "Reporte de Producto: " + (string.IsNullOrEmpty(ddlProducto.SelectedValue) ?
+                        "Todos los productos" : ddlProducto.SelectedItem.Text);
+
+                case "personalizado":
+                    return "Reporte Personalizado";
+
+                default:
+                    return "Reporte General";
+            }
+        }
+
+        private void GenerarIndicadoresMuestra(string tipoReporte)
+        {
+            // Generar datos de muestra para los indicadores según el tipo de reporte
+            switch (tipoReporte)
+            {
+                case "conductor":
+                    litTotalIngresos.Text = "S/ 25,000.00";
+                    litTotalEgresos.Text = "S/ 15,000.00";
+                    litBalance.Text = "S/ 10,000.00";
+                    litIndicadorAdicionalTitulo.Text = "Total Viajes";
+                    litIndicadorAdicional.Text = "15";
+                    break;
+
+                case "vehiculo":
+                    litTotalIngresos.Text = "S/ 18,500.00";
+                    litTotalEgresos.Text = "S/ 12,300.00";
+                    litBalance.Text = "S/ 6,200.00";
+                    litIndicadorAdicionalTitulo.Text = "Rendimiento Promedio";
+                    litIndicadorAdicional.Text = "12.5 km/gal";
+                    break;
+
+                case "pedido":
+                    litTotalIngresos.Text = "S/ 35,000.00";
+                    litTotalEgresos.Text = "S/ 22,000.00";
+                    litBalance.Text = "S/ 13,000.00";
+                    litIndicadorAdicionalTitulo.Text = "Viajes Realizados";
+                    litIndicadorAdicional.Text = "8";
+                    break;
+
+                case "financiero":
+                    litTotalIngresos.Text = "S/ 125,000.00";
+                    litTotalEgresos.Text = "S/ 95,000.00";
+                    litBalance.Text = "S/ 30,000.00";
+                    litIndicadorAdicionalTitulo.Text = "Margen";
+                    litIndicadorAdicional.Text = "24%";
+                    break;
+
+                case "combustible":
+                    litTotalIngresos.Text = "S/ 42,000.00";
+                    litTotalEgresos.Text = "S/ 8,500.00";
+                    litBalance.Text = "S/ 33,500.00";
+                    litIndicadorAdicionalTitulo.Text = "Total Combustible";
+                    litIndicadorAdicional.Text = "1,250 gal";
+                    break;
+
+                case "producto":
+                    litTotalIngresos.Text = "S/ 65,000.00";
+                    litTotalEgresos.Text = "S/ 45,000.00";
+                    litBalance.Text = "S/ 20,000.00";
+                    litIndicadorAdicionalTitulo.Text = "Cantidad Transportada";
+                    litIndicadorAdicional.Text = "2,500 und";
+                    break;
+
+                case "personalizado":
+                    litTotalIngresos.Text = "S/ 55,000.00";
+                    litTotalEgresos.Text = "S/ 35,000.00";
+                    litBalance.Text = "S/ 20,000.00";
+                    litIndicadorAdicionalTitulo.Text = "Indicador Personalizado";
+                    litIndicadorAdicional.Text = "Variable";
+                    break;
+
+                default:
+                    litTotalIngresos.Text = "S/ 0.00";
+                    litTotalEgresos.Text = "S/ 0.00";
+                    litBalance.Text = "S/ 0.00";
+                    litIndicadorAdicionalTitulo.Text = "Total";
+                    litIndicadorAdicional.Text = "0";
                     break;
             }
         }
 
-        private void GenerarReporteConductor(string tipoReporteDetalle)
+        private void GenerarGraficoMuestra(string tipoReporte)
         {
-            try
+            // En esta versión básica, configuramos un gráfico de muestra
+            // que se actualizará con datos reales cuando implementemos la lógica específica
+
+            // Configurar títulos y ejes del gráfico según el tipo de reporte
+            switch (tipoReporte)
             {
-                string fechaDesde = txtFechaDesde.Text;
-                string fechaHasta = txtFechaHasta.Text;
-                string idConductor = ddlConductor.SelectedValue;
-                string tipoLicencia = ddlTipoLicencia.SelectedValue;
-                string experienciaMinima = txtExperienciaMinima.Text;
+                case "conductor":
+                    litTituloGrafico.Text = "Viajes realizados por mes";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Mes";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Cantidad de viajes";
+                    break;
 
-                // Crear DataTable para simular resultados (en producción conectaría a la BD)
-                DataTable dt = new DataTable();
-                dt.Columns.Add("ID", typeof(int));
-                dt.Columns.Add("Nombre", typeof(string));
-                dt.Columns.Add("FechaViaje", typeof(DateTime));
-                dt.Columns.Add("Ruta", typeof(string));
-                dt.Columns.Add("Vehiculo", typeof(string));
-                dt.Columns.Add("Kilometraje", typeof(decimal));
-                dt.Columns.Add("Ingresos", typeof(decimal));
-                dt.Columns.Add("Gastos", typeof(decimal));
-                dt.Columns.Add("Rendimiento", typeof(decimal));
+                case "vehiculo":
+                    litTituloGrafico.Text = "Consumo de combustible por mes";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Mes";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Galones";
+                    break;
 
-                // Datos de ejemplo (en producción estos vendrían de la BD)
-                dt.Rows.Add(1, "Juan Pérez", DateTime.Now.AddDays(-30), "Lima - Arequipa", "ABC-123", 550.5m, 2500.0m, 800.0m, 78.5m);
-                dt.Rows.Add(1, "Juan Pérez", DateTime.Now.AddDays(-25), "Lima - Cusco", "ABC-123", 620.3m, 2800.0m, 950.0m, 72.3m);
-                dt.Rows.Add(2, "Carlos López", DateTime.Now.AddDays(-20), "Lima - Trujillo", "XYZ-456", 380.2m, 1800.0m, 650.0m, 82.1m);
-                dt.Rows.Add(2, "Carlos López", DateTime.Now.AddDays(-15), "Lima - Chiclayo", "XYZ-456", 420.8m, 2000.0m, 700.0m, 80.5m);
-                dt.Rows.Add(3, "María García", DateTime.Now.AddDays(-10), "Lima - Tacna", "DEF-789", 850.4m, 3500.0m, 1200.0m, 75.8m);
+                case "pedido":
+                    litTituloGrafico.Text = "Distribución de viajes por conductor";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Conductor";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Cantidad de viajes";
+                    break;
 
-                // Configurar el GridView con columnas dinámicas
-                gvReporte.Columns.Clear();
+                case "financiero":
+                    litTituloGrafico.Text = "Ingresos vs Egresos por mes";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Mes";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Monto (S/)";
+                    break;
 
-                // Añadir columnas según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "rendimiento_conductor":
-                        // Columnas para reporte de rendimiento
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "ID", DataField = "ID", SortExpression = "ID" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Conductor", DataField = "Nombre", SortExpression = "Nombre" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Fecha", DataField = "FechaViaje", SortExpression = "FechaViaje", DataFormatString = "{0:dd/MM/yyyy}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Vehículo", DataField = "Vehiculo", SortExpression = "Vehiculo" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Rendimiento", DataField = "Rendimiento", SortExpression = "Rendimiento", DataFormatString = "{0:F2}%" });
+                case "combustible":
+                    litTituloGrafico.Text = "Rendimiento por vehículo";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Vehículo";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Rendimiento (km/gal)";
+                    break;
 
-                        litTituloResultados.Text = "Reporte de Rendimiento por Conductor";
-                        litTituloGrafico.Text = "Rendimiento por Conductor";
-                        break;
+                case "producto":
+                    litTituloGrafico.Text = "Productos más transportados";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Producto";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Cantidad";
+                    break;
 
-                    case "viajes_conductor":
-                        // Columnas para reporte de viajes
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "ID", DataField = "ID", SortExpression = "ID" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Conductor", DataField = "Nombre", SortExpression = "Nombre" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Fecha", DataField = "FechaViaje", SortExpression = "FechaViaje", DataFormatString = "{0:dd/MM/yyyy}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ruta", DataField = "Ruta", SortExpression = "Ruta" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Vehículo", DataField = "Vehiculo", SortExpression = "Vehiculo" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Kilometraje", DataField = "Kilometraje", SortExpression = "Kilometraje", DataFormatString = "{0:F2} km" });
+                case "personalizado":
+                    litTituloGrafico.Text = "Gráfico personalizado";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Categoría";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Valor";
+                    break;
 
-                        litTituloResultados.Text = "Reporte de Viajes por Conductor";
-                        litTituloGrafico.Text = "Viajes por Conductor";
-                        break;
-
-                    case "ingresos_conductor":
-                        // Columnas para reporte de ingresos
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "ID", DataField = "ID", SortExpression = "ID" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Conductor", DataField = "Nombre", SortExpression = "Nombre" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Fecha", DataField = "FechaViaje", SortExpression = "FechaViaje", DataFormatString = "{0:dd/MM/yyyy}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ruta", DataField = "Ruta", SortExpression = "Ruta" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ingresos", DataField = "Ingresos", SortExpression = "Ingresos", DataFormatString = "S/ {0:F2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Gastos", DataField = "Gastos", SortExpression = "Gastos", DataFormatString = "S/ {0:F2}" });
-
-                        litTituloResultados.Text = "Reporte de Ingresos por Conductor";
-                        litTituloGrafico.Text = "Ingresos vs Gastos por Conductor";
-                        break;
-                }
-
-                // Asignar datos al GridView
-                gvReporte.DataSource = dt;
-                gvReporte.DataBind();
-
-                // Generar gráfico según el tipo de reporte
-                GenerarGrafico(dt, tipoReporteDetalle);
-
-                // Mostrar panel de resultados
-                pnlResultados.Visible = true;
+                default:
+                    litTituloGrafico.Text = "Análisis de datos";
+                    chartReporte.ChartAreas[0].AxisX.Title = "Categoría";
+                    chartReporte.ChartAreas[0].AxisY.Title = "Valor";
+                    break;
             }
-            catch (Exception ex)
+
+            // Limpiar series existentes y crear nuevas
+            chartReporte.Series.Clear();
+
+            // Crear la primera serie
+            Series serie1 = new Series();
+            serie1.Name = "Serie1";
+            serie1.ChartType = SeriesChartType.Column;
+            serie1.Color = Color.FromArgb(46, 204, 113); // Verde
+            serie1.IsValueShownAsLabel = true;
+
+            // Para algunos tipos de reporte, añadir una segunda serie
+            Series serie2 = null;
+            if (tipoReporte == "financiero" || tipoReporte == "conductor" || tipoReporte == "vehiculo")
             {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
+                serie2 = new Series();
+                serie2.Name = "Serie2";
+                serie2.ChartType = SeriesChartType.Column;
+                serie2.Color = Color.FromArgb(231, 76, 60); // Rojo
+                serie2.IsValueShownAsLabel = true;
+            }
+
+            // Añadir puntos de datos de muestra
+            Random rnd = new Random();
+            string[] categorias = { "Ene", "Feb", "Mar", "Abr", "May", "Jun" };
+
+            for (int i = 0; i < categorias.Length; i++)
+            {
+                serie1.Points.AddXY(categorias[i], rnd.Next(10, 100));
+
+                if (serie2 != null)
+                {
+                    serie2.Points.AddXY(categorias[i], rnd.Next(5, 80));
+                }
+            }
+
+            // Añadir las series al gráfico
+            chartReporte.Series.Add(serie1);
+            if (serie2 != null)
+            {
+                chartReporte.Series.Add(serie2);
+
+                // Actualizar leyendas para gráficos específicos
+                if (tipoReporte == "financiero")
+                {
+                    serie1.Name = "Ingresos";
+                    serie2.Name = "Egresos";
+                }
+                else if (tipoReporte == "conductor")
+                {
+                    serie1.Name = "Viajes";
+                    serie2.Name = "Productos";
+                }
+                else if (tipoReporte == "vehiculo")
+                {
+                    serie1.Name = "Kilometraje";
+                    serie2.Name = "Combustible";
+                }
             }
         }
 
-        private void GenerarReporteVehiculo(string tipoReporteDetalle)
+        private string ObtenerTipoReporteSeleccionado()
         {
-            try
-            {
-                // Crear DataTable para simular resultados
-                DataTable dt = new DataTable();
-                dt.Columns.Add("ID", typeof(int));
-                dt.Columns.Add("Placa", typeof(string));
-                dt.Columns.Add("Marca", typeof(string));
-                dt.Columns.Add("Modelo", typeof(string));
-                dt.Columns.Add("FechaMantenimiento", typeof(DateTime));
-                dt.Columns.Add("KilometrajeAcumulado", typeof(decimal));
-                dt.Columns.Add("ConsumoCombustible", typeof(decimal));
-                dt.Columns.Add("Costo", typeof(decimal));
-
-                // Datos de ejemplo
-                dt.Rows.Add(1, "ABC-123", "Volvo", "FH16", DateTime.Now.AddDays(-30), 125000.5m, 38.5m, 850.0m);
-                dt.Rows.Add(2, "XYZ-456", "Scania", "R500", DateTime.Now.AddDays(-25), 98000.3m, 35.2m, 780.0m);
-                dt.Rows.Add(3, "DEF-789", "Freightliner", "Cascadia", DateTime.Now.AddDays(-20), 110500.8m, 40.1m, 920.0m);
-
-                // Configurar el GridView con columnas dinámicas
-                gvReporte.Columns.Clear();
-                gvReporte.Columns.Add(new BoundField { HeaderText = "ID", DataField = "ID", SortExpression = "ID" });
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Placa", DataField = "Placa", SortExpression = "Placa" });
-
-                // Añadir columnas según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "consumo_vehiculo":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Marca", DataField = "Marca", SortExpression = "Marca" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Modelo", DataField = "Modelo", SortExpression = "Modelo" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Kilometraje", DataField = "KilometrajeAcumulado", SortExpression = "KilometrajeAcumulado", DataFormatString = "{0:N1} km" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Consumo", DataField = "ConsumoCombustible", SortExpression = "ConsumoCombustible", DataFormatString = "{0:F2} gal/100km" });
-                        litTituloResultados.Text = "Reporte de Consumo de Combustible por Vehículo";
-                        litTituloGrafico.Text = "Consumo por Vehículo";
-                        break;
-
-                    case "mantenimiento_vehiculo":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Marca", DataField = "Marca", SortExpression = "Marca" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Modelo", DataField = "Modelo", SortExpression = "Modelo" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Fecha Mantenimiento", DataField = "FechaMantenimiento", SortExpression = "FechaMantenimiento", DataFormatString = "{0:dd/MM/yyyy}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Costo", DataField = "Costo", SortExpression = "Costo", DataFormatString = "S/ {0:F2}" });
-                        litTituloResultados.Text = "Reporte de Mantenimientos por Vehículo";
-                        litTituloGrafico.Text = "Costos de Mantenimiento";
-                        break;
-
-                    case "kilometraje_vehiculo":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Marca", DataField = "Marca", SortExpression = "Marca" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Modelo", DataField = "Modelo", SortExpression = "Modelo" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Kilometraje Acumulado", DataField = "KilometrajeAcumulado", SortExpression = "KilometrajeAcumulado", DataFormatString = "{0:N1} km" });
-                        litTituloResultados.Text = "Reporte de Kilometraje por Vehículo";
-                        litTituloGrafico.Text = "Kilometraje por Vehículo";
-                        break;
-                }
-
-                // Asignar datos al GridView
-                gvReporte.DataSource = dt;
-                gvReporte.DataBind();
-
-                // Generar gráfico básico (esto debería adaptarse al tipo de reporte)
-                chartReporte.Series.Clear();
-                chartReporte.ChartAreas.Clear();
-
-                ChartArea chartArea = new ChartArea("ChartArea1");
-                chartArea.BackColor = Color.Transparent;
-                chartArea.AxisX.Interval = 1;
-                chartArea.AxisY.Title = "Valores";
-                chartReporte.ChartAreas.Add(chartArea);
-
-                Series serie = new Series("Datos");
-                serie.ChartType = SeriesChartType.Column;
-                serie.Color = Color.FromArgb(41, 128, 185);
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    switch (tipoReporteDetalle)
-                    {
-                        case "consumo_vehiculo":
-                            serie.Points.AddXY(row["Placa"].ToString(), Convert.ToDouble(row["ConsumoCombustible"]));
-                            break;
-                        case "mantenimiento_vehiculo":
-                            serie.Points.AddXY(row["Placa"].ToString(), Convert.ToDouble(row["Costo"]));
-                            break;
-                        case "kilometraje_vehiculo":
-                            serie.Points.AddXY(row["Placa"].ToString(), Convert.ToDouble(row["KilometrajeAcumulado"]));
-                            break;
-                    }
-                }
-
-                chartReporte.Series.Add(serie);
-
-                // Mostrar panel de resultados
-                pnlResultados.Visible = true;
-                litTituloResultados.Text = "Reporte por Vehículo: " + ddlTipoReporteDetalle.SelectedItem.Text;
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
-            }
+            if (lnkConductor.CssClass.Contains("active"))
+                return "conductor";
+            else if (lnkVehiculo.CssClass.Contains("active"))
+                return "vehiculo";
+            else if (lnkPedido.CssClass.Contains("active"))
+                return "pedido";
+            else if (lnkFinanciero.CssClass.Contains("active"))
+                return "financiero";
+            else if (lnkCombustible.CssClass.Contains("active"))
+                return "combustible";
+            else if (lnkProducto.CssClass.Contains("active"))
+                return "producto";
+            else if (lnkPersonalizado.CssClass.Contains("active"))
+                return "personalizado";
+            else
+                return "conductor"; // Default
         }
 
+        // Aquí se implementarán los métodos específicos para cada tipo de reporte
+        // Estos métodos serán implementados posteriormente
 
-        private void GenerarReporteRuta(string tipoReporteDetalle)
+        #endregion
+
+        #region Métodos para Detalles de Orden de Viaje
+
+        protected void btnExportarDetalleExcel_Click(object sender, EventArgs e)
         {
-            // Implementar lógica similar a los otros reportes
-            try
-            {
-                // Crear datos de ejemplo
-                DataTable dt = new DataTable();
-                dt.Columns.Add("ID", typeof(int));
-                dt.Columns.Add("Ruta", typeof(string));
-                dt.Columns.Add("Distancia", typeof(decimal));
-                dt.Columns.Add("TiempoPromedio", typeof(decimal));
-                dt.Columns.Add("Ingresos", typeof(decimal));
-                dt.Columns.Add("Gastos", typeof(decimal));
-                dt.Columns.Add("Rentabilidad", typeof(decimal));
-
-                // Datos de ejemplo
-                dt.Rows.Add(1, "Lima - Arequipa", 1020.5m, 14.5m, 5500.0m, 3200.0m, 41.8m);
-                dt.Rows.Add(2, "Lima - Trujillo", 560.3m, 8.2m, 3800.0m, 2100.0m, 44.7m);
-                dt.Rows.Add(3, "Lima - Cusco", 1105.8m, 15.7m, 6200.0m, 3500.0m, 43.5m);
-
-                // Configurar GridView
-                gvReporte.Columns.Clear();
-                gvReporte.Columns.Add(new BoundField { HeaderText = "ID", DataField = "ID", SortExpression = "ID" });
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Ruta", DataField = "Ruta", SortExpression = "Ruta" });
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Distancia", DataField = "Distancia", SortExpression = "Distancia", DataFormatString = "{0:N1} km" });
-
-                // Añadir columnas según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "rentabilidad_ruta":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ingresos", DataField = "Ingresos", SortExpression = "Ingresos", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Gastos", DataField = "Gastos", SortExpression = "Gastos", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Rentabilidad", DataField = "Rentabilidad", SortExpression = "Rentabilidad", DataFormatString = "{0:N2}%" });
-
-                        litTituloResultados.Text = "Reporte de Rentabilidad por Ruta";
-                        litTituloGrafico.Text = "Rentabilidad por Ruta";
-                        break;
-
-                    case "tiempo_ruta":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Tiempo Promedio", DataField = "TiempoPromedio", SortExpression = "TiempoPromedio", DataFormatString = "{0:N1} horas" });
-
-                        litTituloResultados.Text = "Reporte de Tiempo Promedio por Ruta";
-                        litTituloGrafico.Text = "Tiempo Promedio por Ruta";
-                        break;
-                }
-
-                // Asignar datos al GridView
-                gvReporte.DataSource = dt;
-                gvReporte.DataBind();
-
-                // Generar gráfico
-                chartReporte.Series.Clear();
-                chartReporte.ChartAreas.Clear();
-
-                ChartArea chartArea = new ChartArea("ChartArea1");
-                chartArea.BackColor = Color.Transparent;
-                chartArea.AxisX.Interval = 1;
-                chartArea.AxisY.Title = tipoReporteDetalle == "rentabilidad_ruta" ? "Rentabilidad (%)" : "Tiempo (horas)";
-                chartReporte.ChartAreas.Add(chartArea);
-
-                Series serie = new Series("Datos");
-                serie.ChartType = SeriesChartType.Column;
-                serie.Color = Color.FromArgb(41, 128, 185);
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    if (tipoReporteDetalle == "rentabilidad_ruta")
-                        serie.Points.AddXY(row["Ruta"].ToString(), Convert.ToDouble(row["Rentabilidad"]));
-                    else
-                        serie.Points.AddXY(row["Ruta"].ToString(), Convert.ToDouble(row["TiempoPromedio"]));
-                }
-
-                chartReporte.Series.Add(serie);
-
-                // Mostrar panel de resultados
-                pnlResultados.Visible = true;
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
-            }
-        }
-
-        private void GenerarReporteFinanciero(string tipoReporteDetalle)
-        {
-            try
-            {
-                // Crear datos de ejemplo
-                DataTable dt = new DataTable();
-                dt.Columns.Add("Periodo", typeof(string));
-                dt.Columns.Add("Ingresos", typeof(decimal));
-                dt.Columns.Add("Gastos", typeof(decimal));
-                dt.Columns.Add("Utilidad", typeof(decimal));
-                dt.Columns.Add("Rentabilidad", typeof(decimal));
-
-                // Datos de ejemplo (últimos 6 meses)
-                DateTime ahora = DateTime.Now;
-                for (int i = 5; i >= 0; i--)
-                {
-                    DateTime fecha = ahora.AddMonths(-i);
-                    string periodo = fecha.ToString("MMM yyyy");
-                    decimal ingresos = 25000m + (decimal)new Random().Next(-5000, 5000);
-                    decimal gastos = 15000m + (decimal)new Random().Next(-3000, 3000);
-                    decimal utilidad = ingresos - gastos;
-                    decimal rentabilidad = (ingresos > 0) ? (utilidad / ingresos * 100) : 0;
-
-                    dt.Rows.Add(periodo, ingresos, gastos, utilidad, rentabilidad);
-                }
-
-                // Configurar GridView
-                gvReporte.Columns.Clear();
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Periodo", DataField = "Periodo", SortExpression = "Periodo" });
-
-                // Añadir columnas según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "ingresos_gastos":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ingresos", DataField = "Ingresos", SortExpression = "Ingresos", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Gastos", DataField = "Gastos", SortExpression = "Gastos", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Utilidad", DataField = "Utilidad", SortExpression = "Utilidad", DataFormatString = "S/ {0:N2}" });
-
-                        litTituloResultados.Text = "Reporte de Ingresos vs Gastos";
-                        litTituloGrafico.Text = "Ingresos vs Gastos (Últimos 6 meses)";
-                        break;
-
-                    case "rentabilidad_mensual":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Ingresos", DataField = "Ingresos", SortExpression = "Ingresos", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Utilidad", DataField = "Utilidad", SortExpression = "Utilidad", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Rentabilidad", DataField = "Rentabilidad", SortExpression = "Rentabilidad", DataFormatString = "{0:N2}%" });
-
-                        litTituloResultados.Text = "Reporte de Rentabilidad Mensual";
-                        litTituloGrafico.Text = "Rentabilidad Mensual (Últimos 6 meses)";
-                        break;
-                }
-
-                // Asignar datos al GridView
-                gvReporte.DataSource = dt;
-                gvReporte.DataBind();
-
-                // Generar gráfico
-                chartReporte.Series.Clear();
-                chartReporte.ChartAreas.Clear();
-
-                ChartArea chartArea = new ChartArea("ChartArea1");
-                chartArea.BackColor = Color.Transparent;
-                chartArea.AxisX.Interval = 1;
-                chartArea.AxisY.Title = "Valores (S/)";
-                chartReporte.ChartAreas.Add(chartArea);
-
-                if (tipoReporteDetalle == "ingresos_gastos")
-                {
-                    Series serieIngresos = new Series("Ingresos");
-                    serieIngresos.ChartType = SeriesChartType.Column;
-                    serieIngresos.Color = Color.FromArgb(40, 167, 69); // Verde
-
-                    Series serieGastos = new Series("Gastos");
-                    serieGastos.ChartType = SeriesChartType.Column;
-                    serieGastos.Color = Color.FromArgb(220, 53, 69); // Rojo
-
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        serieIngresos.Points.AddXY(row["Periodo"].ToString(), Convert.ToDouble(row["Ingresos"]));
-                        serieGastos.Points.AddXY(row["Periodo"].ToString(), Convert.ToDouble(row["Gastos"]));
-                    }
-
-                    chartReporte.Series.Add(serieIngresos);
-                    chartReporte.Series.Add(serieGastos);
-                }
-                else
-                {
-                    Series serieRentabilidad = new Series("Rentabilidad");
-                    serieRentabilidad.ChartType = SeriesChartType.Line;
-                    serieRentabilidad.Color = Color.FromArgb(0, 123, 255); // Azul
-                    serieRentabilidad.BorderWidth = 3;
-                    serieRentabilidad.MarkerStyle = MarkerStyle.Circle;
-                    serieRentabilidad.MarkerSize = 8;
-
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        serieRentabilidad.Points.AddXY(row["Periodo"].ToString(), Convert.ToDouble(row["Rentabilidad"]));
-                    }
-
-                    chartReporte.Series.Add(serieRentabilidad);
-                }
-
-                // Configurar leyenda
-                Legend legend = new Legend("Legend1");
-                legend.Alignment = StringAlignment.Center;
-                legend.Docking = Docking.Bottom;
-                chartReporte.Legends.Add(legend);
-
-                // Mostrar panel de resultados
-                pnlResultados.Visible = true;
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
-            }
-        }
-
-        private void GenerarReporteCombustible(string tipoReporteDetalle)
-        {
-            try
-            {
-                // Crear datos de ejemplo
-                DataTable dt = new DataTable();
-                dt.Columns.Add("Vehiculo", typeof(string));
-                dt.Columns.Add("Fecha", typeof(DateTime));
-                dt.Columns.Add("Combustible", typeof(decimal));
-                dt.Columns.Add("PrecioUnitario", typeof(decimal));
-                dt.Columns.Add("Total", typeof(decimal));
-                dt.Columns.Add("Kilometraje", typeof(decimal));
-                dt.Columns.Add("Rendimiento", typeof(decimal));
-
-                // Datos de ejemplo
-                dt.Rows.Add("ABC-123", DateTime.Now.AddDays(-30), 50.5m, 14.50m, 732.25m, 450.0m, 8.91m);
-                dt.Rows.Add("ABC-123", DateTime.Now.AddDays(-20), 48.2m, 14.80m, 713.36m, 420.0m, 8.71m);
-                dt.Rows.Add("XYZ-456", DateTime.Now.AddDays(-25), 55.8m, 14.50m, 809.10m, 480.0m, 8.60m);
-                dt.Rows.Add("XYZ-456", DateTime.Now.AddDays(-15), 52.3m, 14.80m, 774.04m, 460.0m, 8.80m);
-                dt.Rows.Add("DEF-789", DateTime.Now.AddDays(-10), 60.2m, 14.80m, 890.96m, 510.0m, 8.47m);
-
-                // Configurar GridView
-                gvReporte.Columns.Clear();
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Vehículo", DataField = "Vehiculo", SortExpression = "Vehiculo" });
-                gvReporte.Columns.Add(new BoundField { HeaderText = "Fecha", DataField = "Fecha", SortExpression = "Fecha", DataFormatString = "{0:dd/MM/yyyy}" });
-
-                // Añadir columnas según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "consumo_por_vehiculo":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Combustible (gal)", DataField = "Combustible", SortExpression = "Combustible", DataFormatString = "{0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Kilometraje", DataField = "Kilometraje", SortExpression = "Kilometraje", DataFormatString = "{0:N1} km" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Rendimiento", DataField = "Rendimiento", SortExpression = "Rendimiento", DataFormatString = "{0:N2} km/gal" });
-
-                        litTituloResultados.Text = "Reporte de Consumo por Vehículo";
-                        litTituloGrafico.Text = "Rendimiento por Vehículo";
-                        break;
-
-                    case "gasto_combustible":
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Combustible (gal)", DataField = "Combustible", SortExpression = "Combustible", DataFormatString = "{0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Precio Unitario", DataField = "PrecioUnitario", SortExpression = "PrecioUnitario", DataFormatString = "S/ {0:N2}" });
-                        gvReporte.Columns.Add(new BoundField { HeaderText = "Total", DataField = "Total", SortExpression = "Total", DataFormatString = "S/ {0:N2}" });
-
-                        litTituloResultados.Text = "Reporte de Gasto en Combustible";
-                        litTituloGrafico.Text = "Gasto en Combustible por Vehículo";
-                        break;
-                }
-
-                // Asignar datos al GridView
-                gvReporte.DataSource = dt;
-                gvReporte.DataBind();
-
-                // Generar gráfico
-                chartReporte.Series.Clear();
-                chartReporte.ChartAreas.Clear();
-
-                ChartArea chartArea = new ChartArea("ChartArea1");
-                chartArea.BackColor = Color.Transparent;
-                chartArea.AxisX.Interval = 1;
-                chartArea.AxisY.Title = tipoReporteDetalle == "consumo_por_vehiculo" ? "Rendimiento (km/gal)" : "Gasto Total (S/)";
-                chartReporte.ChartAreas.Add(chartArea);
-
-                Series serie = new Series("Datos");
-                serie.ChartType = SeriesChartType.Column;
-                serie.Color = Color.FromArgb(41, 128, 185);
-
-                // Agrupar datos para el gráfico
-                var datosAgrupados = dt.AsEnumerable()
-                    .GroupBy(r => r.Field<string>("Vehiculo"))
-                    .Select(g => new
-                    {
-                        Vehiculo = g.Key,
-                        Rendimiento = g.Average(r => r.Field<decimal>("Rendimiento")),
-                        GastoTotal = g.Sum(r => r.Field<decimal>("Total"))
-                    })
-                    .ToList();
-
-                foreach (var item in datosAgrupados)
-                {
-                    if (tipoReporteDetalle == "consumo_por_vehiculo")
-                        serie.Points.AddXY(item.Vehiculo, Convert.ToDouble(item.Rendimiento));
-                    else
-                        serie.Points.AddXY(item.Vehiculo, Convert.ToDouble(item.GastoTotal));
-                }
-
-                chartReporte.Series.Add(serie);
-
-                // Mostrar panel de resultados
-                pnlResultados.Visible = true;
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar reporte: " + ex.Message.Replace("'", "\\'") + "');</script>");
-            }
-        }
-
-        private void GenerarGrafico(DataTable dt, string tipoReporteDetalle)
-        {
-            try
-            {
-                // Limpiar gráfico anterior
-                chartReporte.Series.Clear();
-                chartReporte.ChartAreas.Clear();
-
-                // Añadir área del gráfico
-                ChartArea chartArea = new ChartArea("ChartArea1");
-                chartArea.BackColor = Color.Transparent;
-                chartArea.AxisX.Interval = 1;
-                chartArea.AxisY.Title = "Valores";
-                chartArea.AxisY.TitleFont = new Font("Microsoft Sans Serif", 10);
-                chartReporte.ChartAreas.Add(chartArea);
-
-                // Configurar según el tipo de reporte
-                switch (tipoReporteDetalle)
-                {
-                    case "rendimiento_conductor":
-                        // Gráfico de rendimiento
-                        Series serieRendimiento = new Series("Rendimiento");
-                        serieRendimiento.ChartType = SeriesChartType.Column;
-                        serieRendimiento.Color = Color.FromArgb(41, 128, 185);
-
-                        // Agrupar por conductor
-                        var conductores = dt.AsEnumerable()
-                            .GroupBy(r => r.Field<string>("Nombre"))
-                            .Select(g => new
-                            {
-                                Conductor = g.Key,
-                                Rendimiento = g.Average(r => r.Field<decimal>("Rendimiento"))
-                            })
-                            .OrderByDescending(x => x.Rendimiento)
-                            .Take(5)
-                            .ToList();
-
-                        foreach (var conductor in conductores)
-                        {
-                            serieRendimiento.Points.AddXY(conductor.Conductor, (double)conductor.Rendimiento);
-                        }
-
-                        chartReporte.Series.Add(serieRendimiento);
-                        break;
-
-                    case "viajes_conductor":
-                        // Gráfico de viajes
-                        Series serieViajes = new Series("Viajes");
-                        serieViajes.ChartType = SeriesChartType.Column;
-                        serieViajes.Color = Color.FromArgb(155, 89, 182);
-
-                        // Agrupar por conductor
-                        var viajesConductor = dt.AsEnumerable()
-                            .GroupBy(r => r.Field<string>("Nombre"))
-                            .Select(g => new
-                            {
-                                Conductor = g.Key,
-                                Viajes = g.Count()
-                            })
-                            .OrderByDescending(x => x.Viajes)
-                            .Take(5)
-                            .ToList();
-
-                        foreach (var conductor in viajesConductor)
-                        {
-                            serieViajes.Points.AddXY(conductor.Conductor, conductor.Viajes);
-                        }
-
-                        chartReporte.Series.Add(serieViajes);
-                        break;
-
-                    case "ingresos_conductor":
-                        // Gráfico de ingresos vs gastos
-                        Series serieIngresos = new Series("Ingresos");
-                        serieIngresos.ChartType = SeriesChartType.Column;
-                        serieIngresos.Color = Color.FromArgb(40, 167, 69); // Verde
-
-                        Series serieGastos = new Series("Gastos");
-                        serieGastos.ChartType = SeriesChartType.Column;
-                        serieGastos.Color = Color.FromArgb(220, 53, 69); // Rojo
-
-                        // Agrupar por conductor
-                        var ingresosConductor = dt.AsEnumerable()
-                            .GroupBy(r => r.Field<string>("Nombre"))
-                            .Select(g => new
-                            {
-                                Conductor = g.Key,
-                                Ingresos = g.Sum(r => r.Field<decimal>("Ingresos")),
-                                Gastos = g.Sum(r => r.Field<decimal>("Gastos"))
-                            })
-                            .OrderByDescending(x => x.Ingresos)
-                            .Take(5)
-                            .ToList();
-
-                        foreach (var conductor in ingresosConductor)
-                        {
-                            serieIngresos.Points.AddXY(conductor.Conductor, (double)conductor.Ingresos);
-                            serieGastos.Points.AddXY(conductor.Conductor, (double)conductor.Gastos);
-                        }
-
-                        chartReporte.Series.Add(serieIngresos);
-                        chartReporte.Series.Add(serieGastos);
-                        break;
-                }
-
-                // Configurar leyenda
-                Legend legend = new Legend("Legend1");
-                legend.Alignment = StringAlignment.Center;
-                legend.Docking = Docking.Bottom;
-                chartReporte.Legends.Add(legend);
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error
-                Response.Write("<script>alert('Error al generar gráfico: " + ex.Message.Replace("'", "\\'") + "');</script>");
-            }
+            // Esta función será implementada cuando se complete la funcionalidad del modal de detalles
+            Response.Write("<script>alert('Exportación de detalles en desarrollo.');</script>");
         }
 
         #endregion
+
+        public override void VerifyRenderingInServerForm(Control control)
+        {
+            // Necesario para la exportación a Excel/PDF
+            // No realizar validación para permitir la exportación
+        }
     }
 }

@@ -210,6 +210,9 @@
     <Content Include="Views\AgregarCPIC.aspx" />
     <Content Include="Views\AgregarFactura.aspx" />
     <Content Include="Views\AgregarOrdenViaje.aspx" />
+    <Content Include="Views\BuscarAbastecimiento.aspx" />
+    <Content Include="Views\BuscarCPIC.aspx" />
+    <Content Include="Views\BuscarFactura.aspx" />
     <Content Include="Views\Inicio.aspx" />
     <Content Include="Views\Login.aspx" />
     <Content Include="Views\RegistroChoferes.aspx" />
@@ -302,6 +305,27 @@
     </Compile>
     <Compile Include="Models\DniResponse.cs" />
     <Compile Include="Models\DniService.cs" />
+    <Compile Include="Views\BuscarAbastecimiento.aspx.cs">
+      <DependentUpon>BuscarAbastecimiento.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\BuscarAbastecimiento.aspx.designer.cs">
+      <DependentUpon>BuscarAbastecimiento.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BuscarCPIC.aspx.cs">
+      <DependentUpon>BuscarCPIC.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\BuscarCPIC.aspx.designer.cs">
+      <DependentUpon>BuscarCPIC.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BuscarFactura.aspx.cs">
+      <DependentUpon>BuscarFactura.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\BuscarFactura.aspx.designer.cs">
+      <DependentUpon>BuscarFactura.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Views\Inicio.aspx.cs">
       <DependentUpon>Inicio.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
