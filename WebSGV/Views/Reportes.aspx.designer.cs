@@ -438,51 +438,6 @@ namespace WebSGV.Views
         protected global::System.Web.UI.WebControls.Literal litIndicadorAdicional;
 
         /// <summary>
-        /// Control litTituloGrafico.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTituloGrafico;
-
-        /// <summary>
-        /// Control chartReporte.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.DataVisualization.Charting.Chart chartReporte;
-
-        /// <summary>
-        /// Control pnlGraficoSecundario.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlGraficoSecundario;
-
-        /// <summary>
-        /// Control litTituloGraficoSecundario.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litTituloGraficoSecundario;
-
-        /// <summary>
-        /// Control chartSecundario.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.DataVisualization.Charting.Chart chartSecundario;
-
-        /// <summary>
         /// Control gvReporte.
         /// </summary>
         /// <remarks>

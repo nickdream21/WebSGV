@@ -2,339 +2,293 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
-        <div class="row">
-            <!-- Panel lateral de selección de reportes -->
-            <div class="col-md-3">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">
-                            <i class="fas fa-file-alt text-primary mr-2"></i>
-                            Tipos de Reportes
-                        </h5>
+    <div class="row">
+        <!-- Panel lateral de selección de reportes -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-file-alt text-primary mr-2"></i>
+                        Tipos de Reportes
+                    </h5>
 
-                        <div class="list-group">
-                            <asp:LinkButton ID="lnkConductor" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center active" OnClick="lnkTipoReporte_Click" CommandArgument="conductor">
-                                <i class="fas fa-user mr-2"></i> Reportes por Conductor
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkVehiculo" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="vehiculo">
-                                <i class="fas fa-truck mr-2"></i> Reportes por Vehículo
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkPedido" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="pedido">
-                                <i class="fas fa-clipboard-list mr-2"></i> Reportes por Pedido
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkFinanciero" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="financiero">
-                                <i class="fas fa-dollar-sign mr-2"></i> Reportes Financieros
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkCombustible" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="combustible">
-                                <i class="fas fa-gas-pump mr-2"></i> Reportes de Combustible
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkProducto" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="producto">
-                                <i class="fas fa-box mr-2"></i> Reportes por Producto
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="lnkPersonalizado" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="personalizado">
-                                <i class="fas fa-sliders-h mr-2"></i> Reporte Personalizado
-                            </asp:LinkButton>
-                        </div>
+                    <div class="list-group">
+                        <asp:LinkButton ID="lnkConductor" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center active" OnClick="lnkTipoReporte_Click" CommandArgument="conductor">
+                            <i class="fas fa-user mr-2"></i> Reportes por Conductor
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkVehiculo" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="vehiculo">
+                            <i class="fas fa-truck mr-2"></i> Reportes por Vehículo
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkPedido" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="pedido">
+                            <i class="fas fa-clipboard-list mr-2"></i> Reportes por Pedido
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkFinanciero" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="financiero">
+                            <i class="fas fa-dollar-sign mr-2"></i> Reportes Financieros
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkCombustible" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="combustible">
+                            <i class="fas fa-gas-pump mr-2"></i> Reportes de Combustible
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkProducto" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="producto">
+                            <i class="fas fa-box mr-2"></i> Reportes por Producto
+                        </asp:LinkButton>
+                        <asp:LinkButton ID="lnkPersonalizado" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="personalizado">
+                            <i class="fas fa-sliders-h mr-2"></i> Reporte Personalizado
+                        </asp:LinkButton>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Contenido principal -->
-            <div class="col-md-9">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="card-title font-weight-bold mb-0">
-                                <asp:Literal ID="litTituloReporte" runat="server" Text="Reportes por Conductor"></asp:Literal>
-                            </h4>
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title font-weight-bold mb-0">
+                            <asp:Literal ID="litTituloReporte" runat="server" Text="Reportes por Conductor"></asp:Literal>
+                        </h4>
 
-                            <div>
-                                <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#filtrosAvanzadosModal">
-                                    <i class="fas fa-filter mr-1"></i>Filtros Avanzados
-                                </button>
-                                <asp:Button ID="btnExportarExcel" runat="server" CssClass="btn btn-success" Text="Exportar a Excel" OnClick="btnExportarExcel_Click" />
-                                <asp:Button ID="btnExportarPDF" runat="server" CssClass="btn btn-danger ml-2" Text="Exportar a PDF" OnClick="btnExportarPDF_Click" Visible="true" />
-                            </div>
+                        <div>
+                            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#filtrosAvanzadosModal">
+                                <i class="fas fa-filter mr-1"></i>Filtros Avanzados
+                            </button>
+                            <asp:Button ID="btnExportarExcel" runat="server" CssClass="btn btn-success" Text="Exportar a Excel" OnClick="btnExportarExcel_Click" />
+                            <asp:Button ID="btnExportarPDF" runat="server" CssClass="btn btn-danger ml-2" Text="Exportar a PDF" OnClick="btnExportarPDF_Click" Visible="true" />
                         </div>
+                    </div>
 
-                        <!-- Filtros Básicos -->
-                        <div class="bg-light p-3 rounded mb-4">
-                            <div class="row" id="filtrosBasicos">
-                                <div class="col-md-3 mb-3">
-                                    <div class="form-group">
-                                        <label>Fecha Desde</label>
-                                        <asp:TextBox ID="txtFechaDesde" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                                    </div>
+                    <!-- Filtros Básicos -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <div class="row" id="filtrosBasicos">
+                            <div class="col-md-3 mb-3">
+                                <div class="form-group">
+                                    <label>Fecha Desde</label>
+                                    <asp:TextBox ID="txtFechaDesde" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <div class="form-group">
-                                        <label>Fecha Hasta</label>
-                                        <asp:TextBox ID="txtFechaHasta" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                                    </div>
-                                </div>
-
-                                <!-- Filtros específicos por tipo de reporte -->
-                                <!-- Conductor -->
-                                <asp:Panel ID="pnlFiltroConductor" runat="server" CssClass="col-md-3 mb-3">
-                                    <div class="form-group">
-                                        <label>Conductor</label>
-                                        <asp:DropDownList ID="ddlConductor" runat="server" CssClass="form-control" DataTextField="NombreCompleto" DataValueField="idConductor">
-                                            <asp:ListItem Value="" Text="Todos los conductores" Selected="True"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Vehículo -->
-                                <asp:Panel ID="pnlFiltroVehiculo" runat="server" CssClass="col-md-3 mb-3" Visible="false">
-                                    <div class="form-group">
-                                        <label>Vehículo (Tracto)</label>
-                                        <asp:DropDownList ID="ddlVehiculo" runat="server" CssClass="form-control" DataTextField="placaTracto" DataValueField="idTracto">
-                                            <asp:ListItem Value="" Text="Todos los vehículos" Selected="True"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Pedido/CPIC -->
-                                <asp:Panel ID="pnlFiltroPedido" runat="server" CssClass="col-md-3 mb-3" Visible="false">
-                                    <div class="form-group">
-                                        <label>Número de Pedido (CPIC)</label>
-                                        <asp:DropDownList ID="ddlCPIC" runat="server" CssClass="form-control" DataTextField="numeroCPIC" DataValueField="idCPIC">
-                                            <asp:ListItem Value="" Text="Todos los pedidos" Selected="True"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Financiero -->
-                                <asp:Panel ID="pnlFiltroFinanciero" runat="server" CssClass="col-md-3 mb-3" Visible="false">
-                                    <div class="form-group">
-                                        <label>Tipo de Transacción</label>
-                                        <asp:DropDownList ID="ddlTipoTransaccion" runat="server" CssClass="form-control">
-                                            <asp:ListItem Value="" Text="Todas las transacciones" Selected="True"></asp:ListItem>
-                                            <asp:ListItem Value="ingresos" Text="Solo Ingresos"></asp:ListItem>
-                                            <asp:ListItem Value="egresos" Text="Solo Egresos"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Combustible -->
-                                <asp:Panel ID="pnlFiltroCombustible" runat="server" CssClass="col-md-3 mb-3" Visible="false">
-                                    <div class="form-group">
-                                        <label>Lugar de Abastecimiento</label>
-                                        <asp:DropDownList ID="ddlLugarAbastecimiento" runat="server" CssClass="form-control" DataTextField="nombreAbastecimiento" DataValueField="idLugarAbastecimiento">
-                                            <asp:ListItem Value="" Text="Todos los lugares" Selected="True"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Producto -->
-                                <asp:Panel ID="pnlFiltroProducto" runat="server" CssClass="col-md-3 mb-3" Visible="false">
-                                    <div class="form-group">
-                                        <label>Producto</label>
-                                        <asp:DropDownList ID="ddlProducto" runat="server" CssClass="form-control" DataTextField="nombre" DataValueField="idProducto">
-                                            <asp:ListItem Value="" Text="Todos los productos" Selected="True"></asp:ListItem>
-                                        </asp:DropDownList>
-                                    </div>
-                                </asp:Panel>
-
-                                <!-- Filtro Tipo de Reporte -->
-                                <div class="col-md-3 mb-3">
-                                    <div class="form-group">
-                                        <label>Tipo de Reporte</label>
-                                        <asp:DropDownList ID="ddlTipoReporteDetalle" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlTipoReporteDetalle_SelectedIndexChanged">
-                                        </asp:DropDownList>
-                                    </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="form-group">
+                                    <label>Fecha Hasta</label>
+                                    <asp:TextBox ID="txtFechaHasta" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                                 </div>
                             </div>
 
-                            <!-- Filtros personalizados (solo visible cuando se selecciona "Reporte Personalizado") -->
-                            <asp:Panel ID="pnlFiltrosPersonalizados" runat="server" Visible="false">
-                                <hr />
-                                <h6 class="mb-3">Campos a mostrar en el reporte</h6>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkConductorInfo" runat="server" Text="Información del Conductor" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkVehiculoInfo" runat="server" Text="Información del Vehículo" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkRutaInfo" runat="server" Text="Información de la Ruta" CssClass="form-check-input" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkProductoInfo" runat="server" Text="Información del Producto" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkIngresoInfo" runat="server" Text="Información de Ingresos" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkEgresoInfo" runat="server" Text="Información de Egresos" CssClass="form-check-input" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkCombustibleInfo" runat="server" Text="Información de Combustible" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkClienteInfo" runat="server" Text="Información del Cliente" CssClass="form-check-input" />
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <asp:CheckBox ID="chkFacturaInfo" runat="server" Text="Información de Factura" CssClass="form-check-input" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row mt-3">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Agrupar resultados por</label>
-                                            <asp:DropDownList ID="ddlAgrupamiento" runat="server" CssClass="form-control">
-                                                <asp:ListItem Value="" Text="Sin agrupamiento" Selected="True"></asp:ListItem>
-                                                <asp:ListItem Value="conductor" Text="Conductor"></asp:ListItem>
-                                                <asp:ListItem Value="vehiculo" Text="Vehículo"></asp:ListItem>
-                                                <asp:ListItem Value="cliente" Text="Cliente"></asp:ListItem>
-                                                <asp:ListItem Value="producto" Text="Producto"></asp:ListItem>
-                                                <asp:ListItem Value="mes" Text="Mes"></asp:ListItem>
-                                            </asp:DropDownList>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Ordenar por</label>
-                                            <asp:DropDownList ID="ddlOrdenamiento" runat="server" CssClass="form-control">
-                                                <asp:ListItem Value="fecha_desc" Text="Fecha (más reciente primero)" Selected="True"></asp:ListItem>
-                                                <asp:ListItem Value="fecha_asc" Text="Fecha (más antigua primero)"></asp:ListItem>
-                                                <asp:ListItem Value="monto_desc" Text="Monto (mayor a menor)"></asp:ListItem>
-                                                <asp:ListItem Value="monto_asc" Text="Monto (menor a mayor)"></asp:ListItem>
-                                            </asp:DropDownList>
-                                        </div>
-                                    </div>
+                            <!-- Filtros específicos por tipo de reporte -->
+                            <!-- Conductor -->
+                            <asp:Panel ID="pnlFiltroConductor" runat="server" CssClass="col-md-3 mb-3">
+                                <div class="form-group">
+                                    <label>Conductor</label>
+                                    <asp:DropDownList ID="ddlConductor" runat="server" CssClass="form-control" DataTextField="NombreCompleto" DataValueField="idConductor">
+                                        <asp:ListItem Value="" Text="Todos los conductores" Selected="True"></asp:ListItem>
+                                    </asp:DropDownList>
                                 </div>
                             </asp:Panel>
 
-                            <div class="text-right mt-3">
-                                <asp:Button ID="btnLimpiarFiltros" runat="server" CssClass="btn btn-outline-secondary mr-2" Text="Limpiar Filtros" OnClick="btnLimpiarFiltros_Click" />
-                                <asp:Button ID="btnGenerarReporte" runat="server" CssClass="btn btn-primary" Text="Generar Reporte" OnClick="btnGenerarReporte_Click" />
-                            </div>
-                        </div>
-
-                        <!-- Visualización del reporte -->
-                        <asp:Panel ID="pnlResultados" runat="server" Visible="false">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0 font-weight-bold">
-                                    <asp:Literal ID="litTituloResultados" runat="server"></asp:Literal>
-                                </h5>
-                                <div>
-                                    <asp:Label ID="lblTotalRegistros" runat="server" CssClass="badge badge-info p-2"></asp:Label>
-                                </div>
-                            </div>
-
-                            <!-- Resumen de indicadores clave -->
-                            <div class="row mb-4">
-                                <div class="col-md-3">
-                                    <div class="card bg-primary text-white">
-                                        <div class="card-body p-3">
-                                            <h6 class="card-title mb-1">Total Ingresos</h6>
-                                            <h4 class="mb-0"><asp:Literal ID="litTotalIngresos" runat="server"></asp:Literal></h4>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-danger text-white">
-                                        <div class="card-body p-3">
-                                            <h6 class="card-title mb-1">Total Egresos</h6>
-                                            <h4 class="mb-0"><asp:Literal ID="litTotalEgresos" runat="server"></asp:Literal></h4>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-success text-white">
-                                        <div class="card-body p-3">
-                                            <h6 class="card-title mb-1">Balance</h6>
-                                            <h4 class="mb-0"><asp:Literal ID="litBalance" runat="server"></asp:Literal></h4>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-info text-white">
-                                        <div class="card-body p-3">
-                                            <h6 class="card-title mb-1" id="indicadorAdicionalTitulo">
-                                                <asp:Literal ID="litIndicadorAdicionalTitulo" runat="server" Text="Total Combustible"></asp:Literal>
-                                            </h6>
-                                            <h4 class="mb-0"><asp:Literal ID="litIndicadorAdicional" runat="server"></asp:Literal></h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Panel para gráfico -->
-                            <div class="border rounded p-3 mb-4">
-                                <h6 class="mb-3">
-                                    <asp:Literal ID="litTituloGrafico" runat="server" Text="Análisis de Datos"></asp:Literal>
-                                </h6>
-
-                                <div style="height: 350px;">
-                                    <asp:Chart ID="chartReporte" runat="server" Height="300px" Width="600px" BackColor="Transparent">
-                                        <Series>
-                                            <asp:Series Name="Serie1" Color="#28a745" IsValueShownAsLabel="false"></asp:Series>
-                                            <asp:Series Name="Serie2" Color="#dc3545" IsValueShownAsLabel="false"></asp:Series>
-                                        </Series>
-                                        <ChartAreas>
-                                            <asp:ChartArea Name="ChartArea1" BackColor="Transparent">
-                                                <AxisX Interval="1"></AxisX>
-                                                <AxisY Title="Valores" TitleFont="Microsoft Sans Serif, 10pt"></AxisY>
-                                            </asp:ChartArea>
-                                        </ChartAreas>
-                                        <Legends>
-                                            <asp:Legend Name="Legend1" Alignment="Center" Docking="Bottom"></asp:Legend>
-                                        </Legends>
-                                    </asp:Chart>
-                                </div>
-                            </div>
-
-                            <!-- Segunda visualización gráfica opcional -->
-                            <asp:Panel ID="pnlGraficoSecundario" runat="server" Visible="false" CssClass="border rounded p-3 mb-4">
-                                <h6 class="mb-3">
-                                    <asp:Literal ID="litTituloGraficoSecundario" runat="server" Text="Análisis Secundario"></asp:Literal>
-                                </h6>
-                                <div style="height: 350px;">
-                                    <asp:Chart ID="chartSecundario" runat="server" Height="300px" Width="600px" BackColor="Transparent">
-                                        <Series>
-                                            <asp:Series Name="Serie1" Color="#17a2b8" IsValueShownAsLabel="false"></asp:Series>
-                                        </Series>
-                                        <ChartAreas>
-                                            <asp:ChartArea Name="ChartArea1" BackColor="Transparent">
-                                                <AxisX Interval="1"></AxisX>
-                                                <AxisY Title="Valores" TitleFont="Microsoft Sans Serif, 10pt"></AxisY>
-                                            </asp:ChartArea>
-                                        </ChartAreas>
-                                    </asp:Chart>
+                            <!-- Vehículo -->
+                            <asp:Panel ID="pnlFiltroVehiculo" runat="server" CssClass="col-md-3 mb-3" Visible="false">
+                                <div class="form-group">
+                                    <label>Vehículo (Tracto)</label>
+                                    <asp:DropDownList ID="ddlVehiculo" runat="server" CssClass="form-control" DataTextField="placaTracto" DataValueField="idTracto">
+                                        <asp:ListItem Value="" Text="Todos los vehículos" Selected="True"></asp:ListItem>
+                                    </asp:DropDownList>
                                 </div>
                             </asp:Panel>
 
-                            <!-- Tabla de resultados -->
-                            <div class="table-responsive">
-                                <asp:GridView ID="gvReporte" runat="server" CssClass="table table-striped table-bordered"
-                                    AutoGenerateColumns="False" AllowPaging="True" AllowSorting="True"
-                                    PageSize="10" OnPageIndexChanging="gvReporte_PageIndexChanging"
-                                    OnSorting="gvReporte_Sorting">
-                                    <Columns>
-                                        <asp:BoundField DataField="ID" HeaderText="ID" SortExpression="ID" />
-                                        <%-- Las demás columnas se generarán dinámicamente en el code-behind --%>
-                                    </Columns>
-                                    <PagerStyle CssClass="pagination-ys" HorizontalAlign="Center" />
-                                    <HeaderStyle CssClass="bg-light" />
-                                    <FooterStyle CssClass="bg-light font-weight-bold" />
-                                    <EmptyDataTemplate>
-                                        <div class="alert alert-info text-center">
-                                            No se encontraron datos para los criterios seleccionados.
-                                        </div>
-                                    </EmptyDataTemplate>
-                                </asp:GridView>
+                            <!-- Pedido/CPIC -->
+                            <asp:Panel ID="pnlFiltroPedido" runat="server" CssClass="col-md-3 mb-3" Visible="false">
+                                <div class="form-group">
+                                    <label>Número de Pedido (CPIC)</label>
+                                    <asp:DropDownList ID="ddlCPIC" runat="server" CssClass="form-control" DataTextField="numeroCPIC" DataValueField="idCPIC">
+                                        <asp:ListItem Value="" Text="Todos los pedidos" Selected="True"></asp:ListItem>
+                                    </asp:DropDownList>
+                                </div>
+                            </asp:Panel>
+
+                            <!-- Financiero -->
+                            <asp:Panel ID="pnlFiltroFinanciero" runat="server" CssClass="col-md-3 mb-3" Visible="false">
+                                <div class="form-group">
+                                    <label>Tipo de Transacción</label>
+                                    <asp:DropDownList ID="ddlTipoTransaccion" runat="server" CssClass="form-control">
+                                        <asp:ListItem Value="" Text="Todas las transacciones" Selected="True"></asp:ListItem>
+                                        <asp:ListItem Value="ingresos" Text="Solo Ingresos"></asp:ListItem>
+                                        <asp:ListItem Value="egresos" Text="Solo Egresos"></asp:ListItem>
+                                    </asp:DropDownList>
+                                </div>
+                            </asp:Panel>
+
+                            <!-- Combustible -->
+                            <asp:Panel ID="pnlFiltroCombustible" runat="server" CssClass="col-md-3 mb-3" Visible="false">
+                                <div class="form-group">
+                                    <label>Lugar de Abastecimiento</label>
+                                    <asp:DropDownList ID="ddlLugarAbastecimiento" runat="server" CssClass="form-control" DataTextField="nombreAbastecimiento" DataValueField="idLugarAbastecimiento">
+                                        <asp:ListItem Value="" Text="Todos los lugares" Selected="True"></asp:ListItem>
+                                    </asp:DropDownList>
+                                </div>
+                            </asp:Panel>
+
+                            <!-- Producto -->
+                            <asp:Panel ID="pnlFiltroProducto" runat="server" CssClass="col-md-3 mb-3" Visible="false">
+                                <div class="form-group">
+                                    <label>Producto</label>
+                                    <asp:DropDownList ID="ddlProducto" runat="server" CssClass="form-control" DataTextField="nombre" DataValueField="idProducto">
+                                        <asp:ListItem Value="" Text="Todos los productos" Selected="True"></asp:ListItem>
+                                    </asp:DropDownList>
+                                </div>
+                            </asp:Panel>
+
+                            <!-- Filtro Tipo de Reporte -->
+                            <div class="col-md-3 mb-3">
+                                <div class="form-group">
+                                    <label>Tipo de Reporte</label>
+                                    <asp:DropDownList ID="ddlTipoReporteDetalle" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlTipoReporteDetalle_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros personalizados (solo visible cuando se selecciona "Reporte Personalizado") -->
+                        <asp:Panel ID="pnlFiltrosPersonalizados" runat="server" Visible="false">
+                            <hr />
+                            <h6 class="mb-3">Campos a mostrar en el reporte</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkConductorInfo" runat="server" Text="Información del Conductor" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkVehiculoInfo" runat="server" Text="Información del Vehículo" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkRutaInfo" runat="server" Text="Información de la Ruta" CssClass="form-check-input" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkProductoInfo" runat="server" Text="Información del Producto" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkIngresoInfo" runat="server" Text="Información de Ingresos" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkEgresoInfo" runat="server" Text="Información de Egresos" CssClass="form-check-input" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkCombustibleInfo" runat="server" Text="Información de Combustible" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkClienteInfo" runat="server" Text="Información del Cliente" CssClass="form-check-input" />
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <asp:CheckBox ID="chkFacturaInfo" runat="server" Text="Información de Factura" CssClass="form-check-input" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Agrupar resultados por</label>
+                                        <asp:DropDownList ID="ddlAgrupamiento" runat="server" CssClass="form-control">
+                                            <asp:ListItem Value="" Text="Sin agrupamiento" Selected="True"></asp:ListItem>
+                                            <asp:ListItem Value="conductor" Text="Conductor"></asp:ListItem>
+                                            <asp:ListItem Value="vehiculo" Text="Vehículo"></asp:ListItem>
+                                            <asp:ListItem Value="cliente" Text="Cliente"></asp:ListItem>
+                                            <asp:ListItem Value="producto" Text="Producto"></asp:ListItem>
+                                            <asp:ListItem Value="mes" Text="Mes"></asp:ListItem>
+                                        </asp:DropDownList>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Ordenar por</label>
+                                        <asp:DropDownList ID="ddlOrdenamiento" runat="server" CssClass="form-control">
+                                            <asp:ListItem Value="fecha_desc" Text="Fecha (más reciente primero)" Selected="True"></asp:ListItem>
+                                            <asp:ListItem Value="fecha_asc" Text="Fecha (más antigua primero)"></asp:ListItem>
+                                            <asp:ListItem Value="monto_desc" Text="Monto (mayor a menor)"></asp:ListItem>
+                                            <asp:ListItem Value="monto_asc" Text="Monto (menor a mayor)"></asp:ListItem>
+                                        </asp:DropDownList>
+                                    </div>
+                                </div>
                             </div>
                         </asp:Panel>
+
+                        <div class="text-right mt-3">
+                            <asp:Button ID="btnLimpiarFiltros" runat="server" CssClass="btn btn-outline-secondary mr-2" Text="Limpiar Filtros" OnClick="btnLimpiarFiltros_Click" />
+                            <asp:Button ID="btnGenerarReporte" runat="server" CssClass="btn btn-primary" Text="Generar Reporte" OnClick="btnGenerarReporte_Click" />
+                        </div>
                     </div>
+
+                    <!-- Visualización del reporte -->
+                    <asp:Panel ID="pnlResultados" runat="server" Visible="false">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 font-weight-bold">
+                                <asp:Literal ID="litTituloResultados" runat="server"></asp:Literal>
+                            </h5>
+                            <div>
+                                <asp:Label ID="lblTotalRegistros" runat="server" CssClass="badge badge-info p-2"></asp:Label>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de indicadores clave -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title mb-1">Total Ingresos</h6>
+                                        <h4 class="mb-0"><asp:Literal ID="litTotalIngresos" runat="server"></asp:Literal></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title mb-1">Total Egresos</h6>
+                                        <h4 class="mb-0"><asp:Literal ID="litTotalEgresos" runat="server"></asp:Literal></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title mb-1">Balance</h6>
+                                        <h4 class="mb-0"><asp:Literal ID="litBalance" runat="server"></asp:Literal></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title mb-1" id="indicadorAdicionalTitulo">
+                                            <asp:Literal ID="litIndicadorAdicionalTitulo" runat="server" Text="Total Combustible"></asp:Literal>
+                                        </h6>
+                                        <h4 class="mb-0"><asp:Literal ID="litIndicadorAdicional" runat="server"></asp:Literal></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de resultados -->
+                        <div class="table-responsive">
+                            <asp:GridView ID="gvReporte" runat="server" CssClass="table table-striped table-bordered"
+                                AutoGenerateColumns="False" AllowPaging="True" AllowSorting="True"
+                                PageSize="10" OnPageIndexChanging="gvReporte_PageIndexChanging"
+                                OnSorting="gvReporte_Sorting">
+                                <Columns>
+                                    <asp:BoundField DataField="ID" HeaderText="ID" SortExpression="ID" />
+                                    <%-- Las demás columnas se generarán dinámicamente en el code-behind --%>
+                                </Columns>
+                                <PagerStyle CssClass="pagination-ys" HorizontalAlign="Center" />
+                                <HeaderStyle CssClass="bg-light" />
+                                <FooterStyle CssClass="bg-light font-weight-bold" />
+                                <EmptyDataTemplate>
+                                    <div class="alert alert-info text-center">
+                                        No se encontraron datos para los criterios seleccionados.
+                                    </div>
+                                </EmptyDataTemplate>
+                            </asp:GridView>
+                        </div>
+                    </asp:Panel>
                 </div>
             </div>
         </div>
@@ -347,7 +301,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="filtrosAvanzadosModalLabel">Filtros Avanzados</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -615,7 +569,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="detalleOrdenViajeModalLabel">Detalle de Orden de Viaje</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
