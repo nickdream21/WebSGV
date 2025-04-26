@@ -98,9 +98,8 @@
                             <asp:Panel ID="pnlFiltroPedido" runat="server" CssClass="col-md-3 mb-3" Visible="false">
                                 <div class="form-group">
                                     <label>Número de Pedido (CPIC)</label>
-                                    <asp:DropDownList ID="ddlCPIC" runat="server" CssClass="form-control" DataTextField="numeroCPIC" DataValueField="idCPIC">
-                                        <asp:ListItem Value="" Text="Todos los pedidos" Selected="True"></asp:ListItem>
-                                    </asp:DropDownList>
+                                    <asp:TextBox ID="txtNumeroPedido" runat="server" CssClass="form-control" placeholder="Ej. PED12345"></asp:TextBox>
+
                                 </div>
                             </asp:Panel>
 

@@ -28,7 +28,7 @@ namespace WebSGV.Views
                 // Cargar datos iniciales en los dropdown
                 CargarConductores();
                 CargarVehiculos();
-                CargarPedidos();
+                //CargarPedidos();
                 CargarProductos();
                 CargarLugaresAbastecimiento();
                 CargarTiposReporteDetalle("conductor"); // Por defecto carga los tipos de reporte para conductor
@@ -106,39 +106,7 @@ namespace WebSGV.Views
             }
         }
 
-        private void CargarPedidos()
-        {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    string query = @"SELECT idCPIC, numeroCPIC 
-                                  FROM CPIC 
-                                  ORDER BY fechaEmision DESC";
 
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    conn.Open();
-
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
-
-                    ddlCPIC.DataSource = dt;
-                    ddlCPIC.DataBind();
-
-                    // Agregar el item por defecto
-                    ddlCPIC.Items.Insert(0, new ListItem("Todos los pedidos", ""));
-                }
-            }
-            catch (Exception ex)
-            {
-                // En caso de error, simplemente asegurarse de que el dropdown tenga al menos un item
-                if (ddlCPIC.Items.Count == 0)
-                    ddlCPIC.Items.Add(new ListItem("Todos los pedidos", ""));
-
-                System.Diagnostics.Debug.WriteLine("Error al cargar pedidos: " + ex.Message);
-            }
-        }
 
         private void CargarProductos()
         {
@@ -352,7 +320,6 @@ namespace WebSGV.Views
             // Restablecer dropdowns a su valor inicial
             if (ddlConductor.Items.Count > 0) ddlConductor.SelectedIndex = 0;
             if (ddlVehiculo.Items.Count > 0) ddlVehiculo.SelectedIndex = 0;
-            if (ddlCPIC.Items.Count > 0) ddlCPIC.SelectedIndex = 0;
             if (ddlTipoTransaccion.Items.Count > 0) ddlTipoTransaccion.SelectedIndex = 0;
             if (ddlLugarAbastecimiento.Items.Count > 0) ddlLugarAbastecimiento.SelectedIndex = 0;
             if (ddlProducto.Items.Count > 0) ddlProducto.SelectedIndex = 0;

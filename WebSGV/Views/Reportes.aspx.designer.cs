@@ -168,13 +168,13 @@ namespace WebSGV.Views
         protected global::System.Web.UI.WebControls.Panel pnlFiltroPedido;
 
         /// <summary>
-        /// Control ddlCPIC.
+        /// Control txtNumeroPedido.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCPIC;
+        protected global::System.Web.UI.WebControls.TextBox txtNumeroPedido;
 
         /// <summary>
         /// Control pnlFiltroFinanciero.
