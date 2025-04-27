@@ -392,11 +392,15 @@ namespace WebSGV.Views
         {
             try
             {
-                // Si no hay datos, generar el reporte primero
-                if (gvReporte.Rows.Count == 0)
-                {
-                    GenerarReporte();
-                }
+                // Guardar el estado original de la paginación
+                bool paginacionOriginal = gvReporte.AllowPaging;
+                int paginaOriginal = gvReporte.PageIndex;
+
+                // Desactivar paginación para obtener todos los registros
+                gvReporte.AllowPaging = false;
+
+                // Regenerar el reporte para obtener todos los registros
+                GenerarReporte();
 
                 using (var workbook = new XLWorkbook())
                 {
@@ -594,6 +598,14 @@ namespace WebSGV.Views
                         Response.End();
                     }
                 }
+
+                // Restaurar la paginación original
+                gvReporte.AllowPaging = paginacionOriginal;
+                if (paginacionOriginal)
+                {
+                    gvReporte.PageIndex = paginaOriginal;
+                    GenerarReporte(); // Volver a cargar el reporte con la paginación original
+                }
             }
             catch (ThreadAbortException)
             {
@@ -636,6 +648,8 @@ namespace WebSGV.Views
             }
         }
 
+
+
         private void GenerarReporte()
         {
             string tipoReporte = ObtenerTipoReporteSeleccionado();
@@ -656,11 +670,19 @@ namespace WebSGV.Views
                 {
                     GenerarReporteConductoresAsignados();
                 }
+                else if (tipoReporteDetalle == "financiero_pedido")
+                {
+                    GenerarReporteBalanceFinanciero();
+                }
                 else
                 {
                     // Para los demás tipos de reporte de pedido, usar el reporte general de pedido
                     GenerarReportePedido();
                 }
+            }
+            else if (tipoReporte == "financiero" && tipoReporteDetalle == "balance_financiero")
+            {
+                GenerarReporteBalanceFinanciero();
             }
             else
             {
@@ -669,6 +691,7 @@ namespace WebSGV.Views
 
             pnlResultados.Visible = true;
         }
+
 
 
         // Implementamos el método para generar reportes de pedido
@@ -1190,18 +1213,11 @@ namespace WebSGV.Views
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     string query = @"
-            WITH PedidosCPICs AS (
-                -- Encontrar todos los CPICs relacionados con el pedido especificado
-                SELECT DISTINCT c.idCPIC, c.numeroCPIC, f.numeroPedido
-                FROM CPIC c
-                JOIN Factura f ON c.idFactura = f.idFactura
-                WHERE (@numeroPedido = '' OR f.numeroPedido = @numeroPedido)
-            )
             SELECT 
                 ov.idOrdenViaje,
                 ov.numeroOrdenViaje AS NroOrdenViaje,
-                pc.numeroPedido AS NumeroPedido,
-                pc.numeroCPIC AS numeroCPIC,
+                f.numeroPedido AS NumeroPedido,
+                cpic.numeroCPIC,
                 c.DNI,
                 c.carnetExtranjeria,
                 CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
@@ -1229,7 +1245,8 @@ namespace WebSGV.Views
                  LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
                  WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
             FROM OrdenViaje ov
-            JOIN PedidosCPICs pc ON ov.idCPIC = pc.idCPIC
+            JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            JOIN Factura f ON cpic.idFactura = f.idFactura
             LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
             LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
             LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
@@ -1238,9 +1255,14 @@ namespace WebSGV.Views
             WHERE 1=1
             ";
 
-                    // Si no hay número de pedido, filtramos por fecha
-                    if (string.IsNullOrEmpty(numeroPedido))
+                    // Si hay número de pedido, ese es prioritario
+                    if (!string.IsNullOrEmpty(numeroPedido))
                     {
+                        query += " AND f.numeroPedido = @numeroPedido";
+                    }
+                    else
+                    {
+                        // Si no hay número de pedido, filtramos por fecha
                         query += " AND ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta";
                     }
 
@@ -1267,7 +1289,11 @@ namespace WebSGV.Views
                     // Añadimos parámetros a la consulta
                     cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde);
                     cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta);
-                    cmd.Parameters.AddWithValue("@numeroPedido", numeroPedido);
+
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroPedido", numeroPedido);
+                    }
 
                     if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
                     {
@@ -1435,6 +1461,284 @@ namespace WebSGV.Views
             return "conductor"; // Por defecto
         }
 
+        //REPORTE BALANCEFINANCIERO  POR PEDIDO
+
+        private void GenerarReporteBalanceFinanciero()
+        {
+            DateTime fechaDesde = DateTime.Parse(txtFechaDesde.Text);
+            DateTime fechaHasta = DateTime.Parse(txtFechaHasta.Text);
+            string numeroPedido = txtNumeroPedido.Text.Trim();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"
+            -- Ingresos
+            SELECT 
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                f.numeroPedido AS NumeroPedido,
+                ov.fechaSalida AS FechaTransaccion,
+                'Ingreso' AS TipoTransaccion,
+                CASE 
+                    WHEN i.despachoSoles > 0 OR i.despachoDolares > 0 THEN 'Despacho'
+                    WHEN i.prestamoSoles > 0 OR i.prestamosDolares > 0 THEN 'Préstamo'
+                    WHEN i.mensualidadSoles > 0 OR i.mensualidadDolares > 0 THEN 'Mensualidad'
+                    WHEN i.otrosSoles > 0 OR i.otrosDolares > 0 THEN 'Otros'
+                    ELSE 'No especificado'
+                END AS Concepto,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS Conductor,
+                cl.nombre AS Cliente,
+                ISNULL(i.despachoSoles, 0) + ISNULL(i.prestamoSoles, 0) + 
+                ISNULL(i.mensualidadSoles, 0) + ISNULL(i.otrosSoles, 0) AS IngresoSoles,
+                ISNULL(i.despachoDolares, 0) + ISNULL(i.prestamosDolares, 0) + 
+                ISNULL(i.mensualidadDolares, 0) + ISNULL(i.otrosDolares, 0) AS IngresoDolares,
+                0 AS EgresoSoles,
+                0 AS EgresoDolares
+            FROM OrdenViaje ov
+            JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            JOIN Factura f ON cpic.idFactura = f.idFactura
+            JOIN Ingresos i ON ov.numeroOrdenViaje = i.numeroOrdenViaje
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            WHERE 1=1
+            
+            UNION ALL
+            
+            -- Egresos
+            SELECT 
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                f.numeroPedido AS NumeroPedido,
+                ov.fechaSalida AS FechaTransaccion,
+                'Egreso' AS TipoTransaccion,
+                CASE 
+                    WHEN e.peajesSoles > 0 OR e.peajesDolares > 0 THEN 'Peaje'
+                    WHEN e.alimentacionSoles > 0 OR e.alimentacionDolares > 0 THEN 'Alimentación'
+                    WHEN e.combustibleSoles > 0 OR e.combustibleDolares > 0 THEN 'Combustible'
+                    WHEN e.hospedajeSoles > 0 OR e.hospedajeDolares > 0 THEN 'Hospedaje'
+                    ELSE 'Otros gastos'
+                END AS Concepto,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS Conductor,
+                cl.nombre AS Cliente,
+                0 AS IngresoSoles,
+                0 AS IngresoDolares,
+                ISNULL(e.peajesSoles, 0) + ISNULL(e.alimentacionSoles, 0) + 
+                ISNULL(e.apoyoseguridadSoles, 0) + ISNULL(e.reparacionesVariosSoles, 0) + 
+                ISNULL(e.movilidadSoles, 0) + ISNULL(e.hospedajeSoles, 0) + 
+                ISNULL(e.combustibleSoles, 0) + ISNULL(e.encarpada_desencarpadaSoles, 0) AS EgresoSoles,
+                ISNULL(e.peajesDolares, 0) + ISNULL(e.alimentacionDolares, 0) + 
+                ISNULL(e.apoyoseguridadDolares, 0) + ISNULL(e.repacionesVariosDolares, 0) + 
+                ISNULL(e.movilidadDolares, 0) + ISNULL(e.hospedajeDolares, 0) + 
+                ISNULL(e.combustibleDolares, 0) + ISNULL(e.encarpada_desencarpadaDolares, 0) AS EgresoDolares
+            FROM OrdenViaje ov
+            JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            JOIN Factura f ON cpic.idFactura = f.idFactura
+            JOIN Egresos e ON ov.numeroOrdenViaje = e.numeroOrdenViaje
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            WHERE 1=1
+            
+            UNION ALL
+            
+            -- Categorías Adicionales (gastos adicionales)
+            SELECT 
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                f.numeroPedido AS NumeroPedido,
+                ov.fechaSalida AS FechaTransaccion,
+                'Egreso' AS TipoTransaccion,
+                ca.nombreCategoria AS Concepto,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS Conductor,
+                cl.nombre AS Cliente,
+                0 AS IngresoSoles,
+                0 AS IngresoDolares,
+                ISNULL(ca.soles, 0) AS EgresoSoles,
+                ISNULL(ca.dolares, 0) AS EgresoDolares
+            FROM OrdenViaje ov
+            JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            JOIN Factura f ON cpic.idFactura = f.idFactura
+            JOIN CategoriasAdicionales ca ON ov.numeroOrdenViaje = ca.numeroOrdenViaje
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            WHERE 1=1
+            ";
+
+                    // Aplicamos filtros según lo que haya ingresado el usuario
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        // Si hay número de pedido, ese es prioritario
+                        query += " AND f.numeroPedido = @numeroPedido";
+                    }
+                    else
+                    {
+                        // Si no hay número de pedido, filtramos por fecha
+                        query += " AND ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta";
+                    }
+
+                    // Filtros adicionales si se seleccionó cliente o tipo de transacción
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        query += " AND ov.idCliente = @idCliente";
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlTipoTransaccion.SelectedValue))
+                    {
+                        query += " AND TipoTransaccion = @tipoTransaccion";
+                    }
+
+                    // Valores mínimos y máximos si están presentes
+                    if (!string.IsNullOrEmpty(txtMontoMinimo.Text))
+                    {
+                        query += " AND ((IngresoSoles >= @montoMinimo) OR (IngresoDolares >= @montoMinimo) OR (EgresoSoles >= @montoMinimo) OR (EgresoDolares >= @montoMinimo))";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtMontoMaximo.Text))
+                    {
+                        query += " AND ((IngresoSoles <= @montoMaximo) OR (IngresoDolares <= @montoMaximo) OR (EgresoSoles <= @montoMaximo) OR (EgresoDolares <= @montoMaximo))";
+                    }
+
+                    query += " ORDER BY FechaTransaccion, NroOrdenViaje, TipoTransaccion";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    // Añadimos parámetros a la consulta
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta);
+
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroPedido", numeroPedido);
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@idCliente", ddlClientePedido.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlTipoTransaccion.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@tipoTransaccion", ddlTipoTransaccion.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(txtMontoMinimo.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@montoMinimo", decimal.Parse(txtMontoMinimo.Text));
+                    }
+
+                    if (!string.IsNullOrEmpty(txtMontoMaximo.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@montoMaximo", decimal.Parse(txtMontoMaximo.Text));
+                    }
+
+                    conn.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    // Configurar el GridView para mostrar los datos
+                    ConfigurarGridViewBalanceFinanciero(dt);
+
+                    // Calcular los indicadores para el reporte
+                    CalcularIndicadoresBalanceFinanciero(dt);
+
+                    // Actualizar la interfaz
+                    string titulo = !string.IsNullOrEmpty(numeroPedido)
+                        ? $"Balance Financiero - Pedido: {numeroPedido}"
+                        : "Balance Financiero";
+
+                    litTituloResultados.Text = titulo;
+                    lblTotalRegistros.Text = $"Total registros: {dt.Rows.Count}";
+                    gvReporte.DataSource = dt;
+                    gvReporte.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, creamos una tabla vacía con las columnas esperadas
+                DataTable dt = new DataTable();
+                dt.Columns.Add("NroOrdenViaje", typeof(string));
+                dt.Columns.Add("NumeroPedido", typeof(string));
+                dt.Columns.Add("FechaTransaccion", typeof(DateTime));
+                dt.Columns.Add("TipoTransaccion", typeof(string));
+                dt.Columns.Add("Concepto", typeof(string));
+                dt.Columns.Add("Conductor", typeof(string));
+                dt.Columns.Add("Cliente", typeof(string));
+                dt.Columns.Add("IngresoSoles", typeof(decimal));
+                dt.Columns.Add("IngresoDolares", typeof(decimal));
+                dt.Columns.Add("EgresoSoles", typeof(decimal));
+                dt.Columns.Add("EgresoDolares", typeof(decimal));
+
+                ConfigurarGridViewBalanceFinanciero(dt);
+                CalcularIndicadoresBalanceFinanciero(dt);
+
+                string titulo = !string.IsNullOrEmpty(numeroPedido)
+                    ? $"Balance Financiero - Pedido: {numeroPedido}"
+                    : "Balance Financiero";
+
+                litTituloResultados.Text = titulo;
+                lblTotalRegistros.Text = "Total registros: 0";
+                gvReporte.DataSource = dt;
+                gvReporte.DataBind();
+
+                // Registrar el error y mostrar mensaje
+                System.Diagnostics.Debug.WriteLine("Error al generar balance financiero: " + ex.Message);
+                ScriptManager.RegisterStartupScript(this, GetType(), "errorReporte",
+                    "alert('Error al generar el balance financiero: " + ex.Message.Replace("'", "\\'") + "');", true);
+            }
+        }
+
+        private void ConfigurarGridViewBalanceFinanciero(DataTable dt)
+        {
+            gvReporte.Columns.Clear();
+
+            gvReporte.Columns.Add(new BoundField { DataField = "NroOrdenViaje", HeaderText = "Nº Orden", SortExpression = "NroOrdenViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NumeroPedido", HeaderText = "Número de Pedido", SortExpression = "NumeroPedido" });
+            gvReporte.Columns.Add(new BoundField { DataField = "FechaTransaccion", HeaderText = "Fecha", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "FechaTransaccion" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Concepto", HeaderText = "Concepto", SortExpression = "Concepto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "TipoTransaccion", HeaderText = "Tipo", SortExpression = "TipoTransaccion" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Conductor", HeaderText = "Conductor", SortExpression = "Conductor" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
+            gvReporte.Columns.Add(new BoundField { DataField = "IngresoSoles", HeaderText = "Ingreso S/", DataFormatString = "{0:N2}", SortExpression = "IngresoSoles", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
+            gvReporte.Columns.Add(new BoundField { DataField = "IngresoDolares", HeaderText = "Ingreso $", DataFormatString = "{0:N2}", SortExpression = "IngresoDolares", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
+            gvReporte.Columns.Add(new BoundField { DataField = "EgresoSoles", HeaderText = "Egreso S/", DataFormatString = "{0:N2}", SortExpression = "EgresoSoles", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
+            gvReporte.Columns.Add(new BoundField { DataField = "EgresoDolares", HeaderText = "Egreso $", DataFormatString = "{0:N2}", SortExpression = "EgresoDolares", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
+        }
+
+        private void CalcularIndicadoresBalanceFinanciero(DataTable dt)
+        {
+            decimal totalIngresosSoles = 0;
+            decimal totalIngresosDolares = 0;
+            decimal totalEgresosSoles = 0;
+            decimal totalEgresosDolares = 0;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["IngresoSoles"] != DBNull.Value)
+                    totalIngresosSoles += Convert.ToDecimal(row["IngresoSoles"]);
+
+                if (row["IngresoDolares"] != DBNull.Value)
+                    totalIngresosDolares += Convert.ToDecimal(row["IngresoDolares"]);
+
+                if (row["EgresoSoles"] != DBNull.Value)
+                    totalEgresosSoles += Convert.ToDecimal(row["EgresoSoles"]);
+
+                if (row["EgresoDolares"] != DBNull.Value)
+                    totalEgresosDolares += Convert.ToDecimal(row["EgresoDolares"]);
+            }
+
+            decimal balanceSoles = totalIngresosSoles - totalEgresosSoles;
+            decimal balanceDolares = totalIngresosDolares - totalEgresosDolares;
+
+            // Actualizar interfaz con los indicadores
+            litTotalIngresos.Text = $"S/ {totalIngresosSoles:N2} | $ {totalIngresosDolares:N2}";
+            litTotalEgresos.Text = $"S/ {totalEgresosSoles:N2} | $ {totalEgresosDolares:N2}";
+            litBalance.Text = $"S/ {balanceSoles:N2} | $ {balanceDolares:N2}";
+            litIndicadorAdicionalTitulo.Text = "Transacciones";
+            litIndicadorAdicional.Text = $"{dt.Rows.Count}";
+        }
+
+
+
+        //REPORTE VAIJE POR CONDUCTOR
         private void GenerarReporteViajesConductor()
         {
             DateTime fechaDesde = DateTime.Parse(txtFechaDesde.Text);
