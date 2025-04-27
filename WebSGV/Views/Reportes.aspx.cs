@@ -387,6 +387,7 @@ namespace WebSGV.Views
             GenerarReporte(); // Volver a cargar los datos con el ordenamiento actualizado
         }
 
+        // Modificar el método btnExportarExcel_Click para arreglar el problema de espacios y usar el nombre correcto
         protected void btnExportarExcel_Click(object sender, EventArgs e)
         {
             try
@@ -399,19 +400,46 @@ namespace WebSGV.Views
 
                 using (var workbook = new XLWorkbook())
                 {
-                    var worksheet = workbook.Worksheets.Add("Reporte Viajes");
+                    var worksheet = workbook.Worksheets.Add("Reporte");
 
-                    // Título
+                    string numeroPedido = txtNumeroPedido.Text.Trim();
+                    string tipoReporte = ObtenerTipoReporteSeleccionado();
+
+                    // Modificar el título si estamos filtrando por número de pedido
                     string tituloReporte = litTituloResultados.Text;
+                    if (!string.IsNullOrEmpty(numeroPedido) && tipoReporte == "pedido")
+                    {
+                        tituloReporte = $"Reporte de Pedido: {numeroPedido}";
+                    }
+
+                    // Título del reporte
                     worksheet.Cell(1, 1).Value = tituloReporte;
                     worksheet.Cell(1, 1).Style.Font.Bold = true;
                     worksheet.Cell(1, 1).Style.Font.FontSize = 14;
                     worksheet.Range(1, 1, 1, 15).Merge();
                     worksheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    // Período
-                    worksheet.Cell(2, 1).Value = "Período: " + txtFechaDesde.Text + " al " + txtFechaHasta.Text;
-                    worksheet.Range(2, 1, 2, 15).Merge();
+                    // Añadir información del número de pedido en una línea específica si se busca por pedido
+                    if (!string.IsNullOrEmpty(numeroPedido) && tipoReporte == "pedido")
+                    {
+                        worksheet.Cell(2, 1).Value = $"Número de Pedido: {numeroPedido}";
+                        worksheet.Cell(2, 1).Style.Font.Bold = true;
+                        worksheet.Range(2, 1, 2, 15).Merge();
+                        worksheet.Cell(2, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                        // Período en línea 3
+                        worksheet.Cell(3, 1).Value = "Período: " + txtFechaDesde.Text + " al " + txtFechaHasta.Text;
+                        worksheet.Range(3, 1, 3, 15).Merge();
+                    }
+                    else
+                    {
+                        // Período en línea 2 si no hay pedido específico
+                        worksheet.Cell(2, 1).Value = "Período: " + txtFechaDesde.Text + " al " + txtFechaHasta.Text;
+                        worksheet.Range(2, 1, 2, 15).Merge();
+                    }
+
+                    // Calcular la fila donde empiezan los encabezados
+                    int headerRow = (!string.IsNullOrEmpty(numeroPedido) && tipoReporte == "pedido") ? 5 : 4;
 
                     // Obtener columnas visibles (excluyendo botones)
                     List<string> columnHeaders = new List<string>();
@@ -429,13 +457,13 @@ namespace WebSGV.Views
                     // Encabezados
                     for (int i = 0; i < columnHeaders.Count; i++)
                     {
-                        worksheet.Cell(4, i + 1).Value = columnHeaders[i];
-                        worksheet.Cell(4, i + 1).Style.Font.Bold = true;
-                        worksheet.Cell(4, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                        worksheet.Cell(4, i + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(headerRow, i + 1).Value = columnHeaders[i];
+                        worksheet.Cell(headerRow, i + 1).Style.Font.Bold = true;
+                        worksheet.Cell(headerRow, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                        worksheet.Cell(headerRow, i + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                     }
 
-                    // Datos
+                    // Datos - CORREGIDO: No eliminamos espacios
                     for (int rowIndex = 0; rowIndex < gvReporte.Rows.Count; rowIndex++)
                     {
                         GridViewRow row = gvReporte.Rows[rowIndex];
@@ -445,36 +473,48 @@ namespace WebSGV.Views
                             int originalColIndex = columnIndexes[colIdx];
                             string cellValue = "";
 
-                            if (row.Cells[originalColIndex].Controls.Count > 0)
+                            if (originalColIndex < row.Cells.Count)
                             {
-                                foreach (Control control in row.Cells[originalColIndex].Controls)
+                                if (row.Cells[originalColIndex].Controls.Count > 0)
                                 {
-                                    if (control is Label)
-                                        cellValue = ((Label)control).Text;
-                                    else if (control is LinkButton)
-                                        cellValue = ((LinkButton)control).Text;
-                                    else if (control is HyperLink)
-                                        cellValue = ((HyperLink)control).Text;
+                                    foreach (Control control in row.Cells[originalColIndex].Controls)
+                                    {
+                                        if (control is Label)
+                                            cellValue = ((Label)control).Text;
+                                        else if (control is LinkButton)
+                                            cellValue = ((LinkButton)control).Text;
+                                        else if (control is HyperLink)
+                                            cellValue = ((HyperLink)control).Text;
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                cellValue = row.Cells[originalColIndex].Text;
+                                else
+                                {
+                                    cellValue = row.Cells[originalColIndex].Text;
+                                }
+
+                                // Solo decodificar HTML y eliminar &nbsp;, preservando espacios normales
+                                cellValue = HttpUtility.HtmlDecode(cellValue).Replace("&nbsp;", "").Trim();
                             }
 
-                            cellValue = HttpUtility.HtmlDecode(cellValue).Replace(" ", "").Trim();
-                            worksheet.Cell(rowIndex + 5, colIdx + 1).Value = cellValue;
-                            worksheet.Cell(rowIndex + 5, colIdx + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            worksheet.Cell(rowIndex + headerRow + 1, colIdx + 1).Value = cellValue;
+                            worksheet.Cell(rowIndex + headerRow + 1, colIdx + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                            // Destacar el número de pedido si coincide con el buscado
+                            if (columnHeaders[colIdx] == "Nº Pedido" && cellValue == numeroPedido)
+                            {
+                                worksheet.Cell(rowIndex + headerRow + 1, colIdx + 1).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                                worksheet.Cell(rowIndex + headerRow + 1, colIdx + 1).Style.Font.Bold = true;
+                            }
 
                             if (rowIndex % 2 == 1)
                             {
-                                worksheet.Cell(rowIndex + 5, colIdx + 1).Style.Fill.BackgroundColor = XLColor.FromHtml("#F9F9F9");
+                                worksheet.Cell(rowIndex + headerRow + 1, colIdx + 1).Style.Fill.BackgroundColor = XLColor.FromHtml("#F9F9F9");
                             }
                         }
                     }
 
                     // Resumen
-                    int summaryRow = (gvReporte.Rows.Count > 0 ? gvReporte.Rows.Count : 0) + 7;
+                    int summaryRow = (gvReporte.Rows.Count > 0 ? gvReporte.Rows.Count : 0) + headerRow + 3;
                     worksheet.Cell(summaryRow, 1).Value = "Resumen";
                     worksheet.Cell(summaryRow, 1).Style.Font.Bold = true;
                     summaryRow++;
@@ -505,8 +545,43 @@ namespace WebSGV.Views
                     // Ajustar ancho de columnas
                     worksheet.Columns().AdjustToContents();
 
+                    // Determinar el tipo de reporte para el nombre del archivo
+                    string prefijo = "Reporte_";
+
+                    // Seleccionar el prefijo según el tipo de reporte
+                    switch (tipoReporte)
+                    {
+                        case "conductor":
+                            prefijo += "Viajes_Conductor_";
+                            break;
+                        case "vehiculo":
+                            prefijo += "Viajes_Vehiculo_";
+                            break;
+                        case "pedido":
+                            if (!string.IsNullOrEmpty(numeroPedido))
+                                prefijo += "Pedido_" + numeroPedido + "_";
+                            else
+                                prefijo += "Pedidos_";
+                            break;
+                        case "financiero":
+                            prefijo += "Financiero_";
+                            break;
+                        case "combustible":
+                            prefijo += "Combustible_";
+                            break;
+                        case "producto":
+                            prefijo += "Producto_";
+                            break;
+                        case "personalizado":
+                            prefijo += "Personalizado_";
+                            break;
+                        default:
+                            prefijo += "General_";
+                            break;
+                    }
+
                     // Enviar al navegador
-                    string fileName = "Reporte_Viajes_Conductor_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                    string fileName = prefijo + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
                     Response.Clear();
                     Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                     Response.AddHeader("content-disposition", "attachment;filename=" + fileName);
@@ -517,7 +592,7 @@ namespace WebSGV.Views
                         ms.Position = 0;
                         Response.BinaryWrite(ms.ToArray());
                         Response.End();
-                    } 
+                    }
                 }
             }
             catch (ThreadAbortException)
@@ -526,87 +601,14 @@ namespace WebSGV.Views
             }
             catch (Exception ex)
             {
-                // En lugar de mostrar el error, generamos un Excel vacío con solo los encabezados
-                using (var workbook = new XLWorkbook())
-                {
-                    var worksheet = workbook.Worksheets.Add("Reporte Viajes");
+                // Registrar error y mostrar error amigable
+                System.Diagnostics.Debug.WriteLine("Error al exportar a Excel: " + ex.Message);
 
-                    // Título
-                    string tituloReporte = litTituloResultados.Text;
-                    worksheet.Cell(1, 1).Value = tituloReporte;
-                    worksheet.Cell(1, 1).Style.Font.Bold = true;
-                    worksheet.Cell(1, 1).Style.Font.FontSize = 14;
-                    worksheet.Range(1, 1, 1, 15).Merge();
-                    worksheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                    // Período
-                    worksheet.Cell(2, 1).Value = "Período: " + txtFechaDesde.Text + " al " + txtFechaHasta.Text;
-                    worksheet.Range(2, 1, 2, 15).Merge();
-
-                    // Encabezados
-                    string[] columnHeaders = new string[]
-                    {
-                "ID", "Nº Orden", "DNI", "Conductor", "Tracto", "Carreta", "Cliente",
-                "Producto", "Fecha Salida", "Horas Viaje", "CPIC", "Flete (S/)", "Planta Descarga"
-                    };
-
-                    for (int i = 0; i < columnHeaders.Length; i++)
-                    {
-                        worksheet.Cell(4, i + 1).Value = columnHeaders[i];
-                        worksheet.Cell(4, i + 1).Style.Font.Bold = true;
-                        worksheet.Cell(4, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                        worksheet.Cell(4, i + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    }
-
-                    // Resumen (vacío)
-                    int summaryRow = 7;
-                    worksheet.Cell(summaryRow, 1).Value = "Resumen";
-                    worksheet.Cell(summaryRow, 1).Style.Font.Bold = true;
-                    summaryRow++;
-
-                    worksheet.Cell(summaryRow, 1).Value = "Total Ingresos:";
-                    worksheet.Cell(summaryRow, 2).Value = "S/ 0.00";
-                    worksheet.Cell(summaryRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Cell(summaryRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    summaryRow++;
-
-                    worksheet.Cell(summaryRow, 1).Value = "Total Egresos:";
-                    worksheet.Cell(summaryRow, 2).Value = "S/ 0.00";
-                    worksheet.Cell(summaryRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Cell(summaryRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    summaryRow++;
-
-                    worksheet.Cell(summaryRow, 1).Value = "Balance:";
-                    worksheet.Cell(summaryRow, 2).Value = "S/ 0.00";
-                    worksheet.Cell(summaryRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Cell(summaryRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    summaryRow++;
-
-                    worksheet.Cell(summaryRow, 1).Value = "Total Combustible:";
-                    worksheet.Cell(summaryRow, 2).Value = "0.00 gal";
-                    worksheet.Cell(summaryRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Cell(summaryRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-
-                    // Ajustar ancho de columnas
-                    worksheet.Columns().AdjustToContents();
-
-                    // Enviar al navegador
-                    string fileName = "Reporte_Viajes_Conductor_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
-                    Response.Clear();
-                    Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    Response.AddHeader("content-disposition", "attachment;filename=" + fileName);
-
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        workbook.SaveAs(ms);
-                        ms.Position = 0;
-                        Response.BinaryWrite(ms.ToArray());
-                        Response.End();
-                    }
-                }
+                ScriptManager.RegisterStartupScript(this, GetType(), "errorExport",
+                    "alert('Ocurrió un error al exportar a Excel. Por favor, intente nuevamente.\\n" +
+                    "Si el problema persiste, contacte al administrador del sistema.');", true);
             }
         }
-
         protected void btnExportarPDF_Click(object sender, EventArgs e)
         {
             Response.Write("<script>alert('Función de exportación a PDF en desarrollo.');</script>");
@@ -643,6 +645,23 @@ namespace WebSGV.Views
             {
                 GenerarReporteViajesConductor();
             }
+            else if (tipoReporte == "pedido")
+            {
+                // Verificar qué tipo de reporte detallado se ha seleccionado
+                if (tipoReporteDetalle == "vehiculos_pedido")
+                {
+                    GenerarReporteVehiculosAsignados();
+                }
+                else if (tipoReporteDetalle == "conductores_pedido")
+                {
+                    GenerarReporteConductoresAsignados();
+                }
+                else
+                {
+                    // Para los demás tipos de reporte de pedido, usar el reporte general de pedido
+                    GenerarReportePedido();
+                }
+            }
             else
             {
                 GenerarReporteDePrueba();
@@ -651,6 +670,759 @@ namespace WebSGV.Views
             pnlResultados.Visible = true;
         }
 
+
+        // Implementamos el método para generar reportes de pedido
+        private void GenerarReportePedido()
+        {
+            DateTime fechaDesde = DateTime.Parse(txtFechaDesde.Text);
+            DateTime fechaHasta = DateTime.Parse(txtFechaHasta.Text);
+            string numeroPedido = txtNumeroPedido.Text.Trim();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"
+            SELECT 
+                ov.idOrdenViaje,
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                f.numeroPedido AS NumeroPedido,
+                cpic.numeroCPIC,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
+                t.placaTracto,
+                cr.placaCarreta,
+                cl.nombre AS Cliente,
+                p.nombre AS Producto,
+                ov.fechaSalida,
+                ov.horaSalida,
+                ov.fechaLlegada,
+                ov.horaLlegada,
+                CASE 
+                    WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
+                      OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
+                    ELSE DATEDIFF(HOUR, 
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
+                    )
+                END AS HorasViaje,
+                (SELECT TOP 1 pd.nombre 
+                 FROM GuiasTransportista gt
+                 LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
+                 WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
+            FROM OrdenViaje ov
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
+            LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
+            LEFT JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            LEFT JOIN Factura f ON cpic.idFactura = f.idFactura
+            WHERE 1=1
+            ";
+
+                    // Aplicamos filtros según lo que haya ingresado el usuario
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        // Si hay número de pedido, ese es prioritario
+                        query += " AND f.numeroPedido LIKE @numeroPedido";
+                    }
+                    else
+                    {
+                        // Si no hay número de pedido, filtramos por fecha
+                        query += " AND ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta";
+                    }
+
+                    // Filtros opcionales del modal de filtros avanzados
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        query += " AND ov.idCliente = @idCliente";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtNumeroFactura.Text))
+                    {
+                        query += " AND f.numeroFactura LIKE @numeroFactura";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtValorMinimo.Text))
+                    {
+                        query += " AND cpic.valorTotalFlete >= @valorMinimo";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtValorMaximo.Text))
+                    {
+                        query += " AND cpic.valorTotalFlete <= @valorMaximo";
+                    }
+
+                    query += " ORDER BY ov.fechaSalida DESC, ov.horaSalida DESC";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    // Añadimos parámetros a la consulta
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta);
+
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroPedido", "%" + numeroPedido + "%");
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@idCliente", ddlClientePedido.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(txtNumeroFactura.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroFactura", "%" + txtNumeroFactura.Text + "%");
+                    }
+
+                    if (!string.IsNullOrEmpty(txtValorMinimo.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@valorMinimo", decimal.Parse(txtValorMinimo.Text));
+                    }
+
+                    if (!string.IsNullOrEmpty(txtValorMaximo.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@valorMaximo", decimal.Parse(txtValorMaximo.Text));
+                    }
+
+                    conn.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    // Configurar el GridView para mostrar los datos
+                    ConfigurarGridViewPedido(dt);
+
+                    // Calcular los indicadores para el reporte
+                    CalcularIndicadoresPedido(dt);
+
+                    // Actualizar la interfaz
+                    string titulo = !string.IsNullOrEmpty(numeroPedido)
+                        ? $"Reporte de Pedido: {numeroPedido}"
+                        : "Reporte de Pedidos";
+
+                    litTituloResultados.Text = titulo;
+                    lblTotalRegistros.Text = $"Total registros: {dt.Rows.Count}";
+                    gvReporte.DataSource = dt;
+                    gvReporte.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, creamos una tabla vacía con las columnas esperadas
+                DataTable dt = new DataTable();
+                dt.Columns.Add("idOrdenViaje", typeof(int));
+                dt.Columns.Add("NroOrdenViaje", typeof(string));
+                dt.Columns.Add("NumeroPedido", typeof(string));
+                dt.Columns.Add("numeroCPIC", typeof(string));
+                dt.Columns.Add("NombreConductor", typeof(string));
+                dt.Columns.Add("placaTracto", typeof(string));
+                dt.Columns.Add("placaCarreta", typeof(string));
+                dt.Columns.Add("Cliente", typeof(string));
+                dt.Columns.Add("Producto", typeof(string));
+                dt.Columns.Add("fechaSalida", typeof(DateTime));
+                dt.Columns.Add("horaSalida", typeof(TimeSpan));
+                dt.Columns.Add("fechaLlegada", typeof(DateTime));
+                dt.Columns.Add("horaLlegada", typeof(TimeSpan));
+                dt.Columns.Add("HorasViaje", typeof(int));
+                dt.Columns.Add("PlantaDescarga", typeof(string));
+
+                ConfigurarGridViewPedido(dt);
+                CalcularIndicadoresPedido(dt);
+
+                string titulo = !string.IsNullOrEmpty(numeroPedido)
+                    ? $"Reporte de Pedido: {numeroPedido}"
+                    : "Reporte de Pedidos";
+
+                litTituloResultados.Text = titulo;
+                lblTotalRegistros.Text = "Total registros: 0";
+                gvReporte.DataSource = dt;
+                gvReporte.DataBind();
+
+                // Registrar el error
+                System.Diagnostics.Debug.WriteLine("Error al generar reporte de pedido: " + ex.Message);
+            }
+        }
+
+        private void ConfigurarGridViewPedido(DataTable dt)
+        {
+            gvReporte.Columns.Clear();
+
+            gvReporte.Columns.Add(new BoundField { DataField = "NroOrdenViaje", HeaderText = "Nº Orden", SortExpression = "NroOrdenViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NumeroPedido", HeaderText = "Número de Pedido", SortExpression = "NumeroPedido" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NombreConductor", HeaderText = "Conductor", SortExpression = "NombreConductor" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaTracto", HeaderText = "Tracto", SortExpression = "placaTracto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaCarreta", HeaderText = "Carreta", SortExpression = "placaCarreta" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Producto", HeaderText = "Producto", SortExpression = "Producto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaSalida", HeaderText = "Fecha Salida", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaSalida" });
+            gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
+            gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
+        }
+
+        private void CalcularIndicadoresPedido(DataTable dt)
+        {
+            decimal totalIngresos = 0;
+            decimal totalEgresos = 0;
+            int totalPedidos = dt.Rows.Count;
+            int totalHorasViaje = 0;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string numeroOrden = row["NroOrdenViaje"].ToString();
+
+                    // Sumar las horas de viaje para el indicador adicional
+                    if (row["HorasViaje"] != DBNull.Value)
+                    {
+                        totalHorasViaje += Convert.ToInt32(row["HorasViaje"]);
+                    }
+
+                    // Calcular ingresos
+                    string queryIngresos = @"
+            SELECT 
+                ISNULL(SUM(despachoSoles), 0) + ISNULL(SUM(prestamoSoles), 0) + ISNULL(SUM(mensualidadSoles), 0) + ISNULL(SUM(otrosSoles), 0) +
+                ISNULL(SUM(despachoDolares), 0) + ISNULL(SUM(prestamosDolares), 0) + ISNULL(SUM(mensualidadDolares), 0) + ISNULL(SUM(otrosDolares), 0)
+            FROM Ingresos
+            WHERE numeroOrdenViaje = @numeroOrdenViaje";
+
+                    using (SqlCommand cmd = new SqlCommand(queryIngresos, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroOrdenViaje", numeroOrden);
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value)
+                        {
+                            totalIngresos += Convert.ToDecimal(result);
+                        }
+                    }
+
+                    // Calcular egresos
+                    string queryEgresos = @"
+            SELECT 
+                ISNULL(SUM(peajesSoles + peajesDolares + alimentacionSoles + alimentacionDolares +
+                           apoyoseguridadSoles + apoyoseguridadDolares + 
+                           reparacionesVariosSoles + repacionesVariosDolares + 
+                           movilidadSoles + movilidadDolares + 
+                           hospedajeSoles + hospedajeDolares + 
+                           combustibleSoles + combustibleDolares + 
+                           encarpada_desencarpadaSoles + encarpada_desencarpadaDolares), 0)
+            FROM Egresos
+            WHERE numeroOrdenViaje = @numeroOrdenViaje";
+
+                    using (SqlCommand cmd = new SqlCommand(queryEgresos, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroOrdenViaje", numeroOrden);
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value)
+                        {
+                            totalEgresos += Convert.ToDecimal(result);
+                        }
+                    }
+
+                    // Calcular gastos adicionales
+                    string queryAdicionales = @"
+            SELECT 
+                ISNULL(SUM(soles), 0) + ISNULL(SUM(dolares), 0)
+            FROM CategoriasAdicionales
+            WHERE numeroOrdenViaje = @numeroOrdenViaje";
+
+                    using (SqlCommand cmd = new SqlCommand(queryAdicionales, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroOrdenViaje", numeroOrden);
+                        object result = cmd.ExecuteScalar();
+                        if (result != DBNull.Value)
+                        {
+                            totalEgresos += Convert.ToDecimal(result);
+                        }
+                    }
+                }
+            }
+
+            // Actualizar interfaz con los indicadores
+            litTotalIngresos.Text = $"S/ {totalIngresos:N2}";
+            litTotalEgresos.Text = $"S/ {totalEgresos:N2}";
+            litBalance.Text = $"S/ {(totalIngresos - totalEgresos):N2}";
+            litIndicadorAdicionalTitulo.Text = "Total Horas de Viaje";
+            litIndicadorAdicional.Text = $"{totalHorasViaje} hrs";
+        }
+
+
+
+        //reporte vehivulkos asignados por pedido
+
+        private void GenerarReporteVehiculosAsignados()
+        {
+            DateTime fechaDesde = DateTime.Parse(txtFechaDesde.Text);
+            DateTime fechaHasta = DateTime.Parse(txtFechaHasta.Text);
+            string numeroPedido = txtNumeroPedido.Text.Trim();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"
+            SELECT 
+                ov.idOrdenViaje,
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                f.numeroPedido AS NumeroPedido,
+                cpic.numeroCPIC,
+                t.placaTracto,
+                t.marca AS MarcaTracto,
+                t.modelo AS ModeloTracto,
+                cr.placaCarreta,
+                cr.marca AS MarcaCarreta,
+                cr.modelo AS ModeloCarreta,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS Conductor,
+                cl.nombre AS Cliente,
+                p.nombre AS Producto,
+                ov.fechaSalida,
+                ov.horaSalida,
+                ov.fechaLlegada,
+                ov.horaLlegada,
+                CASE 
+                    WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
+                      OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
+                    ELSE DATEDIFF(HOUR, 
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
+                    )
+                END AS HorasViaje,
+                (SELECT TOP 1 pd.nombre 
+                 FROM GuiasTransportista gt
+                 LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
+                 WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
+            FROM OrdenViaje ov
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
+            LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
+            LEFT JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+            LEFT JOIN Factura f ON cpic.idFactura = f.idFactura
+            WHERE 1=1
+            ";
+
+                    // Aplicamos filtros según lo que haya ingresado el usuario
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        // Si hay número de pedido, ese es prioritario
+                        query += " AND f.numeroPedido LIKE @numeroPedido";
+                    }
+                    else
+                    {
+                        // Si no hay número de pedido, filtramos por fecha de salida
+                        query += " AND ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta";
+                    }
+
+                    // Filtros opcionales del modal de filtros avanzados
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        query += " AND ov.idCliente = @idCliente";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtPlacaVehiculo.Text))
+                    {
+                        query += " AND (t.placaTracto LIKE @placaVehiculo OR cr.placaCarreta LIKE @placaVehiculo)";
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlMarcaVehiculo.SelectedValue))
+                    {
+                        query += " AND (t.marca = @marcaVehiculo OR cr.marca = @marcaVehiculo)";
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlModeloVehiculo.SelectedValue))
+                    {
+                        query += " AND (t.modelo = @modeloVehiculo OR cr.modelo = @modeloVehiculo)";
+                    }
+
+                    query += " ORDER BY ov.fechaSalida DESC, ov.horaSalida DESC";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    // Añadimos parámetros a la consulta
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta);
+
+                    if (!string.IsNullOrEmpty(numeroPedido))
+                    {
+                        cmd.Parameters.AddWithValue("@numeroPedido", "%" + numeroPedido + "%");
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@idCliente", ddlClientePedido.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(txtPlacaVehiculo.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@placaVehiculo", "%" + txtPlacaVehiculo.Text + "%");
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlMarcaVehiculo.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@marcaVehiculo", ddlMarcaVehiculo.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(ddlModeloVehiculo.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@modeloVehiculo", ddlModeloVehiculo.SelectedValue);
+                    }
+
+                    conn.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    // Configurar el GridView para mostrar los datos
+                    ConfigurarGridViewVehiculosAsignados(dt);
+
+                    // Calcular los indicadores para el reporte
+                    CalcularIndicadoresVehiculosAsignados(dt);
+
+                    // Actualizar la interfaz
+                    string titulo = !string.IsNullOrEmpty(numeroPedido)
+                        ? $"Vehículos Asignados - Pedido: {numeroPedido}"
+                        : "Vehículos Asignados por Período";
+
+                    litTituloResultados.Text = titulo;
+                    lblTotalRegistros.Text = $"Total registros: {dt.Rows.Count}";
+                    gvReporte.DataSource = dt;
+                    gvReporte.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, creamos una tabla vacía con las columnas esperadas
+                DataTable dt = new DataTable();
+                dt.Columns.Add("idOrdenViaje", typeof(int));
+                dt.Columns.Add("NroOrdenViaje", typeof(string));
+                dt.Columns.Add("NumeroPedido", typeof(string));
+                dt.Columns.Add("numeroCPIC", typeof(string));
+                dt.Columns.Add("placaTracto", typeof(string));
+                dt.Columns.Add("MarcaTracto", typeof(string));
+                dt.Columns.Add("ModeloTracto", typeof(string));
+                dt.Columns.Add("placaCarreta", typeof(string));
+                dt.Columns.Add("MarcaCarreta", typeof(string));
+                dt.Columns.Add("ModeloCarreta", typeof(string));
+                dt.Columns.Add("Conductor", typeof(string));
+                dt.Columns.Add("Cliente", typeof(string));
+                dt.Columns.Add("fechaSalida", typeof(DateTime));
+                dt.Columns.Add("fechaLlegada", typeof(DateTime));
+                dt.Columns.Add("HorasViaje", typeof(int));
+                dt.Columns.Add("PlantaDescarga", typeof(string));
+
+                ConfigurarGridViewVehiculosAsignados(dt);
+                CalcularIndicadoresVehiculosAsignados(dt);
+
+                string titulo = !string.IsNullOrEmpty(numeroPedido)
+                    ? $"Vehículos Asignados - Pedido: {numeroPedido}"
+                    : "Vehículos Asignados por Período";
+
+                litTituloResultados.Text = titulo;
+                lblTotalRegistros.Text = "Total registros: 0";
+                gvReporte.DataSource = dt;
+                gvReporte.DataBind();
+
+                // Registrar el error
+                System.Diagnostics.Debug.WriteLine("Error al generar reporte de vehículos asignados: " + ex.Message);
+            }
+        }
+
+        private void ConfigurarGridViewVehiculosAsignados(DataTable dt)
+        {
+            gvReporte.Columns.Clear();
+
+            gvReporte.Columns.Add(new BoundField { DataField = "NroOrdenViaje", HeaderText = "Nº Orden", SortExpression = "NroOrdenViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NumeroPedido", HeaderText = "Número de Pedido", SortExpression = "NumeroPedido" });
+            gvReporte.Columns.Add(new BoundField { DataField = "numeroCPIC", HeaderText = "CPIC", SortExpression = "numeroCPIC" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaTracto", HeaderText = "Placa Tracto", SortExpression = "placaTracto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "MarcaTracto", HeaderText = "Marca", SortExpression = "MarcaTracto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "ModeloTracto", HeaderText = "Modelo", SortExpression = "ModeloTracto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaCarreta", HeaderText = "Placa Carreta", SortExpression = "placaCarreta" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Conductor", HeaderText = "Conductor", SortExpression = "Conductor" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaSalida", HeaderText = "Fecha Salida", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaSalida" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
+        }
+
+        private void CalcularIndicadoresVehiculosAsignados(DataTable dt)
+        {
+            int totalVehiculos = dt.DefaultView.ToTable(true, "placaTracto").Rows.Count;
+            int totalCarretas = dt.DefaultView.ToTable(true, "placaCarreta").Rows.Count;
+            int totalViajes = dt.Rows.Count;
+            int totalHoras = 0;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["HorasViaje"] != DBNull.Value)
+                {
+                    totalHoras += Convert.ToInt32(row["HorasViaje"]);
+                }
+            }
+
+            // Actualizar interfaz con los indicadores
+            litTotalIngresos.Text = $"{totalVehiculos} vehículos";
+            litTotalEgresos.Text = $"{totalCarretas} carretas";
+            litBalance.Text = $"{totalViajes} viajes";
+            litIndicadorAdicionalTitulo.Text = "Total Horas";
+            litIndicadorAdicional.Text = $"{totalHoras} hrs";
+        }
+
+        //reporte conductores asignados por pedido
+
+        private void GenerarReporteConductoresAsignados()
+        {
+            DateTime fechaDesde = DateTime.Parse(txtFechaDesde.Text);
+            DateTime fechaHasta = DateTime.Parse(txtFechaHasta.Text);
+            string numeroPedido = txtNumeroPedido.Text.Trim();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"
+            WITH PedidosCPICs AS (
+                -- Encontrar todos los CPICs relacionados con el pedido especificado
+                SELECT DISTINCT c.idCPIC, c.numeroCPIC, f.numeroPedido
+                FROM CPIC c
+                JOIN Factura f ON c.idFactura = f.idFactura
+                WHERE (@numeroPedido = '' OR f.numeroPedido = @numeroPedido)
+            )
+            SELECT 
+                ov.idOrdenViaje,
+                ov.numeroOrdenViaje AS NroOrdenViaje,
+                pc.numeroPedido AS NumeroPedido,
+                pc.numeroCPIC AS numeroCPIC,
+                c.DNI,
+                c.carnetExtranjeria,
+                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
+                c.telefono,
+                c.correo,
+                t.placaTracto,
+                cr.placaCarreta,
+                cl.nombre AS Cliente,
+                p.nombre AS Producto,
+                ov.fechaSalida,
+                ov.horaSalida,
+                ov.fechaLlegada,
+                ov.horaLlegada,
+                CASE 
+                    WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
+                      OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
+                    ELSE DATEDIFF(HOUR, 
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
+                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
+                    )
+                END AS HorasViaje,
+                (SELECT TOP 1 gt.ruta1 FROM GuiasTransportista gt WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje) AS Ruta,
+                (SELECT TOP 1 pd.nombre 
+                 FROM GuiasTransportista gt
+                 LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
+                 WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
+            FROM OrdenViaje ov
+            JOIN PedidosCPICs pc ON ov.idCPIC = pc.idCPIC
+            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+            LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
+            LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
+            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
+            WHERE 1=1
+            ";
+
+                    // Si no hay número de pedido, filtramos por fecha
+                    if (string.IsNullOrEmpty(numeroPedido))
+                    {
+                        query += " AND ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta";
+                    }
+
+                    // Filtros opcionales del modal de filtros avanzados
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        query += " AND ov.idCliente = @idCliente";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtNombreConductor.Text))
+                    {
+                        query += " AND (c.nombre LIKE @nombreConductor OR c.apPaterno LIKE @nombreConductor OR c.apMaterno LIKE @nombreConductor)";
+                    }
+
+                    if (!string.IsNullOrEmpty(txtDNIConductor.Text))
+                    {
+                        query += " AND c.DNI LIKE @dniConductor";
+                    }
+
+                    query += " ORDER BY c.apPaterno, c.apMaterno, c.nombre, ov.fechaSalida DESC";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    // Añadimos parámetros a la consulta
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta);
+                    cmd.Parameters.AddWithValue("@numeroPedido", numeroPedido);
+
+                    if (!string.IsNullOrEmpty(ddlClientePedido.SelectedValue))
+                    {
+                        cmd.Parameters.AddWithValue("@idCliente", ddlClientePedido.SelectedValue);
+                    }
+
+                    if (!string.IsNullOrEmpty(txtNombreConductor.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@nombreConductor", "%" + txtNombreConductor.Text + "%");
+                    }
+
+                    if (!string.IsNullOrEmpty(txtDNIConductor.Text))
+                    {
+                        cmd.Parameters.AddWithValue("@dniConductor", "%" + txtDNIConductor.Text + "%");
+                    }
+
+                    conn.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+
+                    // Configurar el GridView para mostrar los datos
+                    ConfigurarGridViewConductoresAsignados(dt);
+
+                    // Calcular los indicadores para el reporte
+                    CalcularIndicadoresConductoresAsignados(dt);
+
+                    // Actualizar la interfaz
+                    string titulo = !string.IsNullOrEmpty(numeroPedido)
+                        ? $"Conductores Asignados - Pedido: {numeroPedido}"
+                        : "Conductores Asignados por Período";
+
+                    litTituloResultados.Text = titulo;
+                    lblTotalRegistros.Text = $"Total registros: {dt.Rows.Count}";
+                    gvReporte.DataSource = dt;
+                    gvReporte.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, creamos una tabla vacía con las columnas esperadas
+                DataTable dt = new DataTable();
+                dt.Columns.Add("idOrdenViaje", typeof(int));
+                dt.Columns.Add("NroOrdenViaje", typeof(string));
+                dt.Columns.Add("NumeroPedido", typeof(string));
+                dt.Columns.Add("numeroCPIC", typeof(string));
+                dt.Columns.Add("DNI", typeof(string));
+                dt.Columns.Add("NombreConductor", typeof(string));
+                dt.Columns.Add("telefono", typeof(string));
+                dt.Columns.Add("placaTracto", typeof(string));
+                dt.Columns.Add("placaCarreta", typeof(string));
+                dt.Columns.Add("Cliente", typeof(string));
+                dt.Columns.Add("Producto", typeof(string));
+                dt.Columns.Add("fechaSalida", typeof(DateTime));
+                dt.Columns.Add("fechaLlegada", typeof(DateTime));
+                dt.Columns.Add("HorasViaje", typeof(int));
+                dt.Columns.Add("Ruta", typeof(string));
+                dt.Columns.Add("PlantaDescarga", typeof(string));
+
+                ConfigurarGridViewConductoresAsignados(dt);
+                CalcularIndicadoresConductoresAsignados(dt);
+
+                string titulo = !string.IsNullOrEmpty(numeroPedido)
+                    ? $"Conductores Asignados - Pedido: {numeroPedido}"
+                    : "Conductores Asignados por Período";
+
+                litTituloResultados.Text = titulo;
+                lblTotalRegistros.Text = "Total registros: 0";
+                gvReporte.DataSource = dt;
+                gvReporte.DataBind();
+
+                // Registrar el error
+                System.Diagnostics.Debug.WriteLine("Error al generar reporte de conductores asignados: " + ex.Message);
+            }
+        }
+
+        private void ConfigurarGridViewConductoresAsignados(DataTable dt)
+        {
+            gvReporte.Columns.Clear();
+
+            gvReporte.Columns.Add(new BoundField { DataField = "NroOrdenViaje", HeaderText = "Nº Orden", SortExpression = "NroOrdenViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NumeroPedido", HeaderText = "Número de Pedido", SortExpression = "NumeroPedido" });
+            gvReporte.Columns.Add(new BoundField { DataField = "NombreConductor", HeaderText = "Conductor", SortExpression = "NombreConductor" });
+            gvReporte.Columns.Add(new BoundField { DataField = "DNI", HeaderText = "DNI", SortExpression = "DNI" });
+            gvReporte.Columns.Add(new BoundField { DataField = "telefono", HeaderText = "Teléfono", SortExpression = "telefono" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaTracto", HeaderText = "Placa Tracto", SortExpression = "placaTracto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "placaCarreta", HeaderText = "Placa Carreta", SortExpression = "placaCarreta" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Producto", HeaderText = "Producto", SortExpression = "Producto" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaSalida", HeaderText = "Fecha Salida", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaSalida" });
+            gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
+            gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
+            gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "Ruta", HeaderText = "Ruta", SortExpression = "Ruta" });
+            gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
+        }
+
+        private void CalcularIndicadoresConductoresAsignados(DataTable dt)
+        {
+            int totalConductores = dt.DefaultView.ToTable(true, "NombreConductor").Rows.Count;
+            int totalViajes = dt.Rows.Count;
+            int totalHoras = 0;
+            double promedioHorasPorViaje = 0;
+
+            // Contar cuántos viajes tiene cada conductor
+            Dictionary<string, int> viajesPorConductor = new Dictionary<string, int>();
+            Dictionary<string, int> horasPorConductor = new Dictionary<string, int>();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                string conductor = row["NombreConductor"].ToString();
+
+                if (!viajesPorConductor.ContainsKey(conductor))
+                {
+                    viajesPorConductor[conductor] = 0;
+                    horasPorConductor[conductor] = 0;
+                }
+
+                viajesPorConductor[conductor]++;
+
+                if (row["HorasViaje"] != DBNull.Value)
+                {
+                    int horas = Convert.ToInt32(row["HorasViaje"]);
+                    totalHoras += horas;
+                    horasPorConductor[conductor] += horas;
+                }
+            }
+
+            // Calcular promedio de horas por viaje
+            if (totalViajes > 0)
+            {
+                promedioHorasPorViaje = (double)totalHoras / totalViajes;
+            }
+
+            // Encontrar el conductor con más viajes
+            string conductorMasViajes = "";
+            int maxViajes = 0;
+
+            foreach (var kvp in viajesPorConductor)
+            {
+                if (kvp.Value > maxViajes)
+                {
+                    maxViajes = kvp.Value;
+                    conductorMasViajes = kvp.Key;
+                }
+            }
+
+            // Actualizar interfaz con los indicadores
+            litTotalIngresos.Text = $"{totalConductores} conductores";
+            litTotalEgresos.Text = $"{totalViajes} viajes";
+            litBalance.Text = $"{promedioHorasPorViaje:F1} hrs/viaje";
+            litIndicadorAdicionalTitulo.Text = "Conductor con más viajes";
+            litIndicadorAdicional.Text = conductorMasViajes + " (" + maxViajes + " viajes)";
+        }
         private string ObtenerTipoReporteSeleccionado()
         {
             if (lnkConductor.CssClass.Contains("active")) return "conductor";
