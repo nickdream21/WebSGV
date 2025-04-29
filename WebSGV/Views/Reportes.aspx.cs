@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using ClosedXML.Excel;
 using System.Linq;
 using System.Threading;
+using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace WebSGV.Views
 {
@@ -284,6 +286,7 @@ namespace WebSGV.Views
 
         #region Eventos de Navegación y UI
 
+
         protected void lnkTipoReporte_Click(object sender, EventArgs e)
         {
             // Obtener el tipo de reporte seleccionado desde el CommandArgument
@@ -527,7 +530,7 @@ namespace WebSGV.Views
                             {
                                 if (row.Cells[originalColIndex].Controls.Count > 0)
                                 {
-                                    foreach (Control control in row.Cells[originalColIndex].Controls)
+                                    foreach (System.Web.UI.Control control in row.Cells[originalColIndex].Controls)
                                     {
                                         if (control is Label)
                                             cellValue = ((Label)control).Text;
@@ -685,14 +688,163 @@ namespace WebSGV.Views
         {
             try
             {
+                // Asegurarnos que el panel de resultados esté visible
+                pnlResultados.Visible = true;
+
+                // Generar el reporte - esto llenará el GridView y los indicadores
                 GenerarReporte();
+
+                // Actualizar el título del reporte en la modal
+                litTituloResultados.Text = litTituloReporte.Text + " - " + ddlTipoReporteDetalle.SelectedItem.Text;
+
+                // Establecer el texto del contador de registros
+                if (gvReporte.Rows.Count > 0)
+                {
+                    lblTotalRegistros.Text = "Total registros: " + gvReporte.Rows.Count;
+                }
+                else
+                {
+                    lblTotalRegistros.Text = "No se encontraron registros";
+                }
+
+                // Preparar valores para indicadores para que se vean correctamente
+                litTotalIngresos.Text = "S/ " + FormatDecimal(CalcularTotalIngresos());
+                litTotalEgresos.Text = "S/ " + FormatDecimal(CalcularTotalEgresos());
+                litBalance.Text = "S/ " + FormatDecimal(CalcularTotalIngresos() - CalcularTotalEgresos());
+
+                // Establecer el indicador adicional según el tipo de reporte
+                string tipoReporte = ObtenerTipoReporteSeleccionado();
+                if (tipoReporte == "combustible")
+                {
+                    litIndicadorAdicionalTitulo.Text = "Total Combustible";
+                    litIndicadorAdicional.Text = FormatDecimal(CalcularTotalCombustible()) + " Gal.";
+                }
+                else if (tipoReporte == "producto")
+                {
+                    litIndicadorAdicionalTitulo.Text = "Total Producto";
+                    litIndicadorAdicional.Text = FormatDecimal(CalcularTotalProducto()) + " Kg.";
+                }
+                else
+                {
+                    litIndicadorAdicionalTitulo.Text = "Total Viajes";
+                    litIndicadorAdicional.Text = gvReporte.Rows.Count.ToString();
+                }
+
+                // Actualizar el UpdatePanel para que refleje los cambios
+                upResultados.Update();
+
+                // Primero, asegurarse de aplicar estilos correctos con jQuery
+                string fixStylesScript = @"
+            $(document).ready(function() {
+                // Fix para encabezados de tabla transparentes
+                $('.table thead th').css({
+                    'background-color': '#0275d8',
+                    'color': 'white',
+                    'opacity': '1'
+                });
+                
+                // Fix para tarjetas de indicadores
+                $('.card.shadow-sm, .card-body, .card-title, .card-body p, .card-body h4').css('opacity', '1');
+                
+                // Fix para gradientes
+                $('.bg-gradient-primary').css({
+                    'background': 'linear-gradient(to right, #0062cc, #0275d8)',
+                    'opacity': '1'
+                });
+                $('.bg-gradient-danger').css({
+                    'background': 'linear-gradient(to right, #c82333, #dc3545)',
+                    'opacity': '1'
+                });
+                $('.bg-gradient-success').css({
+                    'background': 'linear-gradient(to right, #218838, #28a745)',
+                    'opacity': '1'
+                });
+                $('.bg-gradient-info').css({
+                    'background': 'linear-gradient(to right, #138496, #17a2b8)',
+                    'opacity': '1'
+                });
+            });";
+
+                // Registrar script para aplicar estilos
+                ScriptManager.RegisterStartupScript(this, GetType(), "FixStyles",
+                    fixStylesScript, true);
+
+                // Luego, mostrar la modal después de un breve retraso para que los estilos se apliquen
+                ScriptManager.RegisterStartupScript(this, GetType(), "MostrarModal",
+                    "setTimeout(function() { $('#modalResultados').modal('show'); }, 100);", true);
             }
             catch (Exception ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "errorReporte",
-                    "alert('Error al generar el reporte: " + ex.Message.Replace("'", "\\'") + "');", true);
+                // En caso de error, mostrar mensaje al usuario
+                ScriptManager.RegisterStartupScript(this, GetType(), "errorModal",
+                    "alert('Error al generar el reporte: " + System.Web.HttpUtility.JavaScriptStringEncode(ex.Message) + "');", true);
             }
         }
+
+        // Método auxiliar para formatear valores decimales
+        private string FormatDecimal(decimal value)
+        {
+            return value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("es-PE"));
+        }
+
+        // Métodos de cálculo para los indicadores (implementa estas funciones según tu lógica de negocio)
+        private decimal CalcularTotalIngresos()
+        {
+            // Implementa tu lógica para calcular ingresos aquí
+            // Por ahora retornamos un valor de ejemplo
+            return 12500.00m;
+        }
+
+        private decimal CalcularTotalEgresos()
+        {
+            // Implementa tu lógica para calcular egresos aquí
+            // Por ahora retornamos un valor de ejemplo
+            return 5250.00m;
+        }
+
+        private decimal CalcularTotalCombustible()
+        {
+            // Implementa tu lógica para calcular combustible aquí
+            // Por ahora retornamos un valor de ejemplo
+            return 320.00m;
+        }
+
+        private decimal CalcularTotalProducto()
+        {
+            // Implementa tu lógica para calcular producto aquí
+            // Por ahora retornamos un valor de ejemplo
+            return 15000.00m;
+        }
+
+
+
+
+
+
+
+
+        // Función para renderizar el Panel en string
+        private string RenderizarPanel(System.Web.UI.Control control)
+        {
+            // DESACTIVA VALIDACIÓN DE EVENTOS
+            this.EnableEventValidation = false;
+
+            using (System.IO.StringWriter stringWriter = new System.IO.StringWriter())
+            {
+                using (HtmlTextWriter htmlWriter = new HtmlTextWriter(stringWriter))
+                {
+                    control.RenderControl(htmlWriter);
+                    return stringWriter.ToString();
+                }
+            }
+        }
+
+
+        public override void VerifyRenderingInServerForm(System.Web.UI.Control control)
+        {
+            // Evitar error de GridView fuera de <form runat="server">
+        }
+
 
 
         private void GenerarReporte()

@@ -1,7 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Reportes.aspx.cs" Inherits="WebSGV.Views.Reportes" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Reportes.aspx.cs" Inherits="WebSGV.Views.Reportes" EnableEventValidation="false" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-
     <div class="row">
         <!-- Panel lateral de selección de reportes -->
         <div class="col-md-3">
@@ -218,76 +217,117 @@
                         </div>
                     </div>
 
-                    <!-- Visualización del reporte -->
-                    <asp:Panel ID="pnlResultados" runat="server" Visible="false">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0 font-weight-bold">
-                                <asp:Literal ID="litTituloResultados" runat="server"></asp:Literal>
-                            </h5>
-                            <div>
-                                <asp:Label ID="lblTotalRegistros" runat="server" CssClass="badge badge-info p-2"></asp:Label>
-                            </div>
-                        </div>
+                    <!-- Panel de resultados oculto para mantener la compatibilidad con el código existente -->
+                    <asp:Panel ID="pnlResultadosHidden" runat="server" Visible="false"></asp:Panel>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Resumen de indicadores clave -->
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title mb-1">Total Ingresos</h6>
-                                        <h4 class="mb-0"><asp:Literal ID="litTotalIngresos" runat="server"></asp:Literal></h4>
+    <!-- Modal de Resultados - CORREGIDO -->
+    <div class="modal fade" id="modalResultados" tabindex="-1" role="dialog" aria-labelledby="modalResultadosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-black">
+                    <h5 class="modal-title" id="modalResultadosLabel">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        <asp:Literal ID="litTituloResultados" runat="server"></asp:Literal>
+                    </h5>
+                    <button type="button" class="close text-black" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <asp:UpdatePanel ID="upResultados" runat="server" UpdateMode="Conditional">
+                        <ContentTemplate>
+                            <asp:Panel ID="pnlResultados" runat="server" Visible="true">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <asp:Label ID="lblTotalRegistros" runat="server" CssClass="badge badge-info p-2 font-weight-normal" Style="font-size: 14px;"></asp:Label>
+                                    <div class="text-right">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnImprimirResultados">
+                                            <i class="fas fa-print mr-1"></i>Imprimir
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-danger text-white">
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title mb-1">Total Egresos</h6>
-                                        <h4 class="mb-0"><asp:Literal ID="litTotalEgresos" runat="server"></asp:Literal></h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title mb-1">Balance</h6>
-                                        <h4 class="mb-0"><asp:Literal ID="litBalance" runat="server"></asp:Literal></h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body p-3">
-                                        <h6 class="card-title mb-1" id="indicadorAdicionalTitulo">
-                                            <asp:Literal ID="litIndicadorAdicionalTitulo" runat="server" Text="Total Combustible"></asp:Literal>
-                                        </h6>
-                                        <h4 class="mb-0"><asp:Literal ID="litIndicadorAdicional" runat="server"></asp:Literal></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Tabla de resultados -->
-                        <div class="table-responsive">
-                            <asp:GridView ID="gvReporte" runat="server" CssClass="table table-striped table-bordered"
-                                AutoGenerateColumns="False" AllowPaging="True" AllowSorting="True"
-                                PageSize="10" OnPageIndexChanging="gvReporte_PageIndexChanging"
-                                OnSorting="gvReporte_Sorting">
-                                <Columns>
-                                    <asp:BoundField DataField="ID" HeaderText="ID" SortExpression="ID" />
-                                    <%-- Las demás columnas se generarán dinámicamente en el code-behind --%>
-                                </Columns>
-                                <PagerStyle CssClass="pagination-ys" HorizontalAlign="Center" />
-                                <HeaderStyle CssClass="bg-light" />
-                                <FooterStyle CssClass="bg-light font-weight-bold" />
-                                <EmptyDataTemplate>
-                                    <div class="alert alert-info text-center">
-                                        No se encontraron datos para los criterios seleccionados.
+                                <!-- Resumen de indicadores clave -->
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="card shadow-sm bg-gradient-primary text-white">
+                                            <div class="card-body p-3 bg-primary">
+                                                <h6 class="card-title mb-1 text-uppercase"><i class="fas fa-money-bill-wave mr-2"></i>Total Ingresos</h6>
+                                                <h4 class="mb-0 font-weight-bold">
+                                                    <asp:Literal ID="litTotalIngresos" runat="server"></asp:Literal></h4>
+                                            </div>
+                                        </div>
                                     </div>
-                                </EmptyDataTemplate>
-                            </asp:GridView>
-                        </div>
-                    </asp:Panel>
+                                    <div class="col-md-3">
+                                        <div class="card shadow-sm bg-gradient-danger text-white">
+                                            <div class="card-body p-3 bg-danger" >
+                                                <h6 class="card-title mb-1 text-uppercase"><i class="fas fa-file-invoice mr-2"></i>Total Egresos</h6>
+                                                <h4 class="mb-0 font-weight-bold">
+                                                    <asp:Literal ID="litTotalEgresos" runat="server"></asp:Literal></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card shadow-sm bg-gradient-success text-white">
+                                            <div class="card-body p-3 bg-success">
+                                                <h6 class="card-title mb-1 text-uppercase"><i class="fas fa-balance-scale mr-2"></i>Balance</h6>
+                                                <h4 class="mb-0 font-weight-bold">
+                                                    <asp:Literal ID="litBalance" runat="server"></asp:Literal></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card shadow-sm bg-gradient-info text-white">
+                                            <div class="card-body p-3 bg-info">
+                                                <h6 class="card-title mb-1 text-uppercase" id="indicadorAdicionalTitulo">
+                                                    <i class="fas fa-gas-pump mr-2"></i>
+                                                    <asp:Literal ID="litIndicadorAdicionalTitulo" runat="server" Text="Total Combustible"></asp:Literal>
+                                                </h6>
+                                                <h4 class="mb-0 font-weight-bold">
+                                                    <asp:Literal ID="litIndicadorAdicional" runat="server"></asp:Literal></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabla de resultados -->
+                                <div class="table-responsive mt-3" style="max-height: 60vh; overflow-y: auto;">
+                                    <asp:GridView ID="gvReporte" runat="server" CssClass="table table-striped table-bordered table-hover"
+                                        AutoGenerateColumns="False" AllowPaging="True"
+                                        PageSize="10" OnPageIndexChanging="gvReporte_PageIndexChanging"
+                                        OnSorting="gvReporte_Sorting">
+                                        <Columns>
+                                            <asp:BoundField DataField="ID" HeaderText="ID" SortExpression="ID" />
+                                            <%-- Las demás columnas se generarán dinámicamente en el code-behind --%>
+                                        </Columns>
+                                        <PagerStyle CssClass="pagination-ys bg-light p-2" HorizontalAlign="Center" />
+                                        <HeaderStyle CssClass="bg-light " />
+                                        <RowStyle CssClass="align-middle" />
+                                        <FooterStyle CssClass="bg-light font-weight-bold" />
+                                        <EmptyDataTemplate>
+                                            <div class="alert alert-info text-center">
+                                                <i class="fas fa-info-circle mr-2"></i>
+                                                No se encontraron datos para los criterios seleccionados.
+                                            </div>
+                                        </EmptyDataTemplate>
+                                    </asp:GridView>
+                                </div>
+                            </asp:Panel>
+                        </ContentTemplate>
+                        <Triggers>
+                            <asp:AsyncPostBackTrigger ControlID="btnGenerarReporte" EventName="Click" />
+                        </Triggers>
+                    </asp:UpdatePanel>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Cerrar
+                    </button>
+                    <asp:Button ID="btnExportarExcelModal" runat="server" CssClass="btn btn-success" Text="Exportar a Excel" OnClick="btnExportarExcel_Click" />
+                    <asp:Button ID="btnExportarPDFModal" runat="server" CssClass="btn btn-danger ml-2" Text="Exportar a PDF" OnClick="btnExportarPDF_Click" />
                 </div>
             </div>
         </div>
@@ -585,27 +625,33 @@
                                             <table class="table table-sm table-borderless">
                                                 <tr>
                                                     <th style="width: 40%">Número de Orden:</th>
-                                                    <td><asp:Label ID="lblNumeroOrden" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblNumeroOrden" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Cliente:</th>
-                                                    <td><asp:Label ID="lblCliente" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblCliente" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Conductor:</th>
-                                                    <td><asp:Label ID="lblConductor" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblConductor" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Fecha Salida:</th>
-                                                    <td><asp:Label ID="lblFechaSalida" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblFechaSalida" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Fecha Llegada:</th>
-                                                    <td><asp:Label ID="lblFechaLlegada" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblFechaLlegada" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>CPIC:</th>
-                                                    <td><asp:Label ID="lblCPIC" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblCPIC" runat="server"></asp:Label></td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -620,27 +666,33 @@
                                             <table class="table table-sm table-borderless">
                                                 <tr>
                                                     <th style="width: 40%">Tracto:</th>
-                                                    <td><asp:Label ID="lblTracto" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblTracto" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Carreta:</th>
-                                                    <td><asp:Label ID="lblCarreta" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblCarreta" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Producto:</th>
-                                                    <td><asp:Label ID="lblProducto" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblProducto" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Planta Descarga:</th>
-                                                    <td><asp:Label ID="lblPlantaDescarga" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblPlantaDescarga" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Guía Transportista:</th>
-                                                    <td><asp:Label ID="lblGuiaTransportista" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblGuiaTransportista" runat="server"></asp:Label></td>
                                                 </tr>
                                                 <tr>
                                                     <th>Observaciones:</th>
-                                                    <td><asp:Label ID="lblObservaciones" runat="server"></asp:Label></td>
+                                                    <td>
+                                                        <asp:Label ID="lblObservaciones" runat="server"></asp:Label></td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -746,27 +798,137 @@
         </div>
     </div>
 
+
+    <style>
+    /* Estilos específicos para modal de resultados */
+    #modalResultados {
+        z-index: 1050 !important;
+    }
+    
+    #modalResultados .modal-content,
+    #modalResultados .modal-header,
+    #modalResultados .modal-body,
+    #modalResultados .modal-footer {
+        opacity: 1 !important;
+    }
+    
+    #modalResultados .table,
+    #modalResultados .table thead th,
+    #modalResultados .table tbody tr,
+    #modalResultados .table tbody td {
+        opacity: 1 !important;
+    }
+    
+    #modalResultados .card,
+    #modalResultados .card-body,
+    #modalResultados .card-title {
+        opacity: 1 !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1040 !important;
+        opacity: 0.5 !important;
+    }
+</style>
     <!-- Referencias a librerías JavaScript -->
     <script type="text/javascript">
         $(document).ready(function () {
-            // Inicialización de componentes
+            console.log("Inicializando manejador específico para modal de resultados");
 
-            // Evento para mostrar el modal de detalle de orden de viaje
-            $('.btn-detalle-orden').click(function (e) {
-                e.preventDefault();
-                $('#detalleOrdenViajeModal').modal('show');
-            });
+            // Eliminar cualquier backdrop residual
+            $('.modal-backdrop').remove();
 
-            // Actualizar UI basado en el tipo de reporte seleccionado
-            function actualizarInterfazSegunTipoReporte() {
-                var tipoReporte = $(".list-group-item.active").attr("commandargument");
-                console.log("Tipo de reporte seleccionado: " + tipoReporte);
+            // Obtener el PageRequestManager una sola vez
+            var prm = Sys.WebForms.PageRequestManager.getInstance();
 
-                // Esta parte se maneja principalmente desde el servidor con UpdatePanels
+            // Desregistrar cualquier handler existente (para evitar duplicados)
+            // Esta es una técnica avanzada para limpiar handlers previos
+            if (prm._events && prm._events.endRequest) {
+                var handlers = prm._events.endRequest.slice();
+                for (var i = 0; i < handlers.length; i++) {
+                    prm.remove_endRequest(handlers[i]);
+                }
             }
 
-            // Inicialización
-            actualizarInterfazSegunTipoReporte();
+            // Registrar un nuevo handler limpio
+            prm.add_endRequest(function (sender, args) {
+                console.log("Solicitud AJAX completada");
+
+                // Verificar si el panel de resultados está visible
+                if ($("#<%= pnlResultados.ClientID %>").is(":visible")) {
+                console.log("Panel de resultados visible, mostrando modal");
+                
+                // 1. Eliminar backdrop anterior
+                $('.modal-backdrop').remove();
+                
+                // 2. Restablecer estilos de la modal
+                $('#modalResultados').css({
+                    'display': 'block', 
+                    'opacity': '1',
+                    'z-index': '1050'
+                });
+                
+                // 3. Asegurar que el contenido sea visible
+                $('#modalResultados .modal-content').css('opacity', '1');
+                $('#modalResultados .modal-header').css('opacity', '1');
+                $('#modalResultados .modal-body').css('opacity', '1');
+                $('#modalResultados .modal-footer').css('opacity', '1');
+                
+                // 4. Mostrar la modal con un pequeño delay para asegurar que todo esté listo
+                setTimeout(function() {
+                    $('#modalResultados').modal({
+                        backdrop: 'static', 
+                        keyboard: true,
+                        show: true
+                    });
+                    
+                    // 5. Configurar z-index correcto
+                    $('.modal-backdrop').css('z-index', '1040');
+                    $('#modalResultados').css('z-index', '1050');
+                    
+                    // 6. Forzar opacidad en elementos clave dentro de la modal
+                    $('.table thead th').css({
+                        'background-color': '#0275d8',
+                        'color': 'white',
+                        'opacity': '1'
+                    });
+                    
+                    $('.card.shadow-sm, .card-body').css('opacity', '1');
+                    
+                    console.log("Modal mostrada correctamente");
+                }, 100);
+            }
         });
+        
+        // Manejador para botón de impresión
+        $("#btnImprimirResultados").off('click').on('click', function() {
+            var printWindow = window.open('', '_blank', 'height=600,width=800');
+            
+            printWindow.document.write('<html><head>');
+            printWindow.document.write('<title>Reporte SGV</title>');
+            printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { padding: 20px; font-family: Arial, sans-serif; }');
+            printWindow.document.write('.table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }');
+            printWindow.document.write('.table th { background-color: #0275d8; color: white; font-weight: bold; padding: 8px; text-align: center; }');
+            printWindow.document.write('.table td { padding: 8px; border: 1px solid #dee2e6; }');
+            printWindow.document.write('.card { margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 0.25rem; }');
+            printWindow.document.write('.card-body { padding: 1rem; }');
+            printWindow.document.write('.bg-gradient-primary { background-color: #007bff; color: white; }');
+            printWindow.document.write('.bg-gradient-danger { background-color: #dc3545; color: white; }');
+            printWindow.document.write('.bg-gradient-success { background-color: #28a745; color: white; }');
+            printWindow.document.write('.bg-gradient-info { background-color: #17a2b8; color: white; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h1>Reporte - Sistema SGV</h1>');
+            printWindow.document.write($("#<%= pnlResultados.ClientID %>").html());
+            printWindow.document.write('</body></html>');
+
+            printWindow.document.close();
+            setTimeout(function () { printWindow.print(); }, 500);
+
+            return false;
+        });
+    });
     </script>
 </asp:Content>

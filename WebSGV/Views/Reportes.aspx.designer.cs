@@ -366,13 +366,13 @@ namespace WebSGV.Views
         protected global::System.Web.UI.WebControls.Button btnGenerarReporte;
 
         /// <summary>
-        /// Control pnlResultados.
+        /// Control pnlResultadosHidden.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlResultados;
+        protected global::System.Web.UI.WebControls.Panel pnlResultadosHidden;
 
         /// <summary>
         /// Control litTituloResultados.
@@ -382,6 +382,24 @@ namespace WebSGV.Views
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTituloResultados;
+
+        /// <summary>
+        /// Control upResultados.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upResultados;
+
+        /// <summary>
+        /// Control pnlResultados.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlResultados;
 
         /// <summary>
         /// Control lblTotalRegistros.
@@ -445,6 +463,24 @@ namespace WebSGV.Views
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView gvReporte;
+
+        /// <summary>
+        /// Control btnExportarExcelModal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnExportarExcelModal;
+
+        /// <summary>
+        /// Control btnExportarPDFModal.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnExportarPDFModal;
 
         /// <summary>
         /// Control pnlFiltrosAvanzadosConductor.
