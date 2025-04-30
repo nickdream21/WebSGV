@@ -69,15 +69,6 @@ namespace WebSGV.Views
         protected global::System.Web.UI.WebControls.LinkButton lnkProducto;
 
         /// <summary>
-        /// Control lnkPersonalizado.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lnkPersonalizado;
-
-        /// <summary>
         /// Control litTituloReporte.
         /// </summary>
         /// <remarks>
@@ -94,15 +85,6 @@ namespace WebSGV.Views
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnExportarExcel;
-
-        /// <summary>
-        /// Control btnExportarPDF.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnExportarPDF;
 
         /// <summary>
         /// Control txtFechaDesde.
@@ -472,15 +454,6 @@ namespace WebSGV.Views
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnExportarExcelModal;
-
-        /// <summary>
-        /// Control btnExportarPDFModal.
-        /// </summary>
-        /// <remarks>
-        /// Campo generado automáticamente.
-        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnExportarPDFModal;
 
         /// <summary>
         /// Control pnlFiltrosAvanzadosConductor.

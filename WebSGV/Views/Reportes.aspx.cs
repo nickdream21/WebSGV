@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Collections;
 
 namespace WebSGV.Views
 {
@@ -326,7 +327,7 @@ namespace WebSGV.Views
             lnkFinanciero.CssClass = lnkFinanciero.CssClass.Replace(" active", "");
             lnkCombustible.CssClass = lnkCombustible.CssClass.Replace(" active", "");
             lnkProducto.CssClass = lnkProducto.CssClass.Replace(" active", "");
-            lnkPersonalizado.CssClass = lnkPersonalizado.CssClass.Replace(" active", "");
+            //lnkPersonalizado.CssClass = lnkPersonalizado.CssClass.Replace(" active", "");
 
             lnkButton.CssClass += " active";
 
@@ -697,20 +698,16 @@ namespace WebSGV.Views
                 // Actualizar el título del reporte en la modal
                 litTituloResultados.Text = litTituloReporte.Text + " - " + ddlTipoReporteDetalle.SelectedItem.Text;
 
-                // Establecer el texto del contador de registros
-                if (gvReporte.Rows.Count > 0)
+
+                // Establecer el texto del contador de registros USANDO _totalRegistros
+                if (_totalRegistros > 0)
                 {
-                    lblTotalRegistros.Text = "Total registros: " + gvReporte.Rows.Count;
+                    lblTotalRegistros.Text = "Total registros: " + _totalRegistros;
                 }
                 else
                 {
                     lblTotalRegistros.Text = "No se encontraron registros";
                 }
-
-                // Preparar valores para indicadores para que se vean correctamente
-                litTotalIngresos.Text = "S/ " + FormatDecimal(CalcularTotalIngresos());
-                litTotalEgresos.Text = "S/ " + FormatDecimal(CalcularTotalEgresos());
-                litBalance.Text = "S/ " + FormatDecimal(CalcularTotalIngresos() - CalcularTotalEgresos());
 
                 // Establecer el indicador adicional según el tipo de reporte
                 string tipoReporte = ObtenerTipoReporteSeleccionado();
@@ -727,49 +724,50 @@ namespace WebSGV.Views
                 else
                 {
                     litIndicadorAdicionalTitulo.Text = "Total Viajes";
-                    litIndicadorAdicional.Text = gvReporte.Rows.Count.ToString();
+                    // Usar _totalRegistros en lugar de gvReporte.Rows.Count
+                    litIndicadorAdicional.Text = _totalRegistros.ToString();
                 }
 
                 // Actualizar el UpdatePanel para que refleje los cambios
                 upResultados.Update();
 
-                // Primero, asegurarse de aplicar estilos correctos con jQuery
+                // Aplicar estilos correctos con jQuery
                 string fixStylesScript = @"
-            $(document).ready(function() {
-                // Fix para encabezados de tabla transparentes
-                $('.table thead th').css({
-                    'background-color': '#0275d8',
-                    'color': 'white',
-                    'opacity': '1'
-                });
-                
-                // Fix para tarjetas de indicadores
-                $('.card.shadow-sm, .card-body, .card-title, .card-body p, .card-body h4').css('opacity', '1');
-                
-                // Fix para gradientes
-                $('.bg-gradient-primary').css({
-                    'background': 'linear-gradient(to right, #0062cc, #0275d8)',
-                    'opacity': '1'
-                });
-                $('.bg-gradient-danger').css({
-                    'background': 'linear-gradient(to right, #c82333, #dc3545)',
-                    'opacity': '1'
-                });
-                $('.bg-gradient-success').css({
-                    'background': 'linear-gradient(to right, #218838, #28a745)',
-                    'opacity': '1'
-                });
-                $('.bg-gradient-info').css({
-                    'background': 'linear-gradient(to right, #138496, #17a2b8)',
-                    'opacity': '1'
-                });
-            });";
+    $(document).ready(function() {
+        // Fix para encabezados de tabla transparentes
+        $('.table thead th').css({
+            'background-color': '#0275d8',
+            'color': 'white',
+            'opacity': '1'
+        });
+        
+        // Fix para tarjetas de indicadores
+        $('.card.shadow-sm, .card-body, .card-title, .card-body p, .card-body h4').css('opacity', '1');
+        
+        // Fix para gradientes
+        $('.bg-gradient-primary').css({
+            'background': 'linear-gradient(to right, #0062cc, #0275d8)',
+            'opacity': '1'
+        });
+        $('.bg-gradient-danger').css({
+            'background': 'linear-gradient(to right, #c82333, #dc3545)',
+            'opacity': '1'
+        });
+        $('.bg-gradient-success').css({
+            'background': 'linear-gradient(to right, #218838, #28a745)',
+            'opacity': '1'
+        });
+        $('.bg-gradient-info').css({
+            'background': 'linear-gradient(to right, #138496, #17a2b8)',
+            'opacity': '1'
+        });
+    });";
 
                 // Registrar script para aplicar estilos
                 ScriptManager.RegisterStartupScript(this, GetType(), "FixStyles",
                     fixStylesScript, true);
 
-                // Luego, mostrar la modal después de un breve retraso para que los estilos se apliquen
+                // Mostrar la modal después de un breve retraso para que los estilos se apliquen
                 ScriptManager.RegisterStartupScript(this, GetType(), "MostrarModal",
                     "setTimeout(function() { $('#modalResultados').modal('show'); }, 100);", true);
             }
@@ -846,7 +844,8 @@ namespace WebSGV.Views
         }
 
 
-
+        // Variable a nivel de clase para guardar el recuento total
+        private int _totalRegistros = 0;
         private void GenerarReporte()
         {
             string tipoReporte = ObtenerTipoReporteSeleccionado();
@@ -1026,6 +1025,21 @@ namespace WebSGV.Views
                 GenerarReporteDePrueba();
             }
 
+            if (gvReporte.DataSource != null)
+            {
+                if (gvReporte.DataSource is DataTable)
+                {
+                    _totalRegistros = ((DataTable)gvReporte.DataSource).Rows.Count;
+                }
+                else if (gvReporte.DataSource is DataView)
+                {
+                    _totalRegistros = ((DataView)gvReporte.DataSource).Count;
+                }
+                else if (gvReporte.DataSource is ICollection)
+                {
+                    _totalRegistros = ((ICollection)gvReporte.DataSource).Count;
+                }
+            }
             pnlResultados.Visible = true;
         }
 
@@ -1794,7 +1808,7 @@ namespace WebSGV.Views
             if (lnkFinanciero.CssClass.Contains("active")) return "financiero";
             if (lnkCombustible.CssClass.Contains("active")) return "combustible";
             if (lnkProducto.CssClass.Contains("active")) return "producto";
-            if (lnkPersonalizado.CssClass.Contains("active")) return "personalizado";
+           // if (lnkPersonalizado.CssClass.Contains("active")) return "personalizado";
             return "conductor"; // Por defecto
         }
 

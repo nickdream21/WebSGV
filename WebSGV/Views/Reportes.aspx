@@ -30,9 +30,6 @@
                         <asp:LinkButton ID="lnkProducto" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="producto">
                             <i class="fas fa-box mr-2"></i> Reportes por Producto
                         </asp:LinkButton>
-                        <asp:LinkButton ID="lnkPersonalizado" runat="server" CssClass="list-group-item list-group-item-action d-flex align-items-center" OnClick="lnkTipoReporte_Click" CommandArgument="personalizado">
-                            <i class="fas fa-sliders-h mr-2"></i> Reporte Personalizado
-                        </asp:LinkButton>
                     </div>
                 </div>
             </div>
@@ -48,11 +45,7 @@
                         </h4>
 
                         <div>
-                            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#filtrosAvanzadosModal">
-                                <i class="fas fa-filter mr-1"></i>Filtros Avanzados
-                            </button>
                             <asp:Button ID="btnExportarExcel" runat="server" CssClass="btn btn-success" Text="Exportar a Excel" OnClick="btnExportarExcel_Click" />
-                            <asp:Button ID="btnExportarPDF" runat="server" CssClass="btn btn-danger ml-2" Text="Exportar a PDF" OnClick="btnExportarPDF_Click" Visible="true" />
                         </div>
                     </div>
 
@@ -327,7 +320,7 @@
                         <i class="fas fa-times mr-1"></i>Cerrar
                     </button>
                     <asp:Button ID="btnExportarExcelModal" runat="server" CssClass="btn btn-success" Text="Exportar a Excel" OnClick="btnExportarExcel_Click" />
-                    <asp:Button ID="btnExportarPDFModal" runat="server" CssClass="btn btn-danger ml-2" Text="Exportar a PDF" OnClick="btnExportarPDF_Click" />
+    
                 </div>
             </div>
         </div>
