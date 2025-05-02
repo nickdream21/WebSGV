@@ -1066,7 +1066,17 @@ namespace WebSGV.Views
                 t.placaTracto,
                 cr.placaCarreta,
                 cl.nombre AS Cliente,
-                p.nombre AS Producto,
+                (
+                    SELECT STUFF(
+                        (
+                            SELECT ', ' + p.nombre
+                            FROM GuiasTransportista gt
+                            JOIN DetalleOrdenViaje dov ON gt.idGuia = dov.idGuia
+                            JOIN Producto p ON dov.idProducto = p.idProducto
+                            WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje
+                            FOR XML PATH('')
+                        ), 1, 2, '')
+                ) AS Producto,
                 ov.fechaSalida,
                 ov.horaSalida,
                 ov.fechaLlegada,
@@ -1088,11 +1098,12 @@ namespace WebSGV.Views
             LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
             LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
             LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
-            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
             LEFT JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
             LEFT JOIN Factura f ON cpic.idFactura = f.idFactura
             WHERE 1=1
             ";
+
+                    // Resto del código permanece igual...
 
                     // Aplicamos filtros según lo que haya ingresado el usuario
                     if (!string.IsNullOrEmpty(numeroPedido))
@@ -1234,7 +1245,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
             gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
-            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje", Visible=false });
             gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
         }
 
@@ -1524,7 +1535,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaSalida", HeaderText = "Fecha Salida", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaSalida" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
-            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje", Visible=false });
             gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
         }
 
@@ -1564,48 +1575,61 @@ namespace WebSGV.Views
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     string query = @"
-            SELECT 
-                ov.idOrdenViaje,
-                ov.numeroOrdenViaje AS NroOrdenViaje,
-                f.numeroPedido AS NumeroPedido,
-                cpic.numeroCPIC,
-                c.DNI,
-                c.carnetExtranjeria,
-                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
-                c.telefono,
-                c.correo,
-                t.placaTracto,
-                cr.placaCarreta,
-                cl.nombre AS Cliente,
-                p.nombre AS Producto,
-                ov.fechaSalida,
-                ov.horaSalida,
-                ov.fechaLlegada,
-                ov.horaLlegada,
-                CASE 
-                    WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
-                      OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
-                    ELSE DATEDIFF(HOUR, 
-                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
-                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
-                    )
-                END AS HorasViaje,
-                (SELECT TOP 1 gt.ruta1 FROM GuiasTransportista gt WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje) AS Ruta,
-                (SELECT TOP 1 pd.nombre 
-                 FROM GuiasTransportista gt
-                 LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
-                 WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
-            FROM OrdenViaje ov
-            JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
-            JOIN Factura f ON cpic.idFactura = f.idFactura
-            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
-            LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
-            LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
-            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
-            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
-            WHERE 1=1
-            ";
+    SELECT 
+        ov.idOrdenViaje,
+        ov.numeroOrdenViaje AS NroOrdenViaje,
+        f.numeroPedido AS NumeroPedido,
+        cpic.numeroCPIC,
+        c.DNI,
+        c.carnetExtranjeria,
+        CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
+        c.telefono,
+        c.correo,
+        t.placaTracto,
+        cr.placaCarreta,
+        cl.nombre AS Cliente,
+        (
+            SELECT STUFF(
+                (
+                    SELECT ', ' + p.nombre
+                    FROM GuiasTransportista gt
+                    JOIN DetalleOrdenViaje dov ON gt.idGuia = dov.idGuia
+                    JOIN Producto p ON dov.idProducto = p.idProducto
+                    WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje
+                    FOR XML PATH('')
+                ), 1, 2, '')
+        ) AS Producto,
+        ov.fechaSalida,
+        ov.horaSalida,
+        ov.fechaLlegada,
+        ov.horaLlegada,
+        CASE 
+            WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
+              OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
+            ELSE DATEDIFF(HOUR, 
+                DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
+                DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
+            )
+        END AS HorasViaje,
+        (SELECT TOP 1 r.nombre 
+         FROM GuiasTransportista gt 
+         JOIN Ruta r ON TRY_CAST(gt.ruta1 AS INT) = r.idRuta
+         WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje) AS Ruta,
+        (SELECT TOP 1 pd.nombre 
+         FROM GuiasTransportista gt
+         LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
+         WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
+    FROM OrdenViaje ov
+    JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+    JOIN Factura f ON cpic.idFactura = f.idFactura
+    LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+    LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
+    LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
+    LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+    WHERE 1=1
+    ";
 
+                    // El resto del método permanece igual...
                     // Si hay número de pedido, ese es prioritario
                     if (!string.IsNullOrEmpty(numeroPedido))
                     {
@@ -1721,6 +1745,7 @@ namespace WebSGV.Views
             }
         }
 
+
         private void ConfigurarGridViewConductoresAsignados(DataTable dt)
         {
             gvReporte.Columns.Clear();
@@ -1738,7 +1763,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
             gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
-            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje", Visible=false});
             gvReporte.Columns.Add(new BoundField { DataField = "Ruta", HeaderText = "Ruta", SortExpression = "Ruta" });
             gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
         }
@@ -2101,38 +2126,39 @@ namespace WebSGV.Views
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     string query = @"
-            SELECT 
-                ov.numeroOrdenViaje AS NroOrdenViaje,
-                CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
-                t.placaTracto,
-                cr.placaCarreta,
-                cl.nombre AS Cliente,
-                p.nombre AS Producto,
-                ov.fechaSalida,
-                ov.horaSalida,
-                ov.fechaLlegada,
-                ov.horaLlegada,
-                CASE 
-                    WHEN ov.fechaSalida IS NULL OR ov.horaSalida IS NULL 
-                      OR ov.fechaLlegada IS NULL OR ov.horaLlegada IS NULL THEN NULL
-                    ELSE DATEDIFF(HOUR, 
-                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaSalida), CAST(ov.fechaSalida AS datetime)),
-                        DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', ov.horaLlegada), CAST(ov.fechaLlegada AS datetime))
-                    )
-                END AS HorasViaje,
-                (SELECT TOP 1 pd.nombre 
-                 FROM GuiasTransportista gt
-                 LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
-                 WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
-            FROM OrdenViaje ov
-            LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
-            LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
-            LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
-            LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
-            LEFT JOIN Producto p ON ov.idProducto = p.idProducto
-            LEFT JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
-            WHERE ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta
-            ";
+SELECT 
+    ov.numeroOrdenViaje AS NroOrdenViaje,
+    CONCAT(c.nombre, ' ', c.apPaterno, ' ', c.apMaterno) AS NombreConductor,
+    t.placaTracto,
+    cr.placaCarreta,
+    cl.nombre AS Cliente,
+    (
+        SELECT STUFF(
+            (
+                SELECT ', ' + p.nombre
+                FROM GuiasTransportista gt
+                JOIN DetalleOrdenViaje dov ON gt.idGuia = dov.idGuia
+                JOIN Producto p ON dov.idProducto = p.idProducto
+                WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje
+                FOR XML PATH('')
+            ), 1, 2, '')
+    ) AS Producto,
+    ov.fechaSalida,
+    ov.horaSalida,
+    ov.fechaLlegada,
+    ov.horaLlegada,
+    (SELECT TOP 1 pd.nombre 
+     FROM GuiasTransportista gt
+     LEFT JOIN PlantaDescarga pd ON gt.plantaDescarga = pd.nombre OR TRY_CAST(gt.plantaDescarga AS INT) = pd.idPlanta
+     WHERE gt.numeroOrdenViaje = ov.numeroOrdenViaje AND pd.nombre IS NOT NULL) AS PlantaDescarga
+FROM OrdenViaje ov
+LEFT JOIN Conductor c ON ov.idConductor = c.idConductor
+LEFT JOIN Tracto t ON ov.idTracto = t.idTracto
+LEFT JOIN Carreta cr ON ov.idCarreta = cr.idCarreta
+LEFT JOIN Cliente cl ON ov.idCliente = cl.idCliente
+LEFT JOIN CPIC cpic ON ov.idCPIC = cpic.idCPIC
+WHERE ov.fechaSalida BETWEEN @fechaDesde AND @fechaHasta
+";
 
                     if (!string.IsNullOrEmpty(idConductor))
                     {
@@ -2197,7 +2223,6 @@ namespace WebSGV.Views
                 dt.Columns.Add("horaSalida", typeof(TimeSpan));
                 dt.Columns.Add("fechaLlegada", typeof(DateTime));
                 dt.Columns.Add("horaLlegada", typeof(TimeSpan));
-                dt.Columns.Add("HorasViaje", typeof(int));
                 dt.Columns.Add("PlantaDescarga", typeof(string));
 
                 ConfigurarGridViewViajesConductor(dt);
@@ -2208,8 +2233,6 @@ namespace WebSGV.Views
                 gvReporte.DataBind();
             }
         }
-
-
 
         private void ConfigurarGridViewViajesConductor(DataTable dt)
         {
@@ -2225,7 +2248,6 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
             gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
-            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas Viaje", SortExpression = "HorasViaje" });
             gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
         }
 
@@ -2436,7 +2458,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "NombreConductor", HeaderText = "Conductor", SortExpression = "NombreConductor" });
             gvReporte.Columns.Add(new BoundField { DataField = "Producto", HeaderText = "Producto", SortExpression = "Producto" });
             gvReporte.Columns.Add(new BoundField { DataField = "CantidadBolsas", HeaderText = "Cant. Bolsas", SortExpression = "CantidadBolsas", DataFormatString = "{0:N0}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
-            gvReporte.Columns.Add(new BoundField { DataField = "PesoKg", HeaderText = "Peso (Kg)", SortExpression = "PesoKg", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right } });
+            gvReporte.Columns.Add(new BoundField { DataField = "PesoKg", HeaderText = "Peso (Kg)", SortExpression = "PesoKg", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right },Visible=false });
             gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
             gvReporte.Columns.Add(new BoundField { DataField = "GuiaTransportista", HeaderText = "Guía Transportista", SortExpression = "GuiaTransportista" });
             gvReporte.Columns.Add(new BoundField { DataField = "GuiaCliente", HeaderText = "Guía Cliente", SortExpression = "GuiaCliente" });
@@ -2969,7 +2991,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "EstacionServicio", HeaderText = "Est. Servicio", SortExpression = "EstacionServicio" });
             gvReporte.Columns.Add(new BoundField { DataField = "DistanciaKm", HeaderText = "Dist. (Km)", DataFormatString = "{0:N0}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "DistanciaKm" });
             gvReporte.Columns.Add(new BoundField { DataField = "Galones", HeaderText = "Galones", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "Galones" });
-            gvReporte.Columns.Add(new BoundField { DataField = "PrecioUnitario", HeaderText = "Precio Unit.", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "PrecioUnitario" });
+            gvReporte.Columns.Add(new BoundField { DataField = "PrecioUnitario", HeaderText = "Precio Unit.", DataFormatString = "{0:N3}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "PrecioUnitario" });
             gvReporte.Columns.Add(new BoundField { DataField = "Total", HeaderText = "Total $", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "Total" });
             gvReporte.Columns.Add(new BoundField { DataField = "RendimientoKmGalon", HeaderText = "Km/Galón", DataFormatString = "{0:N2}", ItemStyle = { HorizontalAlign = HorizontalAlign.Right }, SortExpression = "RendimientoKmGalon" });
             gvReporte.Columns.Add(new BoundField { DataField = "Cliente", HeaderText = "Cliente", SortExpression = "Cliente" });
@@ -3260,7 +3282,7 @@ namespace WebSGV.Views
             gvReporte.Columns.Add(new BoundField { DataField = "horaSalida", HeaderText = "Hora Salida", SortExpression = "horaSalida" });
             gvReporte.Columns.Add(new BoundField { DataField = "fechaLlegada", HeaderText = "Fecha Llegada", DataFormatString = "{0:dd/MM/yyyy}", SortExpression = "fechaLlegada" });
             gvReporte.Columns.Add(new BoundField { DataField = "horaLlegada", HeaderText = "Hora Llegada", SortExpression = "horaLlegada" });
-            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas", SortExpression = "HorasViaje" });
+            gvReporte.Columns.Add(new BoundField { DataField = "HorasViaje", HeaderText = "Horas", SortExpression = "HorasViaje",Visible=false });
             gvReporte.Columns.Add(new BoundField { DataField = "NombreRuta", HeaderText = "Ruta", SortExpression = "NombreRuta" });
             gvReporte.Columns.Add(new BoundField { DataField = "PlantaDescarga", HeaderText = "Planta Descarga", SortExpression = "PlantaDescarga" });
         }

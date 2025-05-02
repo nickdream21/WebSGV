@@ -23,6 +23,11 @@ namespace WebSGV.Views
         {
             string numeroAbastecimiento = txtBuscarAbastecimiento.Text.Trim();
 
+            // Limitar a 6 caracteres y asegurar formato correcto
+            if (numeroAbastecimiento.Length > 6)
+                numeroAbastecimiento = numeroAbastecimiento.Substring(0, 6);
+            numeroAbastecimiento = numeroAbastecimiento.PadLeft(6, '0');
+
             if (string.IsNullOrEmpty(numeroAbastecimiento))
             {
                 MostrarMensaje("Por favor, ingrese un número de abastecimiento para buscar.", "danger");
@@ -36,10 +41,38 @@ namespace WebSGV.Views
 
                 if (abastecimiento != null)
                 {
-                    // Mostrar datos del abastecimiento
-                    MostrarDatosAbastecimiento(abastecimiento);
-                    pnlResultados.Visible = true;
-                    pnlNoResultados.Visible = false;
+                    try
+                    {
+                        // Primero configurar la visibilidad
+                        pnlResultados.Visible = true;
+                        pnlNoResultados.Visible = false;
+
+                        // Luego mostrar los datos
+                        MostrarDatosAbastecimiento(abastecimiento);
+
+                        // Por último, registrar scripts para actualizar la UI
+                        string script = @"
+                    try {
+                        if (document.getElementById('" + pnlResultados.ClientID + @"')) {
+                            document.getElementById('" + pnlResultados.ClientID + @"').style.display = 'block';
+                        }
+                        if (document.getElementById('" + pnlNoResultados.ClientID + @"')) {
+                            document.getElementById('" + pnlNoResultados.ClientID + @"').style.display = 'none';
+                        }
+                    } catch(e) { 
+                        console.error('Error al actualizar paneles: ' + e);
+                    }";
+
+                        ScriptManager.RegisterStartupScript(this, this.GetType(),
+                            "ActualizarUI", script, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Capturar cualquier error en MostrarDatosAbastecimiento
+                        MostrarMensaje("Error al mostrar datos: " + ex.Message, "danger");
+                        pnlResultados.Visible = false;
+                        pnlNoResultados.Visible = true;
+                    }
                 }
                 else
                 {
@@ -60,6 +93,9 @@ namespace WebSGV.Views
 
             try
             {
+                // Asegurar formato adecuado: eliminar espacios y rellenar con ceros
+                numeroAbastecimiento = numeroAbastecimiento.Trim().PadLeft(6, '0');
+
                 // Cadena de conexión - Ajustar según tu configuración
                 string connectionString = ConfigurationManager.ConnectionStrings["ConexionSGV"].ConnectionString;
 
@@ -67,36 +103,42 @@ namespace WebSGV.Views
                 {
                     connection.Open();
 
-                    // Consulta SQL para obtener el abastecimiento
+                    // Consulta SQL modificada para tratar correctamente el campo char(6)
                     string query = @"
-                        SELECT a.idAbastecimientoCombustible, a.numeroAbastecimientoCombustible, 
-                               a.producto, a.fechaHora, a.galonesRutaAsignada, a.galonesCompradosRuta, 
-                               a.galonesTotalAbastecidos, a.galonesAlFinalizar, a.galonesTotalConsumidos, 
-                               a.precioDolar, a.montoTotalGalonesComprados, a.distanciaRutaKM, 
-                               a.consumoComputador, a.observaciones, a.horaRetorno, a.rendimientoPromedio,
-                               t.placaTracto, t.idTracto, 
-                               cr.placaCarreta, cr.idCarreta,
-                               c.nombre + ' ' + c.apPaterno + ' ' + c.apMaterno AS nombreConductor, c.idConductor,
-                               r.nombre AS nombreRuta, r.idRuta,
-                               la.nombreAbastecimiento AS lugarAbastecimiento, la.idLugarAbastecimiento,
-                               tc.idTipoCarro
-                        FROM AbastecimientoCombustible a
-                        LEFT JOIN Tracto t ON a.idTracto = t.idTracto
-                        LEFT JOIN Carreta cr ON a.idCarreta = cr.idCarreta
-                        LEFT JOIN Conductor c ON a.idConductor = c.idConductor
-                        LEFT JOIN Ruta r ON a.idRuta = r.idRuta
-                        LEFT JOIN LugarAbastecimiento la ON a.idLugarAbastecimiento = la.idLugarAbastecimiento
-                        LEFT JOIN TipoCarro tc ON a.idTipoCarro = tc.idTipoCarro
-                        WHERE a.numeroAbastecimientoCombustible = @numeroAbastecimiento";
+                SELECT a.idAbastecimientoCombustible, a.numeroAbastecimientoCombustible, 
+                       a.producto, a.fechaHora, a.galonesRutaAsignada, a.galonesCompradosRuta, 
+                       a.galonesTotalAbastecidos, a.galonesAlFinalizar, a.galonesTotalConsumidos, 
+                       a.precioDolar, a.montoTotalGalonesComprados, a.distanciaRutaKM, 
+                       a.consumoComputador, a.observaciones, a.horaRetorno, a.rendimientoPromedio,
+                       t.placaTracto, t.idTracto, 
+                       cr.placaCarreta, cr.idCarreta,
+                       c.nombre + ' ' + c.apPaterno + ' ' + c.apMaterno AS nombreConductor, c.idConductor,
+                       r.nombre AS nombreRuta, r.idRuta,
+                       la.nombreAbastecimiento AS lugarAbastecimiento, la.idLugarAbastecimiento,
+                       tc.idTipoCarro
+                FROM AbastecimientoCombustible a
+                LEFT JOIN Tracto t ON a.idTracto = t.idTracto
+                LEFT JOIN Carreta cr ON a.idCarreta = cr.idCarreta
+                LEFT JOIN Conductor c ON a.idConductor = c.idConductor
+                LEFT JOIN Ruta r ON a.idRuta = r.idRuta
+                LEFT JOIN LugarAbastecimiento la ON a.idLugarAbastecimiento = la.idLugarAbastecimiento
+                LEFT JOIN TipoCarro tc ON a.idTipoCarro = tc.idTipoCarro
+                WHERE RTRIM(a.numeroAbastecimientoCombustible) = @numeroAbastecimiento";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
+                        // Logueamos la búsqueda para depuración
+                        System.Diagnostics.Debug.WriteLine($"Buscando abastecimiento con número: '{numeroAbastecimiento}'");
+
                         command.Parameters.AddWithValue("@numeroAbastecimiento", numeroAbastecimiento);
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
                             {
+                                // Logueamos el valor encontrado para depuración
+                                System.Diagnostics.Debug.WriteLine($"Encontrado abastecimiento: '{reader["numeroAbastecimientoCombustible"]}'");
+
                                 abastecimiento = new AbastecimientoModel
                                 {
                                     IdAbastecimientoCombustible = Convert.ToInt32(reader["idAbastecimientoCombustible"]),
@@ -129,17 +171,104 @@ namespace WebSGV.Views
                                 };
                             }
                         }
+
+                        // Si no se encontró con la búsqueda exacta, intentar con LIKE
+                        if (abastecimiento == null)
+                        {
+                            System.Diagnostics.Debug.WriteLine("No se encontró con búsqueda exacta, intentando con LIKE");
+
+                            string queryLike = @"
+                        SELECT a.idAbastecimientoCombustible, a.numeroAbastecimientoCombustible, 
+                               a.producto, a.fechaHora, a.galonesRutaAsignada, a.galonesCompradosRuta, 
+                               a.galonesTotalAbastecidos, a.galonesAlFinalizar, a.galonesTotalConsumidos, 
+                               a.precioDolar, a.montoTotalGalonesComprados, a.distanciaRutaKM, 
+                               a.consumoComputador, a.observaciones, a.horaRetorno, a.rendimientoPromedio,
+                               t.placaTracto, t.idTracto, 
+                               cr.placaCarreta, cr.idCarreta,
+                               c.nombre + ' ' + c.apPaterno + ' ' + c.apMaterno AS nombreConductor, c.idConductor,
+                               r.nombre AS nombreRuta, r.idRuta,
+                               la.nombreAbastecimiento AS lugarAbastecimiento, la.idLugarAbastecimiento,
+                               tc.idTipoCarro
+                        FROM AbastecimientoCombustible a
+                        LEFT JOIN Tracto t ON a.idTracto = t.idTracto
+                        LEFT JOIN Carreta cr ON a.idCarreta = cr.idCarreta
+                        LEFT JOIN Conductor c ON a.idConductor = c.idConductor
+                        LEFT JOIN Ruta r ON a.idRuta = r.idRuta
+                        LEFT JOIN LugarAbastecimiento la ON a.idLugarAbastecimiento = la.idLugarAbastecimiento
+                        LEFT JOIN TipoCarro tc ON a.idTipoCarro = tc.idTipoCarro
+                        WHERE a.numeroAbastecimientoCombustible LIKE @numeroAbastecimientoLike";
+
+                            using (SqlCommand cmdLike = new SqlCommand(queryLike, connection))
+                            {
+                                cmdLike.Parameters.AddWithValue("@numeroAbastecimientoLike", numeroAbastecimiento + "%");
+
+                                using (SqlDataReader readerLike = cmdLike.ExecuteReader())
+                                {
+                                    if (readerLike.Read())
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Encontrado con LIKE: '{readerLike["numeroAbastecimientoCombustible"]}'");
+
+                                        abastecimiento = new AbastecimientoModel
+                                        {
+                                            IdAbastecimientoCombustible = Convert.ToInt32(readerLike["idAbastecimientoCombustible"]),
+                                            NumeroAbastecimientoCombustible = readerLike["numeroAbastecimientoCombustible"].ToString().Trim(),
+                                            IdTracto = readerLike["idTracto"] != DBNull.Value ? Convert.ToInt32(readerLike["idTracto"]) : 0,
+                                            PlacaTracto = readerLike["placaTracto"] != DBNull.Value ? readerLike["placaTracto"].ToString() : string.Empty,
+                                            IdCarreta = readerLike["idCarreta"] != DBNull.Value ? Convert.ToInt32(readerLike["idCarreta"]) : 0,
+                                            PlacaCarreta = readerLike["placaCarreta"] != DBNull.Value ? readerLike["placaCarreta"].ToString() : string.Empty,
+                                            IdConductor = readerLike["idConductor"] != DBNull.Value ? Convert.ToInt32(readerLike["idConductor"]) : 0,
+                                            NombreConductor = readerLike["nombreConductor"] != DBNull.Value ? readerLike["nombreConductor"].ToString() : string.Empty,
+                                            IdRuta = readerLike["idRuta"] != DBNull.Value ? Convert.ToInt32(readerLike["idRuta"]) : 0,
+                                            NombreRuta = readerLike["nombreRuta"] != DBNull.Value ? readerLike["nombreRuta"].ToString() : string.Empty,
+                                            Producto = readerLike["producto"].ToString(),
+                                            IdLugarAbastecimiento = readerLike["idLugarAbastecimiento"] != DBNull.Value ? Convert.ToInt32(readerLike["idLugarAbastecimiento"]) : 0,
+                                            LugarAbastecimiento = readerLike["lugarAbastecimiento"] != DBNull.Value ? readerLike["lugarAbastecimiento"].ToString() : string.Empty,
+                                            FechaHora = Convert.ToDateTime(readerLike["fechaHora"]),
+                                            GalonesRutaAsignada = Convert.ToDecimal(readerLike["galonesRutaAsignada"]),
+                                            GalonesCompradosRuta = Convert.ToDecimal(readerLike["galonesCompradosRuta"]),
+                                            GalonesTotalAbastecidos = Convert.ToDecimal(readerLike["galonesTotalAbastecidos"]),
+                                            GalonesAlFinalizar = Convert.ToDecimal(readerLike["galonesAlFinalizar"]),
+                                            GalonesTotalConsumidos = Convert.ToDecimal(readerLike["galonesTotalConsumidos"]),
+                                            PrecioDolar = Convert.ToDecimal(readerLike["precioDolar"]),
+                                            MontoTotalGalonesComprados = Convert.ToDecimal(readerLike["montoTotalGalonesComprados"]),
+                                            DistanciaRutaKM = Convert.ToDecimal(readerLike["distanciaRutaKM"]),
+                                            ConsumoComputador = Convert.ToDecimal(readerLike["consumoComputador"]),
+                                            Observaciones = readerLike["observaciones"] != DBNull.Value ? readerLike["observaciones"].ToString() : string.Empty,
+                                            HoraRetorno = readerLike["horaRetorno"] != DBNull.Value ? TimeSpan.Parse(readerLike["horaRetorno"].ToString()) : TimeSpan.Zero,
+                                            RendimientoPromedio = readerLike["rendimientoPromedio"] != DBNull.Value ? Convert.ToDecimal(readerLike["rendimientoPromedio"]) : 0,
+                                            IdTipoCarro = readerLike["idTipoCarro"] != DBNull.Value ? Convert.ToInt32(readerLike["idTipoCarro"]) : 0
+                                        };
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error en ObtenerAbastecimiento: {ex.Message}");
                 throw new Exception("Error al obtener los datos del abastecimiento: " + ex.Message);
             }
 
             return abastecimiento;
         }
-
+        private string TipoCarroAValor(int idTipoCarro)
+        {
+            switch (idTipoCarro)
+            {
+                case 1:
+                    return "camioneta";
+                case 2:
+                    return "camion";
+                case 3:
+                    return "trailer";
+                case 4:
+                    return "otro";
+                default:
+                    return "camion"; // Valor predeterminado
+            }
+        }
         private void MostrarDatosAbastecimiento(AbastecimientoModel abastecimiento)
         {
             // Mostrar datos generales
@@ -150,9 +279,28 @@ namespace WebSGV.Views
             txtRuta.Text = abastecimiento.NombreRuta;
 
             // Establecer tipo de vehículo
+            // Establecer tipo de vehículo - CÓDIGO CORREGIDO
             if (abastecimiento.IdTipoCarro > 0)
             {
-                ddlTipoVehiculo.SelectedValue = abastecimiento.IdTipoCarro.ToString();
+                try
+                {
+                    // Intenta establecer el SelectedValue
+                    string tipoValue = TipoCarroAValor(abastecimiento.IdTipoCarro);
+                    if (!string.IsNullOrEmpty(tipoValue))
+                    {
+                        ddlTipoVehiculo.SelectedValue = tipoValue;
+                    }
+                    else
+                    {
+                        // Si no encuentra el valor, establece el índice 0 (primer elemento)
+                        ddlTipoVehiculo.SelectedIndex = 0;
+                    }
+                }
+                catch (Exception)
+                {
+                    // Si hay error, establece el índice 0 (primer elemento)
+                    ddlTipoVehiculo.SelectedIndex = 0;
+                }
             }
 
             // Productos y lugar
@@ -511,6 +659,12 @@ namespace WebSGV.Views
         {
             lblMensaje.Text = mensaje;
             lblMensaje.CssClass = $"text-{tipo}";
+            lblMensaje.Visible = true;
+
+            // Asegurar que el mensaje sea visible en el cliente
+            ScriptManager.RegisterStartupScript(this, this.GetType(),
+                "MostrarMensaje_" + DateTime.Now.Ticks,
+                $"console.log('Mensaje: {mensaje}');", true);
         }
     }
 

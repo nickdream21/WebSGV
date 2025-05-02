@@ -175,7 +175,7 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownIndicadores">
                             <a class="dropdown-item" href="AgregarIndicadores.aspx">Registrar Indicadores</a>
-                            <a class="dropdown-item" href="BuscarIndicadores.aspx">Buscar Indicadores</a>
+                            <a class="dropdown-item" href="Dashboard.aspx">Buscar Indicadores</a>
                         </div>
                     </li>
 

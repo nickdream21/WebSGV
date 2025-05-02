@@ -90,10 +90,10 @@
             height: auto;
         }
 
-            .form-control:focus {
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            }
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
 
         .btn-primary {
             background-color: var(--primary-color);
@@ -101,10 +101,10 @@
             padding: 8px 20px;
         }
 
-            .btn-primary:hover {
-                background-color: var(--secondary-color);
-                border-color: var(--secondary-color);
-            }
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
 
         .calculation-box {
             background-color: var(--accent-color);
@@ -223,32 +223,32 @@
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
-            .select2-container--default .select2-selection--single:focus,
-            .select2-container--default.select2-container--focus .select2-selection--single {
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
 
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                color: #495057;
-                line-height: 36px;
-                padding-left: 12px;
-                padding-right: 30px;
-            }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #495057;
+            line-height: 36px;
+            padding-left: 12px;
+            padding-right: 30px;
+        }
 
-            .select2-container--default .select2-selection--single .select2-selection__placeholder {
-                color: #6c757d;
-            }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #6c757d;
+        }
 
-            .select2-container--default .select2-selection--single .select2-selection__arrow {
-                height: 36px;
-                width: 30px;
-                right: 3px;
-            }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+            width: 30px;
+            right: 3px;
+        }
 
-                .select2-container--default .select2-selection--single .select2-selection__arrow b {
-                    border-color: #6c757d transparent transparent transparent;
-                }
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #6c757d transparent transparent transparent;
+        }
 
         .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
             border-color: transparent transparent #6c757d transparent;
@@ -271,17 +271,17 @@
             padding: 8px;
         }
 
-            .select2-search--dropdown .select2-search__field {
-                padding: 8px 12px;
-                border: 1px solid #ced4da;
-                border-radius: 4px;
-                outline: none;
-            }
+        .select2-search--dropdown .select2-search__field {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            outline: none;
+        }
 
-                .select2-search--dropdown .select2-search__field:focus {
-                    border-color: #80bdff;
-                    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.2);
-                }
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.2);
+        }
 
         .select2-results__option {
             padding: 8px 12px;
@@ -289,9 +289,9 @@
             transition: background-color 0.15s ease-in-out;
         }
 
-            .select2-results__option[aria-selected=true] {
-                background-color: #e9ecef;
-            }
+        .select2-results__option[aria-selected=true] {
+            background-color: #e9ecef;
+        }
 
         .select2-container--default .select2-results__option--highlighted[aria-selected] {
             background-color: #0056b3;
@@ -318,24 +318,46 @@
                 height: 42px;
             }
 
-                .select2-container--default .select2-selection--single .select2-selection__rendered {
-                    line-height: 40px;
-                }
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                line-height: 40px;
+            }
 
-                .select2-container--default .select2-selection--single .select2-selection__arrow {
-                    height: 40px;
-                }
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 40px;
+            }
         }
 
+        /* Mensaje de éxito o error */
+        .alert-message {
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
         }
     </style>
+
     <div class="container-fluid abastecimiento-container">
+        <!-- Mensaje de alerta para retroalimentación al usuario -->
+        <div id="alertMessage" class="alert-message" role="alert"></div>
+
         <!-- Encabezado con número -->
         <div class="d-flex justify-content-between align-items-center header-container">
             <h3 class="abastecimiento-header text-uppercase">Parte de Abastecimiento de Combustible</h3>
             <div class="numero-container">
                 <label for="numeroAbastecimiento" class="numero-label">N°:</label>
-                <asp:TextBox ID="numeroAbastecimiento" runat="server" CssClass="numero-input" Text=""></asp:TextBox>
+                <asp:TextBox ID="numeroAbastecimiento" runat="server" CssClass="numero-input" MaxLength="6"></asp:TextBox>
             </div>
         </div>
 
@@ -349,10 +371,10 @@
                     <div class="col-md-3">
                         <label for="<%= tipoVehiculo.ClientID %>" class="form-label">Tipo:</label>
                         <asp:DropDownList ID="tipoVehiculo" runat="server" CssClass="form-control">
-                            <asp:ListItem Value="camioneta">Camioneta</asp:ListItem>
-                            <asp:ListItem Value="camion" Selected="True">Camión</asp:ListItem>
-                            <asp:ListItem Value="trailer">Trailer</asp:ListItem>
-                            <asp:ListItem Value="otro">Otro</asp:ListItem>
+                            <asp:ListItem Value="1">Camioneta</asp:ListItem>
+                            <asp:ListItem Value="2" Selected="True">Camión</asp:ListItem>
+                            <asp:ListItem Value="3">Trailer</asp:ListItem>
+                            <asp:ListItem Value="4">Otro</asp:ListItem>
                         </asp:DropDownList>
                     </div>
                     <div class="col-md-3">
@@ -369,263 +391,314 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Ruta y Producto -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-route me-2"></i>Ruta y Producto
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="<%= ddlRuta.ClientID %>" class="form-label">Ruta:</label>
-                            <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control"></asp:DropDownList>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="<%= txtProducto.ClientID %>" class="form-label">Producto:</label>
-                            <asp:TextBox ID="txtProducto" runat="server" CssClass="form-control" placeholder="Ingrese el producto"></asp:TextBox>
-                        </div>
-                    </div>
-                </div>
+        <!-- Ruta y Producto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-route me-2"></i>Ruta y Producto
             </div>
-
-            <!-- Control de Combustible -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-gas-pump me-2"></i>Control de Combustible
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label for="<%= lugarAbastecimiento.ClientID %>" class="form-label">Lugar de Abastecimiento:</label>
-                            <asp:DropDownList ID="lugarAbastecimiento" runat="server" CssClass="form-control">
-                                <asp:ListItem Value="grifo" Selected="True">Grifo Cochera 03</asp:ListItem>
-                                <asp:ListItem Value="otro">Otro</asp:ListItem>
-                            </asp:DropDownList>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="<%= txtFecha.ClientID %>" class="form-label">Fecha:</label>
-                            <asp:TextBox ID="txtFecha" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="<%= txtHora.ClientID %>" class="form-label">Hora:</label>
-                            <asp:TextBox ID="txtHora" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
-                        </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="<%= ddlRuta.ClientID %>" class="form-label">Ruta:</label>
+                        <asp:DropDownList ID="ddlRuta" runat="server" CssClass="form-control"></asp:DropDownList>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="<%= txtProducto.ClientID %>" class="form-label">Producto:</label>
+                        <asp:TextBox ID="txtProducto" runat="server" CssClass="form-control" placeholder="Ingrese el producto"></asp:TextBox>
                     </div>
                 </div>
-            </div>
-
-            <!-- Detalles de Consumo -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-tachometer-alt me-2"></i>Detalles de Consumo
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtGLRuta.ClientID %>" class="form-label">GL Ruta Asignada:</label>
-                                    <asp:TextBox ID="txtGLRuta" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 50" onchange="calcularTotales()"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtGLComprados.ClientID %>" class="form-label">GL Comprados en Ruta:</label>
-                                    <asp:TextBox ID="txtGLComprados" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 193.5" onchange="calcularTotales()"></asp:TextBox>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtTotalGL.ClientID %>" class="form-label">GL Total Abastecidos:</label>
-                                    <asp:TextBox ID="txtTotalGL" runat="server" CssClass="form-control calculated-field" TextMode="Number" placeholder="Ej: 243.5" ReadOnly="true"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtGLFinal.ClientID %>" class="form-label">GL Trae al Finalizar:</label>
-                                    <asp:TextBox ID="txtGLFinal" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 62" onchange="calcularTotales()"></asp:TextBox>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtGLConsumidos.ClientID %>" class="form-label">GL Total Consumidos:</label>
-                                    <asp:TextBox ID="txtGLConsumidos" runat="server" CssClass="form-control calculated-field" TextMode="Number" placeholder="Ej: 181.65" ReadOnly="true"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtPrecioDolar.ClientID %>" class="form-label">Precio del Dólar:</label>
-                                    <asp:TextBox ID="txtPrecioDolar" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 1.795"></asp:TextBox>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtMontoTotal.ClientID %>" class="form-label">Monto Total GL:</label>
-                                    <asp:TextBox ID="txtMontoTotal" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 193.5"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtDistancia.ClientID %>" class="form-label">Distancia en KM:</label>
-                                    <asp:TextBox ID="txtDistancia" runat="server" CssClass="form-control" TextMode="Number" placeholder="Ej: 1935.9" onchange="calcularRendimiento()"></asp:TextBox>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtConsumoComputador.ClientID %>" class="form-label">Consumo Computador:</label>
-                                    <asp:TextBox ID="txtConsumoComputador" runat="server" CssClass="form-control" TextMode="Number" step="0.01" placeholder="Ej: 184.2"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label for="<%= txtHoraRetorno.ClientID %>" class="form-label">Hora Retorno:</label>
-                                    <asp:TextBox ID="txtHoraRetorno" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
-                                </div>
-                            </div>
-                            <div class="fuel-section mt-3">
-                                <h6 class="mb-2">Visualización de consumo de combustible</h6>
-                                <div class="fuel-tank">
-                                    <div class="fuel-level" id="fuelLevelVisual"></div>
-                                </div>
-                                <div class="fuel-markers">
-                                    <span>0%</span>
-                                    <span>25%</span>
-                                    <span>50%</span>
-                                    <span>75%</span>
-                                    <span>100%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cálculos y Resultados -->
-                    <div class="calculation-box mt-3">
-                        <div class="calculation-result">
-                            <span>Rendimiento promedio (KM/GL):</span>
-                            <span id="rendimientoPromedio">0.00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Observaciones -->
-            <div class="card mb-4 observaciones-section">
-                <div class="card-header">
-                    <i class="fas fa-clipboard me-2"></i>Observaciones
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12">
-                            <asp:TextBox ID="txtObservaciones" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" placeholder="Ingrese observaciones adicionales aquí..."></asp:TextBox>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Botones -->
-            <div class="text-end mt-4">
-                <asp:Button ID="btnImprimir" runat="server" CssClass="btn btn-success me-2" Text="Imprimir" OnClientClick="window.print(); return false;" />
-                <asp:Button ID="btnLimpiar" runat="server" CssClass="btn btn-secondary me-2" Text="Limpiar" OnClientClick="limpiarFormulario(); return false;" />
-                <asp:Button ID="btnGuardar" runat="server" CssClass="btn btn-primary" Text="Guardar" OnClick="btnGuardar_Click" />
             </div>
         </div>
 
-        <!-- Scripts para cálculos automáticos -->
-        <script type="text/javascript">
-            // Función para calcular totales automáticamente
-            function calcularTotales() {
-                var glRuta = parseFloat(document.getElementById('<%= txtGLRuta.ClientID %>').value) || 0;
-                var glComprados = parseFloat(document.getElementById('<%= txtGLComprados.ClientID %>').value) || 0;
-                var glFinal = parseFloat(document.getElementById('<%= txtGLFinal.ClientID %>').value) || 0;
+        <!-- Control de Combustible -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-gas-pump me-2"></i>Control de Combustible
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="<%= lugarAbastecimiento.ClientID %>" class="form-label">Lugar de Abastecimiento:</label>
+                        <asp:DropDownList ID="lugarAbastecimiento" runat="server" CssClass="form-control">
+                            <asp:ListItem Value="1" Selected="True">Grifo Cochera 03</asp:ListItem>
+                            <asp:ListItem Value="2">Otro</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="<%= txtFecha.ClientID %>" class="form-label">Fecha:</label>
+                        <asp:TextBox ID="txtFecha" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="<%= txtHora.ClientID %>" class="form-label">Hora:</label>
+                        <asp:TextBox ID="txtHora" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                // Calcular total abastecido
-                var totalAbastecido = glRuta + glComprados;
-                document.getElementById('<%= txtTotalGL.ClientID %>').value = totalAbastecido.toFixed(2);
+        <!-- Detalles de Consumo -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-tachometer-alt me-2"></i>Detalles de Consumo
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLRuta.ClientID %>" class="form-label">GL Ruta Asignada:</label>
+                                <asp:TextBox ID="txtGLRuta" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 50" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLComprados.ClientID %>" class="form-label">GL Comprados en Ruta:</label>
+                                <asp:TextBox ID="txtGLComprados" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 193.5" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtTotalGL.ClientID %>" class="form-label">GL Total Abastecidos:</label>
+                                <asp:TextBox ID="txtTotalGL" runat="server" CssClass="form-control calculated-field" TextMode="Number" step="any" placeholder="Ej: 243.5" ReadOnly="true"></asp:TextBox>
 
-                // Calcular total consumido
-                var totalConsumido = totalAbastecido - glFinal;
-                document.getElementById('<%= txtGLConsumidos.ClientID %>').value = totalConsumido.toFixed(2);
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLFinal.ClientID %>" class="form-label">GL Trae al Finalizar:</label>
+                                <asp:TextBox ID="txtGLFinal" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 62" onchange="calcularTotales()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtGLConsumidos.ClientID %>" class="form-label">GL Total Consumidos:</label>
+                                <asp:TextBox ID="txtGLConsumidos" runat="server" CssClass="form-control calculated-field" TextMode="Number" step="any" placeholder="Ej: 181.65" ReadOnly="true"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtPrecioDolar.ClientID %>" class="form-label">Precio del Dólar:</label>
+                                <asp:TextBox ID="txtPrecioDolar" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 1.795"></asp:TextBox>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtMontoTotal.ClientID %>" class="form-label">Monto Total GL:</label>
+                                <asp:TextBox ID="txtMontoTotal" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 193.5"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtDistancia.ClientID %>" class="form-label">Distancia en KM:</label>
+                                <asp:TextBox ID="txtDistancia" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 1935.9" onchange="calcularRendimiento()"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtConsumoComputador.ClientID %>" class="form-label">Consumo Computador:</label>
+                                <asp:TextBox ID="txtConsumoComputador" runat="server" CssClass="form-control" TextMode="Number" step="any" placeholder="Ej: 184.2"></asp:TextBox>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="<%= txtHoraRetorno.ClientID %>" class="form-label">Hora Retorno:</label>
+                                <asp:TextBox ID="txtHoraRetorno" runat="server" CssClass="form-control" TextMode="Time"></asp:TextBox>
+                            </div>
+                        </div>
+                        <div class="fuel-section mt-3">
+                            <h6 class="mb-2">Visualización de consumo de combustible</h6>
+                            <div class="fuel-tank">
+                                <div class="fuel-level" id="fuelLevelVisual"></div>
+                            </div>
+                            <div class="fuel-markers">
+                                <span>0%</span>
+                                <span>25%</span>
+                                <span>50%</span>
+                                <span>75%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                // Actualizar visualización del nivel de combustible
-                actualizarNivelCombustible(glFinal, totalAbastecido);
+                <!-- Cálculos y Resultados -->
+                <div class="calculation-box mt-3">
+                    <div class="calculation-result">
+                        <span>Rendimiento promedio (KM/GL):</span>
+                        <span id="rendimientoPromedio">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                // Calcular rendimiento si hay distancia
-                calcularRendimiento();
+        <!-- Observaciones -->
+        <div class="card mb-4 observaciones-section">
+            <div class="card-header">
+                <i class="fas fa-clipboard me-2"></i>Observaciones
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <asp:TextBox ID="txtObservaciones" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" placeholder="Ingrese observaciones adicionales aquí..."></asp:TextBox>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="text-end mt-4">
+            <asp:Button ID="btnImprimir" runat="server" CssClass="btn btn-success me-2" Text="Imprimir" OnClientClick="window.print(); return false;" />
+            <asp:Button ID="btnLimpiar" runat="server" CssClass="btn btn-secondary me-2" Text="Limpiar" OnClientClick="limpiarFormulario(); return false;" />
+            <asp:Button ID="btnGuardar" runat="server" CssClass="btn btn-primary" Text="Guardar" OnClick="btnGuardar_Click" UseSubmitBehavior="true" />
+        </div>
+    </div>
+
+    <!-- Referencias a jQuery y jQuery UI -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <!-- Referencias a Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Scripts para cálculos automáticos -->
+    <script type="text/javascript">
+        // Función para calcular totales automáticamente
+        function calcularTotales() {
+            // Asegurar el uso de punto como separador decimal
+            var glRuta = parseFloat((document.getElementById('<%= txtGLRuta.ClientID %>').value || "0").replace(",", ".")) || 0;
+            var glComprados = parseFloat((document.getElementById('<%= txtGLComprados.ClientID %>').value || "0").replace(",", ".")) || 0;
+            var glFinal = parseFloat((document.getElementById('<%= txtGLFinal.ClientID %>').value || "0").replace(",", ".")) || 0;
+
+            // Calcular total abastecido
+            var totalAbastecido = glRuta + glComprados;
+            document.getElementById('<%= txtTotalGL.ClientID %>').value = totalAbastecido.toFixed(2);
+
+            // Calcular total consumido
+            var totalConsumido = totalAbastecido - glFinal;
+            if (totalConsumido < 0) totalConsumido = 0;
+            document.getElementById('<%= txtGLConsumidos.ClientID %>').value = totalConsumido.toFixed(2);
+
+            // Actualizar visualización del nivel de combustible
+            actualizarNivelCombustible(glFinal, totalAbastecido);
+
+            // Calcular rendimiento si hay distancia
+            calcularRendimiento();
+        }
+
+        // Función para calcular rendimiento
+        function calcularRendimiento() {
+            var distancia = parseFloat((document.getElementById('<%= txtDistancia.ClientID %>').value || "0").replace(",", ".")) || 0;
+            var consumido = parseFloat((document.getElementById('<%= txtGLConsumidos.ClientID %>').value || "0").replace(",", ".")) || 0;
+
+            if (distancia > 0 && consumido > 0) {
+                var rendimiento = distancia / consumido;
+                document.getElementById('rendimientoPromedio').textContent = rendimiento.toFixed(2);
+            } else {
+                document.getElementById('rendimientoPromedio').textContent = "0.00";
             }
+        }
 
-            // Función para calcular rendimiento
-            function calcularRendimiento() {
-                var distancia = parseFloat(document.getElementById('<%= txtDistancia.ClientID %>').value) || 0;
-                var consumido = parseFloat(document.getElementById('<%= txtGLConsumidos.ClientID %>').value) || 0;
-
-                if (distancia > 0 && consumido > 0) {
-                    var rendimiento = distancia / consumido;
-                    document.getElementById('rendimientoPromedio').textContent = rendimiento.toFixed(2);
+        // Función para actualizar la visualización del nivel de combustible
+        function actualizarNivelCombustible(actual, total) {
+            const fuelLevelVisual = document.getElementById('fuelLevelVisual');
+            if (fuelLevelVisual) {  // Verificar que el elemento existe
+                if (total > 0) {
+                    var porcentaje = (actual / total) * 100;
+                    if (porcentaje > 100) porcentaje = 100;
+                    fuelLevelVisual.style.width = porcentaje + '%';
                 } else {
-                    document.getElementById('rendimientoPromedio').textContent = "0.00";
+                    fuelLevelVisual.style.width = '0%';
                 }
             }
+        }
 
-            // Función para actualizar la visualización del nivel de combustible
-            function actualizarNivelCombustible(actual, total) {
-                const fuelLevelVisual = document.getElementById('fuelLevelVisual');
-                if (fuelLevelVisual) {  // Verificar que el elemento existe
-                    if (total > 0) {
-                        var porcentaje = (actual / total) * 100;
-                        fuelLevelVisual.style.width = porcentaje + '%';
-                    } else {
-                        fuelLevelVisual.style.width = '0%';
-                    }
-                }
+        // Inicializar visualización cuando el documento está completamente cargado
+        document.addEventListener('DOMContentLoaded', function () {
+            const txtTotalGL = document.getElementById('<%= txtTotalGL.ClientID %>');
+            const txtGLFinal = document.getElementById('<%= txtGLFinal.ClientID %>');
+
+            if (txtTotalGL && txtGLFinal) {
+                var totalGL = parseFloat(txtTotalGL.value || "0") || 0;
+                var glFinal = parseFloat(txtGLFinal.value || "0") || 0;
+
+                actualizarNivelCombustible(glFinal, totalGL);
             }
 
-            // Inicializar visualización cuando el documento está completamente cargado
-            document.addEventListener('DOMContentLoaded', function () {
-                const txtTotalGL = document.getElementById('<%= txtTotalGL.ClientID %>');
-                const txtGLFinal = document.getElementById('<%= txtGLFinal.ClientID %>');
+            // Establecer fecha y hora actuales si no hay valores
+            var fechaInput = document.getElementById('<%= txtFecha.ClientID %>');
+            var horaInput = document.getElementById('<%= txtHora.ClientID %>');
 
-                if (txtTotalGL && txtGLFinal) {
-                    var totalGL = parseFloat(txtTotalGL.value) || 0;
-                    var glFinal = parseFloat(txtGLFinal.value) || 0;
-
-                    actualizarNivelCombustible(glFinal, totalGL);
-                }
-            });
-
-            // Función para limpiar formulario
-            function limpiarFormulario() {
-                // Resetear los Select2
-                $('#<%= ddlPlaca.ClientID %>').val(null).trigger('change');
-                $('#<%= ddlCarreta.ClientID %>').val(null).trigger('change');
-                $('#<%= ddlConductor.ClientID %>').val(null).trigger('change');
-                $('#<%= ddlRuta.ClientID %>').val(null).trigger('change');
-
-                // Limpiar otros campos
-                document.getElementById('<%= txtProducto.ClientID %>').value = '';
-                document.getElementById('<%= txtGLRuta.ClientID %>').value = '';
-                document.getElementById('<%= txtGLComprados.ClientID %>').value = '';
-                document.getElementById('<%= txtTotalGL.ClientID %>').value = '';
-                document.getElementById('<%= txtGLFinal.ClientID %>').value = '';
-                document.getElementById('<%= txtGLConsumidos.ClientID %>').value = '';
-                document.getElementById('<%= txtPrecioDolar.ClientID %>').value = '';
-                document.getElementById('<%= txtMontoTotal.ClientID %>').value = '';
-                document.getElementById('<%= txtDistancia.ClientID %>').value = '';
-                document.getElementById('<%= txtConsumoComputador.ClientID %>').value = '';
-                document.getElementById('<%= txtObservaciones.ClientID %>').value = '';
-                document.getElementById('rendimientoPromedio').textContent = '0.00';
-                document.getElementById('fuelLevelVisual').style.width = '0%';
+            if (!fechaInput.value) {
+                var hoy = new Date().toISOString().split('T')[0];
+                fechaInput.value = hoy;
             }
 
-            // Inicializar cálculos al cargar la página
-            window.onload = function () {
-                // Establecer fecha actual si no hay fecha
-                var fechaInput = document.getElementById('<%= txtFecha.ClientID %>');
-                if (!fechaInput.value) {
-                    var hoy = new Date().toISOString().split('T')[0];
-                    fechaInput.value = hoy;
+            if (!horaInput.value) {
+                var ahora = new Date();
+                var horas = ahora.getHours().toString().padStart(2, '0');
+                var minutos = ahora.getMinutes().toString().padStart(2, '0');
+                horaInput.value = horas + ":" + minutos;
+            }
+
+            // Iniciar cálculos
+            calcularTotales();
+        });
+
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            // Resetear los Select2
+            try {
+                if ($.fn.select2) {
+                    $('#<%= ddlPlaca.ClientID %>').val(null).trigger('change');
+                    $('#<%= ddlCarreta.ClientID %>').val(null).trigger('change');
+                    $('#<%= ddlConductor.ClientID %>').val(null).trigger('change');
+                    $('#<%= ddlRuta.ClientID %>').val(null).trigger('change');
                 }
+            } catch (e) {
+                console.error("Error al resetear Select2: ", e);
+            }
 
-                // Iniciar cálculos
-                calcularTotales();
-            };
+            // Limpiar otros campos
+            document.getElementById('<%= txtProducto.ClientID %>').value = '';
+            document.getElementById('<%= txtGLRuta.ClientID %>').value = '';
+            document.getElementById('<%= txtGLComprados.ClientID %>').value = '';
+            document.getElementById('<%= txtTotalGL.ClientID %>').value = '';
+            document.getElementById('<%= txtGLFinal.ClientID %>').value = '';
+            document.getElementById('<%= txtGLConsumidos.ClientID %>').value = '';
+            document.getElementById('<%= txtPrecioDolar.ClientID %>').value = '';
+            document.getElementById('<%= txtMontoTotal.ClientID %>').value = '';
+            document.getElementById('<%= txtDistancia.ClientID %>').value = '';
+            document.getElementById('<%= txtConsumoComputador.ClientID %>').value = '';
+            document.getElementById('<%= txtObservaciones.ClientID %>').value = '';
+            document.getElementById('rendimientoPromedio').textContent = '0.00';
+            document.getElementById('fuelLevelVisual').style.width = '0%';
 
-            $(document).ready(function () {
-                // Inicializar Select2 en los DropDownList
+            // Ocultar mensaje de alerta si está visible
+            document.getElementById('alertMessage').style.display = 'none';
+        }
+
+        // Función para mostrar mensajes al usuario
+        function mostrarMensaje(mensaje, tipo) {
+            var alertDiv = document.getElementById('alertMessage');
+            
+            // Configurar el tipo de alerta
+            alertDiv.classList.remove('alert-success', 'alert-danger');
+            if (tipo === 'success') {
+                alertDiv.classList.add('alert-success');
+            } else {
+                alertDiv.classList.add('alert-danger');
+            }
+            
+            // Establecer el mensaje
+            alertDiv.innerHTML = mensaje;
+            alertDiv.style.display = 'block';
+            
+            // Ocultar después de 5 segundos
+            setTimeout(function() {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Inicializar Select2 cuando el documento esté listo
+        $(document).ready(function () {
+            // Inicializar Select2 en los DropDownList
+            try {
                 $('#<%= ddlPlaca.ClientID %>').select2({
                     placeholder: "Buscar placa...",
                     allowClear: true,
@@ -685,16 +758,15 @@
                         }
                     }
                 });
+            } catch (e) {
+                console.error("Error al inicializar Select2: ", e);
+            }
+
+            // Asegurar que el botón Guardar tiene el comportamiento correcto
+            $('#<%= btnGuardar.ClientID %>').on('click', function (e) {
+                console.log('Botón Guardar clickeado');
+                // No se previene el comportamiento por defecto
             });
-
-        </script>
-
-        <!-- Scripts para autocomplete con jQuery UI -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
-        <!-- Referencias a Select2 -->
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        });
+    </script>
 </asp:Content>

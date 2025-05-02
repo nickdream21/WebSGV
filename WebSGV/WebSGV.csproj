@@ -255,6 +255,7 @@
     <Content Include="Views\BuscarAbastecimiento.aspx" />
     <Content Include="Views\BuscarCPIC.aspx" />
     <Content Include="Views\BuscarFactura.aspx" />
+    <Content Include="Views\Dashboard.aspx" />
     <Content Include="Views\Inicio.aspx" />
     <Content Include="Views\Login.aspx" />
     <Content Include="Views\RegistroChoferes.aspx" />
@@ -375,6 +376,13 @@
     </Compile>
     <Compile Include="Views\BuscarFactura.aspx.designer.cs">
       <DependentUpon>BuscarFactura.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Views\Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="Views\Inicio.aspx.cs">
       <DependentUpon>Inicio.aspx</DependentUpon>
