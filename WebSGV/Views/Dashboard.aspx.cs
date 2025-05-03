@@ -190,6 +190,129 @@ namespace WebSGV.Views
                     $"alert('Error al cargar datos: {ex.Message.Replace("'", "\\'")}');", true);
             }
         }
+        protected void btnDiagnostico_Click(object sender, EventArgs e)
+        {
+            DiagnosticoCumplimiento();
+        }
+        // Método de diagnóstico - Agregar temporalmente a la clase
+        private void DiagnosticoCumplimiento()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    // PASO 1: Verificar si hay registros para el mes/año seleccionados
+                    string sqlConteo = @"
+                SELECT COUNT(*) 
+                FROM Indicadores 
+                WHERE MONTH(fechaHoraSalidaBase) = @Mes AND YEAR(fechaHoraSalidaBase) = @Anio";
+
+                    using (SqlCommand cmd = new SqlCommand(sqlConteo, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Mes", Convert.ToInt32(ddlMes.SelectedValue));
+                        cmd.Parameters.AddWithValue("@Anio", Convert.ToInt32(ddlAnio.SelectedValue));
+
+                        int totalRegistros = (int)cmd.ExecuteScalar();
+                        System.Diagnostics.Debug.WriteLine($"Total de registros para {ddlMes.SelectedItem.Text} {ddlAnio.SelectedValue}: {totalRegistros}");
+
+                        if (totalRegistros == 0)
+                        {
+                            ScriptManager.RegisterStartupScript(this, GetType(), "AlertNoData",
+                                "alert('No hay datos para el período seleccionado');", true);
+                            return;
+                        }
+                    }
+
+                    // PASO 2: Analizar los registros específicos
+                    string sqlDetalles = @"
+                SELECT TOP 10
+                    numeroPedido,
+                    fechaHoraSalidaBase,
+                    fechaHoraProgramacion,
+                    ABS(DATEDIFF(MINUTE, fechaHoraSalidaBase, fechaHoraProgramacion)) AS DiferenciaMinutos,
+                    CASE WHEN ABS(DATEDIFF(MINUTE, fechaHoraSalidaBase, fechaHoraProgramacion)) <= 30 
+                         THEN 'CUMPLE' ELSE 'NO CUMPLE' END AS Estado
+                FROM Indicadores
+                WHERE MONTH(fechaHoraSalidaBase) = @Mes AND YEAR(fechaHoraSalidaBase) = @Anio
+                ORDER BY fechaHoraSalidaBase";
+
+                    using (SqlCommand cmd = new SqlCommand(sqlDetalles, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Mes", Convert.ToInt32(ddlMes.SelectedValue));
+                        cmd.Parameters.AddWithValue("@Anio", Convert.ToInt32(ddlAnio.SelectedValue));
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            System.Diagnostics.Debug.WriteLine("=== DETALLE DE REGISTROS ===");
+                            int analizados = 0, cumplen = 0;
+
+                            while (reader.Read())
+                            {
+                                analizados++;
+                                if (reader["Estado"].ToString() == "CUMPLE") cumplen++;
+
+                                System.Diagnostics.Debug.WriteLine(
+                                    $"Pedido: {reader["numeroPedido"]}, " +
+                                    $"Salida: {reader["fechaHoraSalidaBase"]}, " +
+                                    $"Programado: {reader["fechaHoraProgramacion"]}, " +
+                                    $"Diferencia: {reader["DiferenciaMinutos"]} min, " +
+                                    $"Estado: {reader["Estado"]}");
+                            }
+
+                            double porcentajeDetalle = analizados > 0 ?
+                                Math.Round(((double)cumplen / analizados) * 100) : 0;
+
+                            System.Diagnostics.Debug.WriteLine(
+                                $"De {analizados} registros analizados, {cumplen} cumplen el criterio " +
+                                $"({porcentajeDetalle}% cumplimiento)");
+                        }
+                    }
+
+                    // PASO 3: Calcular el porcentaje correcto
+                    string sqlCumplimientoCorrecto = @"
+                SELECT 
+                    COUNT(*) AS Total,
+                    SUM(CASE WHEN ABS(DATEDIFF(MINUTE, fechaHoraSalidaBase, fechaHoraProgramacion)) <= 30 THEN 1 ELSE 0 END) AS Cumplen
+                FROM Indicadores
+                WHERE MONTH(fechaHoraSalidaBase) = @Mes AND YEAR(fechaHoraSalidaBase) = @Anio";
+
+                    using (SqlCommand cmd = new SqlCommand(sqlCumplimientoCorrecto, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Mes", Convert.ToInt32(ddlMes.SelectedValue));
+                        cmd.Parameters.AddWithValue("@Anio", Convert.ToInt32(ddlAnio.SelectedValue));
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                int total = Convert.ToInt32(reader["Total"]);
+                                int cumplen = Convert.ToInt32(reader["Cumplen"]);
+                                double porcentaje = total > 0 ? Math.Round(((double)cumplen / total) * 100) : 0;
+
+                                System.Diagnostics.Debug.WriteLine(
+                                    $"RESULTADO FINAL: {cumplen} de {total} cumplen = {porcentaje}%");
+
+                                // Actualizar el valor en la UI
+                                litCumplimiento.Text = porcentaje.ToString();
+
+                                // Mostrar mensaje para confirmar
+                                ScriptManager.RegisterStartupScript(this, GetType(), "AlertDiagnostico",
+                                    $"alert('Diagnóstico completado: {porcentaje}% de cumplimiento');", true);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR DIAGNÓSTICO: {ex.Message}");
+                ScriptManager.RegisterStartupScript(this, GetType(), "AlertError",
+                    $"alert('Error en diagnóstico: {ex.Message}');", true);
+            }
+        }
+
 
         // Método para cargar los KPIs
         private void CargarKPIs(int mes, int anio)
@@ -198,17 +321,31 @@ namespace WebSGV.Views
             {
                 conn.Open();
 
-                // % Cumplimiento hora programada
+                // % Cumplimiento - Basado en campos de Excel
+                // % Cumplimiento hora prog. - Basado en la fórmula de Power BI
                 string sqlCumplimiento = @"
-                    SELECT AVG(CASE 
-                                WHEN ABS(DATEDIFF(MINUTE, 
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaBase), DATEADD(HOUR, DATEPART(HOUR, horaSalidaBase), CAST(fechaSalidaBase AS DATETIME))), 
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME)))
-                                        )) <= 30 THEN 100.0 
-                                ELSE 0.0 
-                            END) AS Cumplimiento
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE MONTH(fechaSalidaBase) = @Mes AND YEAR(fechaSalidaBase) = @Anio";
+    SELECT 
+        CASE WHEN COUNT(*) > 0 
+            THEN CAST(SUM(CASE 
+                WHEN (
+                    -- Esta condición verifica si llegó antes o a tiempo (diferencia <= 0)
+                    DATEDIFF(MINUTE, 
+                        DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), 
+                            DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME))),
+                        DATEADD(MINUTE, DATEPART(MINUTE, horaLlegadaTrujillo), 
+                            DATEADD(HOUR, DATEPART(HOUR, horaLlegadaTrujillo), CAST(fechaLlegadaTrujillo AS DATETIME)))
+                    ) <= 0
+                ) THEN 1 
+                ELSE 0 
+            END) AS FLOAT) / COUNT(*) * 100 
+            ELSE 0 
+        END AS Cumplimiento
+    FROM vw_IndicadoresExcelCompatible
+    WHERE MONTH(fechaLlegadaTrujillo) = @Mes AND YEAR(fechaLlegadaTrujillo) = @Anio
+        AND fechaLlegadaTrujillo IS NOT NULL 
+        AND fechaProgramacion IS NOT NULL
+        AND horaProgramacion IS NOT NULL
+        AND horaLlegadaTrujillo IS NOT NULL";
 
                 using (SqlCommand cmd = new SqlCommand(sqlCumplimiento, conn))
                 {
@@ -219,23 +356,11 @@ namespace WebSGV.Views
                     double cumplimiento = result != DBNull.Value ? Convert.ToDouble(result) : 0;
                     litCumplimiento.Text = Math.Round(cumplimiento).ToString();
                 }
-
-                // Total camiones
+                // Total camiones - contar todos los registros/viajes
                 string sqlCamiones = @"
-                    WITH TractosList AS (
-                        SELECT tracto1 AS tracto FROM vw_IndicadoresExcelCompatible
-                        WHERE MONTH(fechaSalidaBase) = @Mes AND YEAR(fechaSalidaBase) = @Anio
-                        
-                        UNION
-                        
-                        SELECT tracto2 AS tracto FROM vw_IndicadoresExcelCompatible  
-                        WHERE tracto2 IS NOT NULL 
-                          AND MONTH(fechaSalidaBase) = @Mes AND YEAR(fechaSalidaBase) = @Anio
-                          AND NOT EXISTS (SELECT 1 FROM vw_IndicadoresExcelCompatible 
-                                        WHERE tracto1 = tracto2
-                                        AND MONTH(fechaSalidaBase) = @Mes AND YEAR(fechaSalidaBase) = @Anio)
-                    )
-                    SELECT COUNT(*) AS TotalCamiones FROM TractosList";
+    SELECT COUNT(*) AS TotalCamionesViajes
+    FROM vw_IndicadoresExcelCompatible
+    WHERE MONTH(fechaSalidaBase) = @Mes AND YEAR(fechaSalidaBase) = @Anio";
 
                 using (SqlCommand cmd = new SqlCommand(sqlCamiones, conn))
                 {
@@ -350,34 +475,70 @@ namespace WebSGV.Views
 
                 // Datos para Tiempos promedio en Trujillo (por meses)
                 string sqlTrujillo = @"
-                    SELECT 
-                        DATENAME(MONTH, fechaSalidaBase) AS Mes,
-                        AVG(CASE 
-                                WHEN ABS(DATEDIFF(MINUTE, 
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))), 
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME)))
-                                        )) < 0 THEN 0
-                                ELSE DATEDIFF(HOUR, 
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME))),
-                                         DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME)))
-                                        ) 
-                            END) AS EsperaIngresoTrujillo,
-                        AVG(DATEDIFF(HOUR, 
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))),
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaInicioCarga), DATEADD(HOUR, DATEPART(HOUR, horaInicioCarga), CAST(fechaInicioCarga AS DATETIME)))
-                            )) AS EsperaInicio,
-                        AVG(DATEDIFF(HOUR, 
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaInicioCarga), DATEADD(HOUR, DATEPART(HOUR, horaInicioCarga), CAST(fechaInicioCarga AS DATETIME))),
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaTerminoCarga), DATEADD(HOUR, DATEPART(HOUR, horaTerminoCarga), CAST(fechaTerminoCarga AS DATETIME)))
-                            )) AS Carga,
-                        AVG(DATEDIFF(HOUR, 
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))),
-                                DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaPlanta), DATEADD(HOUR, DATEPART(HOUR, horaSalidaPlanta), CAST(fechaSalidaPlanta AS DATETIME)))
-                            )) AS PermanenciaTrujillo
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE YEAR(fechaSalidaBase) = @Anio
-                    GROUP BY DATENAME(MONTH, fechaSalidaBase), MONTH(fechaSalidaBase)
-                    ORDER BY MONTH(fechaSalidaBase)";
+    SELECT 
+        DATENAME(MONTH, fechaSalidaBase) AS Mes,
+        -- Espera a ingreso Trujillo
+        AVG(
+            CASE 
+                WHEN DATEDIFF(MINUTE, 
+                    DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), 
+                        DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME))),
+                    DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), 
+                        DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME)))
+                ) < 0 THEN 0
+                ELSE DATEDIFF(MINUTE, 
+                    DATEADD(MINUTE, DATEPART(MINUTE, horaProgramacion), 
+                        DATEADD(HOUR, DATEPART(HOUR, horaProgramacion), CAST(fechaProgramacion AS DATETIME))),
+                    DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), 
+                        DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME)))
+                ) / 60.0 
+            END
+        ) AS EsperaIngresoTrujillo,
+        
+        -- Espera para iniciar la carga
+        AVG(
+            DATEDIFF(MINUTE,
+                DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))),
+                DATEADD(MINUTE, DATEPART(MINUTE, horaInicioCarga), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaInicioCarga), CAST(fechaInicioCarga AS DATETIME)))
+            ) / 60.0
+        ) AS EsperaInicio,
+        
+        -- Carga (Horas)
+        AVG(
+            DATEDIFF(MINUTE,
+                DATEADD(MINUTE, DATEPART(MINUTE, horaInicioCarga), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaInicioCarga), CAST(fechaInicioCarga AS DATETIME))),
+                DATEADD(MINUTE, DATEPART(MINUTE, horaTerminoCarga), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaTerminoCarga), CAST(fechaTerminoCarga AS DATETIME)))
+            ) / 60.0
+        ) AS Carga,
+        
+        -- Permanencia en planta Trujillo
+        AVG(
+            DATEDIFF(MINUTE,
+                DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))),
+                DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaPlanta), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaSalidaPlanta), CAST(fechaSalidaPlanta AS DATETIME)))
+            ) / 60.0
+        ) AS PermanenciaTrujillo
+        
+    FROM vw_IndicadoresExcelCompatible
+    WHERE YEAR(fechaSalidaBase) = @Anio
+        AND fechaProgramacion IS NOT NULL 
+        AND horaProgramacion IS NOT NULL
+        AND fechaIngresoPlanta IS NOT NULL 
+        AND horaIngresoPlanta IS NOT NULL
+        AND fechaInicioCarga IS NOT NULL 
+        AND horaInicioCarga IS NOT NULL
+        AND fechaTerminoCarga IS NOT NULL 
+        AND horaTerminoCarga IS NOT NULL
+        AND fechaSalidaPlanta IS NOT NULL 
+        AND horaSalidaPlanta IS NOT NULL
+    GROUP BY DATENAME(MONTH, fechaSalidaBase), MONTH(fechaSalidaBase)
+    ORDER BY MONTH(fechaSalidaBase)";
 
                 using (SqlCommand cmd = new SqlCommand(sqlTrujillo, conn))
                 {
@@ -437,17 +598,24 @@ namespace WebSGV.Views
 
                 // Datos para Tiempo Trujillo-Ecuador (días)
                 string sqlTrujilloEcuador = @"
-                    SELECT 
-                        DATENAME(MONTH, fechaSalidaPlanta) AS Mes,
-                        AVG(DATEDIFF(DAY, 
-                            fechaSalidaPlanta,
-                            fechaLlegadaCebafE
-                        )) AS TiempoTrujilloEcuador
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE YEAR(fechaSalidaPlanta) = @Anio AND MONTH(fechaSalidaPlanta) = @Mes
-                      AND fechaLlegadaCebafE IS NOT NULL
-                    GROUP BY DATENAME(MONTH, fechaSalidaPlanta), MONTH(fechaSalidaPlanta)
-                    ORDER BY MONTH(fechaSalidaPlanta)";
+    SELECT 
+        DATENAME(MONTH, fechaIngresoPlanta) AS Mes,
+        AVG(
+            DATEDIFF(MINUTE, 
+                DATEADD(MINUTE, DATEPART(MINUTE, horaIngresoPlanta), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaIngresoPlanta), CAST(fechaIngresoPlanta AS DATETIME))),
+                DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaPlanta), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaSalidaPlanta), CAST(fechaSalidaPlanta AS DATETIME)))
+            ) / (60.0 * 24.0)  -- Convertir minutos a días
+        ) AS TiempoTrujilloEcuador
+    FROM vw_IndicadoresExcelCompatible
+    WHERE YEAR(fechaIngresoPlanta) = @Anio AND MONTH(fechaIngresoPlanta) = @Mes
+        AND fechaIngresoPlanta IS NOT NULL 
+        AND horaIngresoPlanta IS NOT NULL
+        AND fechaSalidaPlanta IS NOT NULL
+        AND horaSalidaPlanta IS NOT NULL
+    GROUP BY DATENAME(MONTH, fechaIngresoPlanta), MONTH(fechaIngresoPlanta)
+    ORDER BY MONTH(fechaIngresoPlanta)";
 
                 using (SqlCommand cmd = new SqlCommand(sqlTrujilloEcuador, conn))
                 {
@@ -494,19 +662,29 @@ namespace WebSGV.Views
                     }
                 }
 
+
+
+
                 // Datos para Tiempo Base (hrs)
                 string sqlTiempoBase = @"
-                    SELECT 
-                        DATENAME(MONTH, fechaLlegadaBase) AS Mes,
-                        AVG(DATEDIFF(HOUR, 
-                            DATEADD(MINUTE, DATEPART(MINUTE, horaLlegadaBase), DATEADD(HOUR, DATEPART(HOUR, horaLlegadaBase), CAST(fechaLlegadaBase AS DATETIME))),
-                            DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaBaseDepsa), DATEADD(HOUR, DATEPART(HOUR, horaSalidaBaseDepsa), CAST(fechaSalidaBaseDepsa AS DATETIME)))
-                        )) AS TiempoBase
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE YEAR(fechaLlegadaBase) = @Anio AND MONTH(fechaLlegadaBase) = @Mes
-                      AND fechaSalidaBaseDepsa IS NOT NULL
-                    GROUP BY DATENAME(MONTH, fechaLlegadaBase), MONTH(fechaLlegadaBase)
-                    ORDER BY MONTH(fechaLlegadaBase)";
+    SELECT 
+        DATENAME(MONTH, fechaLlegadaBase) AS Mes,
+        AVG(
+            DATEDIFF(MINUTE, 
+                DATEADD(MINUTE, DATEPART(MINUTE, horaLlegadaBase), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaLlegadaBase), CAST(fechaLlegadaBase AS DATETIME))),
+                DATEADD(MINUTE, DATEPART(MINUTE, horaSalidaBaseDepsa), 
+                    DATEADD(HOUR, DATEPART(HOUR, horaSalidaBaseDepsa), CAST(fechaSalidaBaseDepsa AS DATETIME)))
+            ) / 60.0  -- Convertir minutos a horas
+        ) AS TiempoBase
+    FROM vw_IndicadoresExcelCompatible
+    WHERE YEAR(fechaLlegadaBase) = @Anio AND MONTH(fechaLlegadaBase) = @Mes
+      AND fechaLlegadaBase IS NOT NULL 
+      AND horaLlegadaBase IS NOT NULL
+      AND fechaSalidaBaseDepsa IS NOT NULL
+      AND horaSalidaBaseDepsa IS NOT NULL
+    GROUP BY DATENAME(MONTH, fechaLlegadaBase), MONTH(fechaLlegadaBase)
+    ORDER BY MONTH(fechaLlegadaBase)";
 
                 using (SqlCommand cmd = new SqlCommand(sqlTiempoBase, conn))
                 {
@@ -553,73 +731,35 @@ namespace WebSGV.Views
                     }
                 }
 
-                // Datos para Inbalnor y Jave
-                string sqlInbalnorJave = @"
-                    SELECT 
-                        'Inbalnor' AS Bodega,
-                        AVG(CASE 
-                            WHEN bodegaDescarga = 'INBALNOR' THEN
-                                DATEDIFF(HOUR, 
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaLlegadaPlantaDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaLlegadaPlantaDescarga), CAST(fechaLlegadaPlantaDescarga AS DATETIME))),
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaInicioDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaInicioDescarga), CAST(fechaInicioDescarga AS DATETIME)))
-                                )
-                            ELSE NULL END) AS EsperaDescarga,
-                        AVG(CASE 
-                            WHEN bodegaDescarga = 'INBALNOR' THEN
-                                DATEDIFF(HOUR, 
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaInicioDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaInicioDescarga), CAST(fechaInicioDescarga AS DATETIME))),
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaTerminoDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaTerminoDescarga), CAST(fechaTerminoDescarga AS DATETIME)))
-                                )
-                            ELSE NULL END) AS Descarga
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE MONTH(fechaLlegadaPlantaDescarga) = @Mes AND YEAR(fechaLlegadaPlantaDescarga) = @Anio
-                        AND bodegaDescarga = 'INBALNOR'
-                    
-                    UNION ALL
-                    
-                    SELECT 
-                        'JAVE' AS Bodega,
-                        AVG(CASE 
-                            WHEN bodegaDescarga = 'JAVE' THEN
-                                DATEDIFF(HOUR, 
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaLlegadaPlantaDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaLlegadaPlantaDescarga), CAST(fechaLlegadaPlantaDescarga AS DATETIME))),
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaInicioDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaInicioDescarga), CAST(fechaInicioDescarga AS DATETIME)))
-                                )
-                            ELSE NULL END) AS EsperaDescarga,
-                        AVG(CASE 
-                            WHEN bodegaDescarga = 'JAVE' THEN
-                                DATEDIFF(HOUR, 
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaInicioDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaInicioDescarga), CAST(fechaInicioDescarga AS DATETIME))),
-                                    DATEADD(MINUTE, DATEPART(MINUTE, horaTerminoDescarga), 
-                                        DATEADD(HOUR, DATEPART(HOUR, horaTerminoDescarga), CAST(fechaTerminoDescarga AS DATETIME)))
-                                )
-                            ELSE NULL END) AS Descarga
-                    FROM vw_IndicadoresExcelCompatible
-                    WHERE MONTH(fechaLlegadaPlantaDescarga) = @Mes AND YEAR(fechaLlegadaPlantaDescarga) = @Anio
-                        AND bodegaDescarga = 'JAVE'";
+                // Datos para Inbalnor - Usando tabla Indicadores directamente (consulta exitosa)
+                string sqlInbalnor = @"
+SELECT 
+    -- Espera para iniciar la descarga = (Fecha/Hora inicio descarga - Fecha/Hora ingreso) * 24
+    ISNULL(AVG(
+        DATEDIFF(SECOND, fechaHoraIngreso, fechaHoraInicioDescarga) / 3600.0
+    ), 0) AS EsperaDescarga,
+    
+    -- Descarga (Horas) = (Hora término descarga - Hora inicio descarga) * 24
+    ISNULL(AVG(
+        DATEDIFF(SECOND, fechaHoraInicioDescarga, fechaHoraTerminoDescarga) / 3600.0
+    ), 0) AS Descarga
+FROM Indicadores
+WHERE MONTH(fechaHoraLlegadaPlantaDescarga) = @Mes 
+  AND YEAR(fechaHoraLlegadaPlantaDescarga) = @Anio
+  AND bodegaDescarga = 'INBALNOR'
+  AND fechaHoraIngreso IS NOT NULL
+  AND fechaHoraInicioDescarga IS NOT NULL
+  AND fechaHoraTerminoDescarga IS NOT NULL";
 
-                using (SqlCommand cmd = new SqlCommand(sqlInbalnorJave, conn))
+                using (SqlCommand cmdInbalnor = new SqlCommand(sqlInbalnor, conn))
                 {
-                    cmd.Parameters.AddWithValue("@Mes", mes);
-                    cmd.Parameters.AddWithValue("@Anio", anio);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    cmdInbalnor.Parameters.AddWithValue("@Mes", mes);
+                    cmdInbalnor.Parameters.AddWithValue("@Anio", anio);
+                    using (SqlDataReader reader = cmdInbalnor.ExecuteReader())
                     {
                         List<string> diasInbalnor = new List<string>();
                         List<double> esperaDescargaInbalnor = new List<double>();
                         List<double> descargaInbalnor = new List<double>();
-
-                        List<string> diasJave = new List<string>();
-                        List<double> esperaDescargaJave = new List<double>();
-                        List<double> descargaJave = new List<double>();
-
                         string mesNombre = "";
                         switch (mes)
                         {
@@ -636,46 +776,87 @@ namespace WebSGV.Views
                             case 11: mesNombre = "noviembre"; break;
                             case 12: mesNombre = "diciembre"; break;
                         }
-
-                        while (reader.Read())
-                        {
-                            string bodega = reader["Bodega"].ToString();
-                            double esperaDescarga = reader["EsperaDescarga"] != DBNull.Value ? Convert.ToDouble(reader["EsperaDescarga"]) : 0;
-                            double descarga = reader["Descarga"] != DBNull.Value ? Convert.ToDouble(reader["Descarga"]) : 0;
-
-                            if (bodega.Equals("Inbalnor", StringComparison.OrdinalIgnoreCase))
-                            {
-                                diasInbalnor.Add(mesNombre);
-                                esperaDescargaInbalnor.Add(esperaDescarga);
-                                descargaInbalnor.Add(descarga);
-                            }
-                            else if (bodega.Equals("JAVE", StringComparison.OrdinalIgnoreCase))
-                            {
-                                diasJave.Add(mesNombre);
-                                esperaDescargaJave.Add(esperaDescarga);
-                                descargaJave.Add(descarga);
-                            }
-                        }
-
-                        // Si no hay datos, agregamos valores por defecto
-                        if (diasInbalnor.Count == 0)
+                        if (reader.Read())
                         {
                             diasInbalnor.Add(mesNombre);
-                            esperaDescargaInbalnor.Add(3.2);
-                            descargaInbalnor.Add(0.2);
+                            esperaDescargaInbalnor.Add(reader["EsperaDescarga"] != DBNull.Value ?
+                                Convert.ToDouble(reader["EsperaDescarga"]) : 0);
+                            descargaInbalnor.Add(reader["Descarga"] != DBNull.Value ?
+                                Convert.ToDouble(reader["Descarga"]) : 0);
                         }
-
-                        if (diasJave.Count == 0)
+                        else
                         {
-                            diasJave.Add(mesNombre);
-                            esperaDescargaJave.Add(4.9);
-                            descargaJave.Add(0.3);
+                            // Si no hay datos, agregamos valores por defecto
+                            diasInbalnor.Add(mesNombre);
+                            esperaDescargaInbalnor.Add(0.8);
+                            descargaInbalnor.Add(0.3);
                         }
-
                         datos["DiasInbalnor"] = diasInbalnor;
                         datos["EsperaDescargaInbalnor"] = esperaDescargaInbalnor;
                         datos["DescargaInbalnor"] = descargaInbalnor;
+                    }
+                }
 
+                // Datos para Jave - Usando tabla Indicadores directamente
+                string sqlJave = @"
+SELECT 
+    -- Espera para iniciar la descarga = (Fecha/Hora inicio descarga - Fecha/Hora ingreso) * 24
+    ISNULL(AVG(
+        DATEDIFF(SECOND, fechaHoraIngreso, fechaHoraInicioDescarga) / 3600.0
+    ), 0) AS EsperaDescarga,
+    
+    -- Descarga (Horas) = (Hora término descarga - Hora inicio descarga) * 24
+    ISNULL(AVG(
+        DATEDIFF(SECOND, fechaHoraInicioDescarga, fechaHoraTerminoDescarga) / 3600.0
+    ), 0) AS Descarga
+FROM Indicadores
+WHERE MONTH(fechaHoraLlegadaPlantaDescarga) = @Mes 
+  AND YEAR(fechaHoraLlegadaPlantaDescarga) = @Anio
+  AND bodegaDescarga = 'JAVE'
+  AND fechaHoraIngreso IS NOT NULL
+  AND fechaHoraInicioDescarga IS NOT NULL
+  AND fechaHoraTerminoDescarga IS NOT NULL";
+
+                using (SqlCommand cmdJave = new SqlCommand(sqlJave, conn))
+                {
+                    cmdJave.Parameters.AddWithValue("@Mes", mes);
+                    cmdJave.Parameters.AddWithValue("@Anio", anio);
+                    using (SqlDataReader reader = cmdJave.ExecuteReader())
+                    {
+                        List<string> diasJave = new List<string>();
+                        List<double> esperaDescargaJave = new List<double>();
+                        List<double> descargaJave = new List<double>();
+                        string mesNombre = "";
+                        switch (mes)
+                        {
+                            case 1: mesNombre = "enero"; break;
+                            case 2: mesNombre = "febrero"; break;
+                            case 3: mesNombre = "marzo"; break;
+                            case 4: mesNombre = "abril"; break;
+                            case 5: mesNombre = "mayo"; break;
+                            case 6: mesNombre = "junio"; break;
+                            case 7: mesNombre = "julio"; break;
+                            case 8: mesNombre = "agosto"; break;
+                            case 9: mesNombre = "septiembre"; break;
+                            case 10: mesNombre = "octubre"; break;
+                            case 11: mesNombre = "noviembre"; break;
+                            case 12: mesNombre = "diciembre"; break;
+                        }
+                        if (reader.Read())
+                        {
+                            diasJave.Add(mesNombre);
+                            esperaDescargaJave.Add(reader["EsperaDescarga"] != DBNull.Value ?
+                                Convert.ToDouble(reader["EsperaDescarga"]) : 0);
+                            descargaJave.Add(reader["Descarga"] != DBNull.Value ?
+                                Convert.ToDouble(reader["Descarga"]) : 0);
+                        }
+                        else
+                        {
+                            // Si no hay datos, agregamos valores por defecto
+                            diasJave.Add(mesNombre);
+                            esperaDescargaJave.Add(0.8);
+                            descargaJave.Add(0.3);
+                        }
                         datos["DiasJave"] = diasJave;
                         datos["EsperaDescargaJave"] = esperaDescargaJave;
                         datos["DescargaJave"] = descargaJave;

@@ -38,6 +38,8 @@
                     </asp:DropDownList>
 
                     <asp:Button ID="btnFiltrar" runat="server" Text="Aplicar filtro" OnClick="btnFiltrar_Click" CssClass="refresh-btn" />
+                    <!-- Agregar justo debajo del botón de filtro -->
+                    <asp:Button ID="btnDiagnostico" runat="server" Text="Diagnóstico" OnClick="btnDiagnostico_Click" CssClass="refresh-btn" />
                 </div>
 
                 <!-- Tabs de navegación usando LinkButtons para postbacks limpios -->
@@ -439,6 +441,9 @@
             try {
                 console.log("Iniciando carga de página...");
 
+                // Registrar el plugin datalabels primero
+                Chart.register(ChartDataLabels);
+
                 // Obtener el elemento oculto - NOTA: usar la referencia dinámica correcta
                 var hiddenField = document.getElementById('<%= hdnDatosGraficos.ClientID %>');
 
@@ -482,6 +487,26 @@
             }
         }
 
+        // Función para traducir nombres de meses
+        function traducirMeses(meses) {
+            const traduccion = {
+                'january': 'enero',
+                'february': 'febrero',
+                'march': 'marzo',
+                'april': 'abril',
+                'may': 'mayo',
+                'june': 'junio',
+                'july': 'julio',
+                'august': 'agosto',
+                'september': 'septiembre',
+                'october': 'octubre',
+                'november': 'noviembre',
+                'december': 'diciembre'
+            };
+
+            return meses.map(mes => traduccion[mes.toLowerCase()] || mes);
+        }
+
         // Inicializar gráficos con los datos recibidos
         function inicializarGraficos(datos) {
             // Configuración común para todos los gráficos
@@ -493,7 +518,19 @@
                         position: 'right',
                         labels: { color: '#fff', font: { size: 12 } }
                     },
-                    tooltip: { mode: 'index', intersect: false }
+                    tooltip: { mode: 'index', intersect: false },
+                    // Configuración del plugin datalabels
+                    datalabels: {
+                        display: true,
+                        color: '#fff',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: function (value) {
+                            return value.toFixed(3); // Mostrar 3 decimales
+                        },
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 0
+                    }
                 },
                 scales: {
                     y: {
@@ -532,10 +569,23 @@
                 inicializarGraficoTiempoCebaf(datos, commonOptions);
             }
 
-            // Más inicializaciones para otros gráficos según sea necesario
+            // Inicializar gráficos de la pestaña Tiempos Adicionales si están visibles
+            if (document.getElementById('chartTiempoTCI')) {
+                inicializarGraficoTiempoTCI(datos, commonOptions);
+                inicializarGraficoTiempoPuyango(datos, commonOptions);
+                inicializarGraficoEsperaNacionalizacion(datos, commonOptions);
+            }
+
+            // Inicializar gráficos de la pestaña Bodegas y Distancias si están visibles
+            if (document.getElementById('chartBodegaInbalnor')) {
+                inicializarGraficoBodegaInbalnor(datos, commonOptions);
+                inicializarGraficoBodegaJave(datos, commonOptions);
+                inicializarGraficoEcuatorianaInbalnor(datos, commonOptions);
+                inicializarGraficoEcuatorianaJave(datos, commonOptions);
+            }
         }
 
-        // Función para inicializar el gráfico de Tiempos promedio en Trujillo
+        // Función para inicializar el gráfico de Tiempos promedio en Trujillo con filtro por mes
         function inicializarGraficoTrujillo(datos, commonOptions) {
             const ctxTrujillo = document.getElementById('chartTrujillo');
             if (!ctxTrujillo) return;
@@ -545,35 +595,96 @@
                 charts.chartTrujillo.destroy();
             }
 
+            // Obtener el mes seleccionado (1=enero, 2=febrero, etc.)
+            const mesSeleccionado = document.getElementById('<%= ddlMes.ClientID %>').value;
+
+            // Filtrar los datos según el mes seleccionado
+            // Primero encontramos los índices de los meses que coinciden con el mes seleccionado
+            let indicesFiltrados = [];
+            let mesesTrujillo = datos.MesesTrujillo || [];
+
+            // Mapeo de nombres de meses en inglés al número de mes
+            const mesNumero = {
+                'january': '1',
+                'febrero': '2',
+                'february': '2',
+                'marzo': '3',
+                'march': '3',
+                'april': '4',
+                'abril': '4',
+                'may': '5',
+                'mayo': '5',
+                'june': '6',
+                'junio': '6',
+                'july': '7',
+                'julio': '7',
+                'august': '8',
+                'agosto': '8',
+                'september': '9',
+                'septiembre': '9',
+                'october': '10',
+                'octubre': '10',
+                'november': '11',
+                'noviembre': '11',
+                'december': '12',
+                'diciembre': '12'
+            };
+
+            // Buscar los índices que corresponden al mes seleccionado
+            for (let i = 0; i < mesesTrujillo.length; i++) {
+                // Convertir a minúsculas para comparación
+                const mes = mesesTrujillo[i].toLowerCase();
+
+                // Si el mes coincide con el mes seleccionado (por nombre o por posición)
+                if (mesNumero[mes] === mesSeleccionado || i === parseInt(mesSeleccionado) - 1) {
+                    indicesFiltrados.push(i);
+                }
+            }
+
+            // Si no encontramos coincidencias, usar todos los datos (fallback)
+            if (indicesFiltrados.length === 0) {
+                indicesFiltrados = [...Array(mesesTrujillo.length).keys()]; // todos los índices
+            }
+
+            // Filtrar los arrays de datos según los índices encontrados
+            const mesesFiltrados = indicesFiltrados.map(i => mesesTrujillo[i]);
+            const esperaIngresoFiltrado = indicesFiltrados.map(i => datos.EsperaIngresoTrujillo ? datos.EsperaIngresoTrujillo[i] : 0);
+            const esperaInicioFiltrado = indicesFiltrados.map(i => datos.EsperaInicio ? datos.EsperaInicio[i] : 0);
+            const cargaFiltrado = indicesFiltrados.map(i => datos.Carga ? datos.Carga[i] : 0);
+            const permanenciaFiltrado = indicesFiltrados.map(i => datos.PermanenciaTrujillo ? datos.PermanenciaTrujillo[i] : 0);
+
+            // Traducir los meses filtrados a español
+            const mesesTraducidos = traducirMeses(mesesFiltrados);
+
             charts.chartTrujillo = new Chart(ctxTrujillo, {
                 type: 'bar',
                 data: {
-                    labels: datos.MesesTrujillo || [],
+                    labels: mesesTraducidos,
                     datasets: [
                         {
                             label: 'Espera a ingreso Trujillo',
-                            data: datos.EsperaIngresoTrujillo || [],
+                            data: esperaIngresoFiltrado,
                             backgroundColor: 'rgba(255, 99, 132, 0.7)',
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Espera inicio',
-                            data: datos.EsperaInicio || [],
+                            data: esperaInicioFiltrado,
                             backgroundColor: 'rgba(255, 159, 64, 0.7)',
                             borderColor: 'rgba(255, 159, 64, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Carga',
-                            data: datos.Carga || [],
+                            data: cargaFiltrado,
                             backgroundColor: 'rgba(255, 205, 86, 0.7)',
                             borderColor: 'rgba(255, 205, 86, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Permanencia en planta Trujillo',
-                            data: datos.PermanenciaTrujillo || [],
+                            data: permanenciaFiltrado,
                             backgroundColor: 'rgba(75, 192, 192, 0.7)',
                             borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 1
@@ -585,6 +696,8 @@
         }
 
         // Función para inicializar el gráfico de Tiempo Trujillo-Ecuador
+        // Aplicar el mismo patrón de filtrado a las demás funciones de inicialización
+        // Por ejemplo, para Trujillo-Ecuador:
         function inicializarGraficoTrujilloEcuador(datos, commonOptions) {
             const ctx = document.getElementById('chartTrujilloEcuador');
             if (!ctx) return;
@@ -593,14 +706,68 @@
                 charts.chartTrujilloEcuador.destroy();
             }
 
+            // Obtener el mes seleccionado
+            const mesSeleccionado = document.getElementById('<%= ddlMes.ClientID %>').value;
+
+            // Filtrar los datos según el mes seleccionado
+            let indicesFiltrados = [];
+            let mesesTrujilloEcuador = datos.MesesTrujilloEcuador || [];
+
+            // Mapeo de nombres de meses en inglés al número de mes
+            const mesNumero = {
+                'january': '1',
+                'febrero': '2',
+                'february': '2',
+                'marzo': '3',
+                'march': '3',
+                'april': '4',
+                'abril': '4',
+                'may': '5',
+                'mayo': '5',
+                'june': '6',
+                'junio': '6',
+                'july': '7',
+                'julio': '7',
+                'august': '8',
+                'agosto': '8',
+                'september': '9',
+                'septiembre': '9',
+                'october': '10',
+                'octubre': '10',
+                'november': '11',
+                'noviembre': '11',
+                'december': '12',
+                'diciembre': '12'
+            };
+
+            // Buscar los índices que corresponden al mes seleccionado
+            for (let i = 0; i < mesesTrujilloEcuador.length; i++) {
+                const mes = mesesTrujilloEcuador[i].toLowerCase();
+                if (mesNumero[mes] === mesSeleccionado || i === parseInt(mesSeleccionado) - 1) {
+                    indicesFiltrados.push(i);
+                }
+            }
+
+            // Si no encontramos coincidencias, usar todos los datos
+            if (indicesFiltrados.length === 0) {
+                indicesFiltrados = [...Array(mesesTrujilloEcuador.length).keys()];
+            }
+
+            // Filtrar los arrays de datos
+            const mesesFiltrados = indicesFiltrados.map(i => mesesTrujilloEcuador[i]);
+            const tiempoFiltrado = indicesFiltrados.map(i => datos.TiempoTrujilloEcuador ? datos.TiempoTrujilloEcuador[i] : 0);
+
+            // Traducir los meses filtrados a español
+            const mesesTraducidos = traducirMeses(mesesFiltrados);
+
             charts.chartTrujilloEcuador = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: datos.MesesTrujilloEcuador || [],
+                    labels: mesesTraducidos,
                     datasets: [
                         {
                             label: 'Días',
-                            data: datos.TiempoTrujilloEcuador || [],
+                            data: tiempoFiltrado,
                             backgroundColor: 'rgba(54, 162, 235, 0.7)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1
@@ -620,10 +787,13 @@
                 charts.chartBase.destroy();
             }
 
+            // Traducir los meses a español
+            const mesesTraducidos = traducirMeses(datos.MesesBase || []);
+
             charts.chartBase = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: datos.MesesBase || [],
+                    labels: mesesTraducidos,
                     datasets: [
                         {
                             label: 'Horas',
@@ -647,10 +817,13 @@
                 charts.chartInbalnor.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasInbalnor || []);
+
             charts.chartInbalnor = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: datos.DiasInbalnor || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Espera descarga',
@@ -681,10 +854,13 @@
                 charts.chartJave.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasJave || []);
+
             charts.chartJave = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: datos.DiasJave || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Espera descarga',
@@ -715,10 +891,13 @@
                 charts.chartEsperaDepsa.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasEsperaDepsa || []);
+
             charts.chartEsperaDepsa = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: datos.DiasEsperaDepsa || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Horas',
@@ -744,10 +923,13 @@
                 charts.chartEsperaComplex.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasEsperaComplex || []);
+
             charts.chartEsperaComplex = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: datos.DiasEsperaComplex || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Horas',
@@ -772,10 +954,13 @@
                 charts.chartTiempoDepsa.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasTiempoDepsa || []);
+
             charts.chartTiempoDepsa = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: datos.DiasTiempoDepsa || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Horas',
@@ -800,10 +985,13 @@
                 charts.chartTiempoComplex.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasTiempoComplex || []);
+
             charts.chartTiempoComplex = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: datos.DiasTiempoComplex || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Horas',
@@ -828,10 +1016,13 @@
                 charts.chartTiempoCebaf.destroy();
             }
 
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasCebaf || []);
+
             charts.chartTiempoCebaf = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: datos.DiasCebaf || [],
+                    labels: diasTraducidos,
                     datasets: [
                         {
                             label: 'Minutos',
@@ -841,6 +1032,217 @@
                             borderWidth: 2,
                             fill: true,
                             tension: 0.4
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        // Funciones para la pestaña de Tiempos Adicionales
+        function inicializarGraficoTiempoTCI(datos, commonOptions) {
+            const ctx = document.getElementById('chartTiempoTCI');
+            if (!ctx) return;
+
+            if (charts.chartTiempoTCI) {
+                charts.chartTiempoTCI.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasTiempoTCI || []);
+
+            charts.chartTiempoTCI = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoTCI || [],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        function inicializarGraficoTiempoPuyango(datos, commonOptions) {
+            const ctx = document.getElementById('chartTiempoPuyango');
+            if (!ctx) return;
+
+            if (charts.chartTiempoPuyango) {
+                charts.chartTiempoPuyango.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasTiempoPuyango || []);
+
+            charts.chartTiempoPuyango = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoPuyango || [],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        function inicializarGraficoEsperaNacionalizacion(datos, commonOptions) {
+            const ctx = document.getElementById('chartEsperaNacionalizacion');
+            if (!ctx) return;
+
+            if (charts.chartEsperaNacionalizacion) {
+                charts.chartEsperaNacionalizacion.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasEsperaNacionalizacion || []);
+
+            charts.chartEsperaNacionalizacion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoEsperaNacionalizacion || [],
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        // Funciones para la pestaña de Bodegas y Distancias
+        function inicializarGraficoBodegaInbalnor(datos, commonOptions) {
+            const ctx = document.getElementById('chartBodegaInbalnor');
+            if (!ctx) return;
+
+            if (charts.chartBodegaInbalnor) {
+                charts.chartBodegaInbalnor.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasBodegaInbalnor || []);
+
+            charts.chartBodegaInbalnor = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoBodegaInbalnor || [],
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        function inicializarGraficoBodegaJave(datos, commonOptions) {
+            const ctx = document.getElementById('chartBodegaJave');
+            if (!ctx) return;
+
+            if (charts.chartBodegaJave) {
+                charts.chartBodegaJave.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasBodegaJave || []);
+
+            charts.chartBodegaJave = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoBodegaJave || [],
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        function inicializarGraficoEcuatorianaInbalnor(datos, commonOptions) {
+            const ctx = document.getElementById('chartEcuatorianaInbalnor');
+            if (!ctx) return;
+
+            if (charts.chartEcuatorianaInbalnor) {
+                charts.chartEcuatorianaInbalnor.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasEcuatorianaInbalnor || []);
+
+            charts.chartEcuatorianaInbalnor = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoEcuatorianaInbalnor || [],
+                            backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+        }
+
+        function inicializarGraficoEcuatorianaJave(datos, commonOptions) {
+            const ctx = document.getElementById('chartEcuatorianaJave');
+            if (!ctx) return;
+
+            if (charts.chartEcuatorianaJave) {
+                charts.chartEcuatorianaJave.destroy();
+            }
+
+            // Traducir los días a español si contienen nombres de meses
+            const diasTraducidos = traducirMeses(datos.DiasEcuatorianaJave || []);
+
+            charts.chartEcuatorianaJave = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: diasTraducidos,
+                    datasets: [
+                        {
+                            label: 'Horas',
+                            data: datos.TiempoEcuatorianaJave || [],
+                            backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
